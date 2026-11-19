@@ -13,9 +13,19 @@ button:hover{filter:brightness(1.25);transform:translateY(-1px)}button:disabled{
 #game{position:relative;width:100vw;height:100vh;height:100dvh;overflow:hidden}
 #stage{position:absolute;inset:0;min-width:0;background:#101710;display:flex;align-items:center;justify-content:center;overflow:hidden}
 canvas{width:100%;height:100%;object-fit:contain;image-rendering:pixelated;background:#17241b}
+#titleScreen{position:fixed;inset:0;z-index:10;display:grid;place-items:center;overflow:hidden;background:#030817}
+#titleScreen::before{content:"";position:absolute;inset:-12px;background:url("assets/title-screen.png") center/cover no-repeat;filter:blur(10px) brightness(.5);transform:scale(1.04)}
+.title-art{position:relative;z-index:1;width:min(100vw,177.734vh);aspect-ratio:1365 / 768}
+.title-art img{display:block;width:100%;height:100%;object-fit:contain}
+.title-hitbox{position:absolute;left:38%;width:24.5%;height:9.5%;padding:0;border:2px solid transparent;border-radius:9px;background:transparent;color:transparent}
+.title-hitbox:hover,.title-hitbox:focus-visible{filter:none;transform:none;border-color:#ffd16e;background:#ffd16e12;box-shadow:0 0 20px #ffc45a99;outline:none}
+.title-hitbox.start{top:53.4%}.title-hitbox.settings{top:63.4%}.title-hitbox.exit{top:73.3%}
 #statusHud{position:absolute;z-index:3;top:58px;left:14px;width:min(230px,calc(100% - 28px));margin:0;padding:12px;background:rgba(12,14,20,.88);backdrop-filter:blur(8px)}
 #statusHud .statline{font-size:12px}
 #statusHud .bar{height:10px}
+#game.ui-large #statusHud{width:min(270px,calc(100% - 28px));padding:16px}
+#game.ui-large #statusHud .statline,#game.ui-large .pill{font-size:14px}
+#game.ui-large #panelToggle,#game.ui-large #helpButton,#game.ui-large #hint{font-size:14px}
 #side{position:absolute;z-index:4;top:104px;right:14px;width:min(310px,calc(100vw - 28px));max-height:calc(100vh - 178px);max-height:calc(100dvh - 178px);display:none;background:linear-gradient(160deg,#1a1c25,#0e1016);border:1px solid #55452e;border-radius:10px;padding:12px;overflow:auto;box-shadow:0 12px 40px #0009}
 #side.open{display:block}
 #panelToggle,#helpButton{position:absolute;z-index:5}
@@ -39,7 +49,7 @@ canvas{width:100%;height:100%;object-fit:contain;image-rendering:pixelated;backg
 #hint{position:absolute;left:15px;bottom:13px;max-width:calc(100% - 185px);background:#080a0dcc;border:1px solid #ffffff22;border-radius:7px;padding:8px 11px;color:#c7cbd1;font-size:11px;line-height:1.5;pointer-events:none}
 #topbar{position:absolute;z-index:2;top:12px;left:14px;right:14px;display:flex;justify-content:space-between;pointer-events:none}
 .pill{background:#090b10d9;border:1px solid #ffffff2b;border-radius:7px;padding:8px 11px;font-size:11px;color:#e8d4ad}
-#overlay{position:fixed;inset:0;background:radial-gradient(ellipse at center,#22202aee,#050609f7);z-index:10;display:flex;align-items:center;justify-content:center;padding:20px}
+#overlay{position:fixed;inset:0;background:radial-gradient(ellipse at center,#22202aee,#050609f7);z-index:12;display:none;align-items:center;justify-content:center;padding:20px}
 .screen{width:min(760px,100%);max-height:94vh;overflow:auto;border:1px solid #80633b;background:linear-gradient(145deg,#1c1c24,#0d0f15);box-shadow:0 25px 100px #000;border-radius:12px;padding:clamp(20px,4vw,42px)}
 .kicker{font:600 11px Cinzel,serif;letter-spacing:4px;color:#b99a66;text-transform:uppercase}
 h1{font:800 clamp(36px,7vw,66px) Cinzel,serif;color:#e6c27d;letter-spacing:5px;margin:8px 0;text-shadow:0 5px 25px #a36b2c55}
@@ -54,12 +64,24 @@ h1{font:800 clamp(36px,7vw,66px) Cinzel,serif;color:#e6c27d;letter-spacing:5px;m
 #dialogue p{font-size:13px;color:#d6d6dc;line-height:1.6;margin:8px 0 12px}
 #dialogue .row{display:flex;justify-content:flex-end;gap:8px}
 .modalgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:9px;margin-top:15px}
+.setting-row{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:13px 0;border-bottom:1px solid #ffffff20;color:#e5e6eb}
+.setting-row span{display:grid;gap:4px}.setting-row small{color:#aab0bd;line-height:1.45}
+.setting-row input[type=checkbox]{width:20px;height:20px;accent-color:#e5bd72}
+.setting-row select{max-width:145px;padding:8px;border:1px solid #80633b;border-radius:6px;background:#171b22;color:#f7e5c2;font:inherit}
+.creation-layout{display:grid;grid-template-columns:170px minmax(0,1fr);gap:20px;align-items:start}
+.creation-preview{display:grid;justify-items:center;gap:8px;padding:12px;border:1px solid #51442f;border-radius:9px;background:#10131b}
+.creation-preview canvas{width:140px;height:140px;border-radius:7px;background:radial-gradient(ellipse,#34415a,#11141c 72%)}
+.creation-preview strong{color:#e5c17d;text-align:center;overflow-wrap:anywhere}
+.creation-preview small{color:#aab0bd;text-align:center}
+.character-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.character-fields label{display:grid;gap:6px;color:#d7d9e0;font-size:12px}
+.character-fields input,.character-fields select{width:100%;padding:10px;border:1px solid #51442f;border-radius:6px;background:#11141c;color:#f7e5c2;font:inherit}
 .item{border:1px solid #51442f;border-radius:7px;padding:10px;background:#11141c;font-size:12px}
 .item b{display:block;color:#e5c17d;margin-bottom:5px}
 .item span{color:#b7bbc4;line-height:1.5}
 #toast{position:fixed;z-index:20;top:20px;left:50%;transform:translateX(-50%);background:#171b22;border:1px solid #a9854c;padding:10px 18px;border-radius:8px;color:#f2d69e;font-size:12px;opacity:0;transition:.25s;pointer-events:none}
 #toast.show{opacity:1}
-@media(max-width:760px){#statusHud{top:58px;left:10px;padding:9px;width:min(205px,calc(100% - 20px))}#statusHud .statline{font-size:11px}#panelToggle{top:56px;right:10px;padding:8px 10px}#helpButton{right:10px;bottom:10px;padding:9px 11px}#side{top:102px;right:10px;width:min(310px,calc(100vw - 20px));max-height:calc(100dvh - 164px);padding:10px}.panel{padding:9px}.actions{grid-template-columns:repeat(2,1fr)}#hint{font-size:9px;bottom:8px}.panel h3{font-size:11px}}
+@media(max-width:760px){#statusHud{top:58px;left:10px;padding:9px;width:min(205px,calc(100% - 20px))}#statusHud .statline{font-size:11px}#panelToggle{top:56px;right:10px;padding:8px 10px}#helpButton{right:10px;bottom:10px;padding:9px 11px}#side{top:102px;right:10px;width:min(310px,calc(100vw - 20px));max-height:calc(100dvh - 164px);padding:10px}.panel{padding:9px}.actions{grid-template-columns:repeat(2,1fr)}#hint{font-size:9px;bottom:8px}.panel h3{font-size:11px}.creation-layout{grid-template-columns:110px minmax(0,1fr);gap:12px}.creation-preview{padding:8px}.creation-preview canvas{width:90px;height:90px}.character-fields{grid-template-columns:1fr;gap:8px}.character-fields input,.character-fields select{padding:8px}}
 </style>
 </head>
 <body>
@@ -90,17 +112,15 @@ h1{font:800 clamp(36px,7vw,66px) Cinzel,serif;color:#e6c27d;letter-spacing:5px;m
   <section class="panel"><h3>Crônicas recentes</h3><div id="log"></div></section>
  </aside>
 </div>
-<div id="overlay">
- <div class="screen" id="menuScreen">
-  <div class="kicker">Uma lenda esquecida está despertando</div>
-  <h1>DRAKMOR</h1>
-  <div class="kicker">AS CINZAS DO PRIMEIRO REI</div>
-  <p>Há mil anos, o Primeiro Rei selou uma entidade sob as montanhas. Agora, as chamas voltaram a arder em lugares onde não existe fogo, os mortos caminham e os antigos sinos tocam sozinhos.</p>
-  <p>Você é um viajante sem título, recém-chegado ao Vale de Cinzas. Uma mensagem gravada em uma moeda antiga parece conhecer seu nome. Sua jornada começa em uma vila à beira do esquecimento.</p>
-  <div class="menuButtons"><button class="primary" onclick="newGame()">Começar jornada</button><button onclick="continueGame()">Continuar</button><button onclick="showCredits()">Créditos</button></div>
-  <p class="smallnote">RPG de aventura 2D · Salve seu progresso neste navegador · Melhor experiência em tela cheia</p>
+<div id="titleScreen" aria-label="Tela inicial do jogo">
+ <div class="title-art">
+  <img src="assets/title-screen.png" alt="RPG Aventura Sem Fim. A jornada começa em uma vila sob a lua.">
+  <button class="title-hitbox start" type="button" aria-label="Iniciar" title="Iniciar" onclick="showCharacterCreation()"></button>
+  <button class="title-hitbox settings" type="button" aria-label="Configurações" title="Configurações" onclick="showSettings()"></button>
+  <button class="title-hitbox exit" type="button" aria-label="Sair" title="Sair" onclick="exitGame()"></button>
  </div>
 </div>
+<div id="overlay"></div>
 <div id="dialogue"><strong id="speaker">Personagem</strong><p id="dialogueText"></p><div class="row"><button id="dialogueAlt" onclick="dialogueAltAction()" style="display:none">Recusar</button><button class="primary" onclick="nextDialogue()">Continuar</button></div></div>
 <div id="toast"></div>
 <script>
@@ -119,12 +139,20 @@ const world={
  map:[],objects:[],enemies:[],particles:[],
  camera:{x:0,y:0},
 };
+const outfits={
+ blue:{name:"Manto azul",color:"#527fbd"},
+ crimson:{name:"Manto carmesim",color:"#a94352"},
+ forest:{name:"Túnica da floresta",color:"#39744c"},
+ violet:{name:"Túnica arcana",color:"#7860ad"}
+};
+const hairColors={dark:{name:"Preto",color:"#30241f"},brown:{name:"Castanho",color:"#77452e"},blonde:{name:"Loiro",color:"#d5ac55"}};
+const skinTones={light:{name:"Claro",color:"#e7bd9a"},warm:{name:"Moreno",color:"#c88f68"},deep:{name:"Escuro",color:"#80533e"}};
 const player={
  x:6*TILE,y:10*TILE,w:26,h:34,speed:190,
  hp:100,maxHp:100,mp:30,maxMp:30,xp:0,nextXp:50,
  level:1,baseAttack:12,defense:2,gold:12,
  facing:"down",invulnerable:0,potions:2,
- name:"Errante",weapon:"Lâmina gasta",armor:"Casaco de couro",
+ name:"Errante",gender:"Não binário",outfit:"blue",outfitColor:outfits.blue.color,hairStyle:"short",hairColor:hairColors.dark.color,skinTone:"light",skinColor:skinTones.light.color,weapon:"Lâmina gasta",armor:"Casaco de couro",
  inventory:[{name:"Poção de vida",qty:2,desc:"Recupera 45 pontos de vida."},{name:"Pão de viagem",qty:2,desc:"Recupera 15 pontos de vida."}],
  quests:{elder:false,slimes:0,herbs:0,bandit:false,crypt:false},
  flags:{intro:false,elderReward:false,gateOpen:false,cryptBoss:false}
@@ -171,8 +199,54 @@ function makeMap(){
 function newGame(){
  Object.assign(player,{x:6*TILE,y:10*TILE,hp:100,maxHp:100,mp:30,maxMp:30,xp:0,nextXp:50,level:1,baseAttack:12,defense:2,gold:12,potions:2,inventory:[{name:"Poção de vida",qty:2,desc:"Recupera 45 pontos de vida."},{name:"Pão de viagem",qty:2,desc:"Recupera 15 pontos de vida."}],quests:{elder:false,slimes:0,herbs:0,bandit:false,crypt:false},flags:{intro:false,elderReward:false,gateOpen:false,cryptBoss:false}});
  world.chapter=1;world.day=1;world.enemies=[];currentZone="village";makeMap();spawnInitialEnemies();gameStarted=true;
- document.getElementById("overlay").style.display="none";
+ document.getElementById("titleScreen").style.display="none";
+ document.getElementById("overlay").style.display="none";document.getElementById("overlay").innerHTML="";paused=false;
  log("Você chegou ao Vale de Cinzas.","gold");startIntro();updateUI();requestAnimationFrame(loop);
+}
+function showCharacterCreation(){
+ const body=`<div class="creation-layout"><div class="creation-preview"><canvas id="characterPreview" width="160" height="140" aria-label="Prévia do personagem"></canvas><strong id="previewName"></strong><small id="previewDetails"></small></div><div class="character-fields"><label>Nome<input id="characterName" type="text" maxlength="18" autocomplete="off" placeholder="Seu nome"></label><label>Gênero<select id="characterGender"><option>Feminino</option><option>Masculino</option><option>Não binário</option></select></label><label>Roupa<select id="characterOutfit"><option value="blue">Manto azul</option><option value="crimson">Manto carmesim</option><option value="forest">Túnica da floresta</option><option value="violet">Túnica arcana</option></select></label><label>Cabelo<select id="characterHairStyle"><option value="short">Curto</option><option value="long">Longo</option></select></label><label>Cor do cabelo<select id="characterHairColor"><option value="dark">Preto</option><option value="brown">Castanho</option><option value="blonde">Loiro</option></select></label><label>Tom de pele<select id="characterSkin"><option value="light">Claro</option><option value="warm">Moreno</option><option value="deep">Escuro</option></select></label></div></div><div class="menuButtons"><button onclick="closeModal()">Voltar</button><button class="primary" onclick="createCharacter()">Jogar</button></div>`;
+ showModal("Crie seu personagem",body);
+ document.getElementById("characterName").value=player.name==="Errante"?"":player.name;
+ document.getElementById("characterGender").value=player.gender;
+ document.getElementById("characterOutfit").value=player.outfit;
+ document.getElementById("characterHairStyle").value=player.hairStyle;
+ document.getElementById("characterHairColor").value=Object.keys(hairColors).find(key=>hairColors[key].color===player.hairColor)||"dark";
+ document.getElementById("characterSkin").value=player.skinTone;
+ document.querySelectorAll("#overlay .character-fields input,#overlay .character-fields select").forEach(control=>control.addEventListener("input",updateCharacterPreview));
+ document.querySelectorAll("#overlay .character-fields select").forEach(control=>control.addEventListener("change",updateCharacterPreview));
+ updateCharacterPreview();
+}
+function getCharacterDraft(){
+ const outfit=outfits[document.getElementById("characterOutfit").value]||outfits.blue;
+ const hair=hairColors[document.getElementById("characterHairColor").value]||hairColors.dark;
+ const skin=skinTones[document.getElementById("characterSkin").value]||skinTones.light;
+ return{
+  name:document.getElementById("characterName").value.trim(),
+  gender:document.getElementById("characterGender").value,
+  outfit:document.getElementById("characterOutfit").value,
+  outfitColor:outfit.color,
+  hairStyle:document.getElementById("characterHairStyle").value,
+  hairColor:hair.color,
+  skinTone:document.getElementById("characterSkin").value,
+  skinColor:skin.color
+ };
+}
+function updateCharacterPreview(){
+ const preview=document.getElementById("characterPreview");
+ if(!preview)return;
+ const character=getCharacterDraft(),previewCtx=preview.getContext("2d");
+ previewCtx.clearRect(0,0,preview.width,preview.height);
+ previewCtx.save();previewCtx.translate(80,42);previewCtx.scale(2,2);drawHero(previewCtx,-13,-10,character,"down",false);previewCtx.restore();
+ document.getElementById("previewName").textContent=character.name||"Seu personagem";
+ const outfit=outfits[character.outfit]||outfits.blue;
+ const hair=Object.values(hairColors).find(option=>option.color===character.hairColor)||hairColors.dark;
+ document.getElementById("previewDetails").textContent=`${character.gender} · ${outfit.name} · cabelo ${hair.name.toLowerCase()}`;
+}
+function createCharacter(){
+ const character=getCharacterDraft();
+ if(!character.name){toast("Digite um nome para seu personagem.");document.getElementById("characterName").focus();return}
+ Object.assign(player,character);
+ newGame();
 }
 function spawnInitialEnemies(){
  world.enemies=[];
@@ -265,13 +339,55 @@ function openInventory(){
 }
 function showModal(title,body){const ov=document.getElementById("overlay");ov.style.display="flex";ov.innerHTML=`<div class="screen"><div class="kicker">DRAKMOR · REGISTRO DE JORNADA</div><h2>${title}</h2>${body}</div>`;paused=true}
 function closeModal(){document.getElementById("overlay").style.display="none";document.getElementById("overlay").innerHTML="";paused=false}
+const settings={showHints:true,uiSize:"normal"};
+function applySettings(){
+ document.getElementById("hint").hidden=!settings.showHints;
+ document.getElementById("game").classList.toggle("ui-large",settings.uiSize==="large");
+}
+function loadSettings(){
+ try{
+  const raw=localStorage.getItem("drakmorSettings");
+  if(raw){const saved=JSON.parse(raw);settings.showHints=saved.showHints!==false;settings.uiSize=saved.uiSize==="large"?"large":"normal"}
+ }catch(error){toast("Não foi possível carregar as configurações salvas.")}
+ applySettings();
+}
+function saveSettings(){
+ settings.showHints=document.getElementById("settingHints").checked;
+ settings.uiSize=document.getElementById("settingUiSize").value;
+ applySettings();
+ try{localStorage.setItem("drakmorSettings",JSON.stringify(settings))}
+ catch(error){toast("As configurações foram aplicadas, mas não puderam ser salvas.")}
+ closeModal();
+}
+function showSettings(){
+ showModal("Configurações",`<label class="setting-row"><span><b>Dicas de comandos</b><small>Mostrar os atalhos na tela durante o jogo.</small></span><input id="settingHints" type="checkbox" ${settings.showHints?"checked":""}></label><label class="setting-row"><span><b>Tamanho da interface</b><small>Ajusta o tamanho do painel de status e dos comandos.</small></span><select id="settingUiSize"><option value="normal" ${settings.uiSize==="normal"?"selected":""}>Normal</option><option value="large" ${settings.uiSize==="large"?"selected":""}>Grande</option></select></label><div class="menuButtons"><button onclick="toggleFullscreen()" id="fullscreenToggle">Ativar tela cheia</button><button class="primary" onclick="saveSettings()">Salvar</button><button onclick="closeModal()">Voltar</button></div>`);
+ updateFullscreenButton();
+}
+function updateFullscreenButton(){
+ const button=document.getElementById("fullscreenToggle");
+ if(button)button.textContent=document.fullscreenElement?"Sair da tela cheia":"Ativar tela cheia";
+}
+async function toggleFullscreen(){
+ try{
+  if(document.fullscreenElement)await document.exitFullscreen();
+  else if(document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();
+  else{toast("Tela cheia não é suportada neste navegador.");return}
+ }catch(error){toast("Não foi possível ativar a tela cheia. Tente usar F11.");}
+ updateFullscreenButton();
+}
+function exitGame(){
+ window.close();
+ window.setTimeout(()=>{
+  if(!window.closed)showModal("Fechar o jogo",`<p>O navegador bloqueou o fechamento automático desta aba. Feche-a pelo botão <b>X</b> do navegador.</p><div class="menuButtons"><button class="primary" onclick="closeModal()">Voltar</button></div>`);
+ },100);
+}
 function showMap(){
  let body=currentZone==="village"?"Você está no <b>Vale de Cinzas</b>. A vila fica no centro-oeste. O ancião Oren está próximo ao marco; Mira vende provisões; Ilyra cura ferimentos. Ervas-lua brilham na clareira ao norte e ao leste. A passagem da cripta fica no extremo sudeste.":"Você está na <b>Cripta do Primeiro Rei</b>. Esqueletos guardam os corredores. Procure o Cavaleiro sem Rosto no salão inferior.";
  showModal("Mapa e regiões",`<p>${body}</p><p><b>Objetivo:</b> explore, converse com personagens e siga as pistas no painel Jornada atual.</p><div class="menuButtons"><button onclick="closeModal()">Voltar ao jogo</button></div>`);
 }
 function showHelp(){showModal("Como jogar",`<p><b>Movimentação:</b> WASD ou setas. <b>Ataque:</b> Espaço. <b>Magia:</b> Q. <b>Interagir:</b> E. <b>Inventário:</b> I. <b>Poção:</b> 1. <b>Pão:</b> 2.</p><p><b>Descansar:</b> R. <b>Salvar:</b> F. <b>Mapa:</b> M. <b>Painel:</b> J. <b>Ajuda:</b> H. Pressione Enter ou Espaço para avançar diálogos e Esc para fechar uma janela.</p><p>Chegue perto de personagens, baús, placas e plantas e pressione E. Inimigos perseguem você quando chegam perto. Ataque olhando na direção do inimigo. A magia consome mana e causa dano em uma pequena área à sua frente.</p><p>Derrotar inimigos concede XP e ouro. Ao subir de nível, seus atributos aumentam e vida/mana são restauradas.</p><div class="menuButtons"><button onclick="closeModal()">Entendi</button></div>`)}
 function showCredits(){showModal("Créditos",`<p><b>DRAKMOR — As Cinzas do Primeiro Rei</b></p><p>Um pequeno RPG de fantasia criado em HTML, CSS e JavaScript puro, usando Canvas 2D e desenhos procedurais.</p><p>História, personagens, mundo, interface e código: projeto original para estudo e expansão.</p><div class="menuButtons"><button onclick="backToMenu()">Voltar</button></div>`)}
-function backToMenu(){location.reload()}
+function backToMenu(){closeModal()}
 function attack(){
  if(!gameStarted||paused||attackCooldown>0)return;attackCooldown=.42;
  const dir={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]}[player.facing],px=player.x+player.w/2,py=player.y+player.h/2;
@@ -344,7 +460,20 @@ function draw(){
 }
 function drawHouse(x,y,roof){ctx.fillStyle="#b59a6e";ctx.fillRect(x,y+22,130,90);ctx.fillStyle=roof;ctx.beginPath();ctx.moveTo(x-10,y+25);ctx.lineTo(x+65,y-25);ctx.lineTo(x+140,y+25);ctx.closePath();ctx.fill();ctx.fillStyle="#34291f";ctx.fillRect(x+53,y+65,25,47);ctx.fillStyle="#d8bd7c";ctx.fillRect(x+17,y+48,23,22)}
 function drawCharacter(x,y,color,name){ctx.fillStyle="#0006";ctx.beginPath();ctx.ellipse(x+14,y+30,15,6,0,0,Math.PI*2);ctx.fill();ctx.fillStyle=color;ctx.fillRect(x+5,y+6,19,24);ctx.fillStyle="#e1b99a";ctx.fillRect(x+7,y-5,15,14);ctx.fillStyle="#29232a";ctx.fillRect(x+7,y-6,15,5);ctx.font="11px Inter";ctx.textAlign="center";ctx.fillStyle="#fff1d1";ctx.fillText(name,x+14,y-12)}
-function drawPlayer(){const x=player.x,y=player.y;ctx.fillStyle="#0007";ctx.beginPath();ctx.ellipse(x+13,y+31,15,6,0,0,Math.PI*2);ctx.fill();ctx.fillStyle=player.invulnerable>0?"#fff":"#527fbd";ctx.fillRect(x+4,y+7,19,24);ctx.fillStyle="#e7bd9a";ctx.fillRect(x+6,y-5,16,15);ctx.fillStyle="#3a2a25";ctx.fillRect(x+5,y-7,18,6);ctx.fillStyle="#d9dce2";if(player.facing==="right")ctx.fillRect(x+22,y+14,15,3);else if(player.facing==="left")ctx.fillRect(x-10,y+14,15,3);else if(player.facing==="up")ctx.fillRect(x+12,y-12,3,14);else ctx.fillRect(x+12,y+27,3,14)}
+function drawHero(target,x,y,appearance,facing="down",invulnerable=false){
+ target.fillStyle="#0007";target.beginPath();target.ellipse(x+13,y+31,15,6,0,0,Math.PI*2);target.fill();
+ if(appearance.hairStyle==="long"){target.fillStyle=appearance.hairColor||hairColors.dark.color;target.fillRect(x+4,y-2,4,16);target.fillRect(x+21,y-2,4,16)}
+ target.fillStyle=invulnerable?"#fff":appearance.outfitColor||outfits.blue.color;target.fillRect(x+4,y+7,19,24);
+ target.fillStyle=appearance.skinColor||skinTones.light.color;target.fillRect(x+6,y-5,16,15);
+ target.fillStyle=appearance.hairColor||hairColors.dark.color;target.fillRect(x+5,y-7,18,6);
+ target.fillStyle="#352b25";target.fillRect(x+7,y+24,13,3);
+ target.fillStyle="#d9dce2";
+ if(facing==="right")target.fillRect(x+22,y+14,15,3);
+ else if(facing==="left")target.fillRect(x-10,y+14,15,3);
+ else if(facing==="up")target.fillRect(x+12,y-12,3,14);
+ else target.fillRect(x+12,y+27,3,14);
+}
+function drawPlayer(){drawHero(ctx,player.x,player.y,player,player.facing,player.invulnerable>0)}
 function drawEnemy(e){const x=e.x,y=e.y;ctx.fillStyle="#0007";ctx.beginPath();ctx.ellipse(x+e.w/2,y+e.h-2,e.w*.48,6,0,0,Math.PI*2);ctx.fill();ctx.fillStyle=e.color;ctx.beginPath();ctx.arc(x+e.w/2,y+e.h/2,e.w/2,0,Math.PI*2);ctx.fill();ctx.fillStyle="#211b20";ctx.fillRect(x+e.w*.28,y+e.h*.38,4,4);ctx.fillRect(x+e.w*.62,y+e.h*.38,4,4);if(e.hp<e.maxHp){ctx.fillStyle="#281b1b";ctx.fillRect(x,y-8,e.w,4);ctx.fillStyle="#e45b5b";ctx.fillRect(x,y-8,e.w*(e.hp/e.maxHp),4)}}
 function drawObject(o){if(o.type==="herb"&&o.active){ctx.fillStyle="#b7e7a2";ctx.beginPath();ctx.arc(o.x+10,o.y+10,8,0,Math.PI*2);ctx.fill();ctx.fillStyle="#6d9c5d";ctx.fillRect(o.x+9,o.y+10,3,13)}else if(o.type==="chest"){ctx.fillStyle=o.active?"#95602e":"#493b2c";ctx.fillRect(o.x,o.y+8,o.w,o.h-8);ctx.fillStyle="#d6ad55";ctx.fillRect(o.x,o.y+13,o.w,4)}else if(o.type==="portal"){ctx.strokeStyle=player.flags.gateOpen?"#75b7e8":"#655b4a";ctx.lineWidth=5;ctx.beginPath();ctx.ellipse(o.x+21,o.y+21,17,21,0,0,Math.PI*2);ctx.stroke();ctx.fillStyle="#7ebce055";ctx.fill()}else if(o.type==="sign"){ctx.fillStyle="#775132";ctx.fillRect(o.x+12,o.y,5,28);ctx.fillStyle="#c4a06a";ctx.fillRect(o.x,o.y,30,15)}}
 function loop(t){if(!gameStarted)return;const dt=Math.min((t-lastTime)/1000||0,.04);lastTime=t;update(dt);draw();requestAnimationFrame(loop)}
@@ -367,7 +496,16 @@ function saveGame(){
 }
 function continueGame(){
  const raw=localStorage.getItem("drakmorSave");if(!raw){toast("Nenhum jogo salvo encontrado.");return}
- try{const d=JSON.parse(raw);Object.assign(player,d.player);world.chapter=d.chapter||1;world.day=d.day||1;currentZone=d.currentZone||"village";makeMap();if(d.herbs)world.objects.filter(o=>o.type==="herb").forEach((o,i)=>o.active=d.herbs[i]);const chest=world.objects.find(o=>o.type==="chest");if(chest&&d.chest!==undefined)chest.active=d.chest;spawnInitialEnemies();if(currentZone==="crypt"){world.name="Cripta do Primeiro Rei";world.enemies=[];for(let i=0;i<4;i++)spawnEnemy("skeleton",rand(9,24)*TILE,rand(7,17)*TILE);if(!player.flags.cryptBoss)spawnEnemy("boss",24*TILE,17*TILE)}gameStarted=true;document.getElementById("overlay").style.display="none";document.getElementById("location").textContent=world.name.toUpperCase();log("Jornada carregada.","good");updateUI();requestAnimationFrame(loop)}catch(e){toast("O arquivo de salvamento está corrompido.")}}
+ try{
+  const d=JSON.parse(raw);Object.assign(player,d.player);world.chapter=d.chapter||1;world.day=d.day||1;currentZone=d.currentZone||"village";makeMap();
+  if(d.herbs)world.objects.filter(o=>o.type==="herb").forEach((o,i)=>o.active=d.herbs[i]);
+  const chest=world.objects.find(o=>o.type==="chest");if(chest&&d.chest!==undefined)chest.active=d.chest;
+  spawnInitialEnemies();
+  if(currentZone==="crypt"){world.name="Cripta do Primeiro Rei";world.enemies=[];for(let i=0;i<4;i++)spawnEnemy("skeleton",rand(9,24)*TILE,rand(7,17)*TILE);if(!player.flags.cryptBoss)spawnEnemy("boss",24*TILE,17*TILE)}
+  gameStarted=true;document.getElementById("titleScreen").style.display="none";document.getElementById("location").textContent=world.name.toUpperCase();
+  log("Jornada carregada.","good");updateUI();requestAnimationFrame(loop);
+ }catch(error){toast("O arquivo de salvamento está corrompido.")}
+}
 function toggleSidePanel(){
  const side=document.getElementById("side"),button=document.getElementById("panelToggle");
  const open=!side.classList.contains("open");
@@ -381,7 +519,7 @@ function keyDown(e){
  if(e.repeat)return;
  if(document.getElementById("dialogue").style.display==="block"&&(k==="Enter"||k===" ")){nextDialogue();return}
  if(k==="Escape"){
-  if(gameStarted&&document.getElementById("overlay").style.display==="flex")closeModal();
+  if(document.getElementById("overlay").style.display==="flex")closeModal();
   else if(document.getElementById("side").classList.contains("open"))toggleSidePanel();
   return;
  }
@@ -400,6 +538,8 @@ function keyDown(e){
 }
 function keyUp(e){const k=e.key.length===1?e.key.toLowerCase():e.key;keys[k]=false}
 window.addEventListener("keydown",keyDown);window.addEventListener("keyup",keyUp);
+document.addEventListener("fullscreenchange",updateFullscreenButton);
+loadSettings();
 makeMap();updateUI();
 </script>
 </body>
