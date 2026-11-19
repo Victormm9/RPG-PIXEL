@@ -1,0 +1,84 @@
+{
+  "genders": [
+    {"id": "boy", "name": "Menino", "asset": "characters/base/{gender}_{skin}.png"},
+    {"id": "girl", "name": "Menina", "asset": "characters/base/{gender}_{skin}.png"}
+  ],
+  "skin_tones": [
+    {"id": "light", "name": "Claro", "asset": "characters/faces/face_light.png"},
+    {"id": "warm", "name": "Moreno", "asset": "characters/faces/face_warm.png"},
+    {"id": "deep", "name": "Escuro", "asset": "characters/faces/face_deep.png"}
+  ],
+  "hair_styles": [
+    {"id": "short", "name": "Curto", "asset": "characters/hair/{style}_{color}.png"},
+    {"id": "long", "name": "Longo", "asset": "characters/hair/{style}_{color}.png"},
+    {"id": "curly", "name": "Cacheado", "asset": "characters/hair/{style}_{color}.png"},
+    {"id": "messy", "name": "Despojado", "asset": "characters/hair/{style}_{color}.png"},
+    {"id": "braided", "name": "Trançado", "asset": "characters/hair/{style}_{color}.png"}
+  ],
+  "hair_colors": [
+    {"id": "black", "name": "Preto"},
+    {"id": "brown", "name": "Castanho"},
+    {"id": "blonde", "name": "Loiro"},
+    {"id": "red", "name": "Ruivo"},
+    {"id": "silver", "name": "Prateado"}
+  ],
+  "eye_colors": [
+    {"id": "brown", "name": "Castanho", "asset": "characters/faces/eyes_brown.png"},
+    {"id": "blue", "name": "Azul", "asset": "characters/faces/eyes_blue.png"},
+    {"id": "green", "name": "Verde", "asset": "characters/faces/eyes_green.png"},
+    {"id": "gray", "name": "Cinza", "asset": "characters/faces/eyes_gray.png"}
+  ],
+  "shirts": [
+    {"id": "shirt_linen", "name": "Camisa de linho", "asset": "characters/clothes/shirts/linen.png"},
+    {"id": "shirt_crimson", "name": "Túnica carmesim", "asset": "characters/clothes/shirts/crimson.png"},
+    {"id": "shirt_blue", "name": "Túnica azul", "asset": "characters/clothes/shirts/blue.png"},
+    {"id": "shirt_forest", "name": "Túnica da floresta", "asset": "characters/clothes/shirts/forest.png"},
+    {"id": "shirt_arcane", "name": "Manto arcano", "asset": "characters/clothes/shirts/arcane.png"},
+    {"id": "shirt_shadow", "name": "Túnica das sombras", "asset": "characters/clothes/shirts/shadow.png"},
+    {"id": "shirt_white", "name": "Túnica branca", "asset": "characters/clothes/shirts/white.png"}
+  ],
+  "armor": [
+    {"id": "armor_none", "name": "Sem armadura", "asset": null},
+    {"id": "armor_chainmail", "name": "Cota de malha", "asset": "characters/armor/chainmail.png"},
+    {"id": "armor_leather", "name": "Armadura de couro", "asset": "characters/armor/leather.png"},
+    {"id": "armor_solar_plate", "name": "Armadura solar", "asset": "characters/armor/solar_plate.png"},
+    {"id": "armor_leaf", "name": "Armadura de folhas", "asset": "characters/armor/leaf.png"}
+  ],
+  "pants": [
+    {"id": "pants_charcoal", "name": "Calças de carvão", "asset": "characters/clothes/pants/charcoal.png"},
+    {"id": "pants_brown", "name": "Calças de couro", "asset": "characters/clothes/pants/brown.png"},
+    {"id": "pants_blue", "name": "Calças azuis", "asset": "characters/clothes/pants/blue.png"},
+    {"id": "pants_forest", "name": "Calças da floresta", "asset": "characters/clothes/pants/forest.png"}
+  ],
+  "boots": [
+    {"id": "boots_leather", "name": "Botas de couro", "asset": "characters/clothes/boots/leather.png"},
+    {"id": "boots_forest", "name": "Botas da floresta", "asset": "characters/clothes/boots/forest.png"},
+    {"id": "boots_blue", "name": "Botas azuis", "asset": "characters/clothes/boots/blue.png"},
+    {"id": "boots_shadow", "name": "Botas das sombras", "asset": "characters/clothes/boots/shadow.png"},
+    {"id": "boots_plate", "name": "Botas de placa", "asset": "characters/clothes/boots/plate.png"}
+  ],
+  "cloaks": [
+    {"id": "none", "name": "Sem capa", "asset": null},
+    {"id": "cloak_blue", "name": "Capa azul", "asset": "characters/clothes/cloaks/blue.png"},
+    {"id": "cloak_crimson", "name": "Capa carmesim", "asset": "characters/clothes/cloaks/crimson.png"},
+    {"id": "cloak_shadow", "name": "Capa das sombras", "asset": "characters/clothes/cloaks/shadow.png"},
+    {"id": "cloak_white", "name": "Capa branca", "asset": "characters/clothes/cloaks/white.png"},
+    {"id": "cloak_leaves", "name": "Capa de folhas", "asset": "characters/clothes/cloaks/leaves.png"}
+  ],
+  "weapons": [
+    {"id": "weapon_steel_sword", "name": "Espada de aço", "asset": "characters/weapons/steel_sword.png"},
+    {"id": "weapon_solar_sword", "name": "Espada solar", "asset": "characters/weapons/solar_sword.png"},
+    {"id": "weapon_twin_daggers", "name": "Adagas gêmeas", "asset": "characters/weapons/twin_daggers.png"},
+    {"id": "weapon_yew_bow", "name": "Arco de teixo", "asset": "characters/weapons/yew_bow.png"},
+    {"id": "weapon_arcane_staff", "name": "Cajado rúnico", "asset": "characters/weapons/arcane_staff.png"},
+    {"id": "weapon_thorn_staff", "name": "Cajado de espinheiro", "asset": "characters/weapons/thorn_staff.png"}
+  ],
+  "accessories": [
+    {"id": "accessory_none", "name": "Sem acessório", "asset": null},
+    {"id": "accessory_iron_shield", "name": "Escudo de ferro", "asset": "characters/accessories/iron_shield.png"},
+    {"id": "accessory_quiver", "name": "Aljava", "asset": "characters/accessories/quiver.png"},
+    {"id": "accessory_blue_amulet", "name": "Amuleto azul", "asset": "characters/accessories/blue_amulet.png"},
+    {"id": "accessory_shadow_mask", "name": "Máscara sombria", "asset": "characters/accessories/shadow_mask.png"},
+    {"id": "accessory_nature_brooch", "name": "Broche da natureza", "asset": "characters/accessories/nature_brooch.png"}
+  ]
+}

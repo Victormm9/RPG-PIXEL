@@ -12,7 +12,7 @@ button{font:inherit;cursor:pointer;border:1px solid #80633b;background:linear-gr
 button:hover{filter:brightness(1.25);transform:translateY(-1px)}button:disabled{opacity:.4;cursor:not-allowed;transform:none}
 #game{position:relative;width:100vw;height:100vh;height:100dvh;overflow:hidden}
 #stage{position:absolute;inset:0;min-width:0;background:#101710;display:flex;align-items:center;justify-content:center;overflow:hidden}
-canvas{width:100%;height:100%;object-fit:contain;image-rendering:pixelated;background:#17241b}
+canvas{width:min(100vw,160vh);height:min(100vh,62.5vw);object-fit:contain;image-rendering:pixelated;background:#090b10}
 #titleScreen{position:fixed;inset:0;z-index:10;display:grid;place-items:center;overflow:hidden;background:#030817}
 #titleScreen::before{content:"";position:absolute;inset:-12px;background:url("assets/title-screen.png") center/cover no-repeat;filter:blur(10px) brightness(.5);transform:scale(1.04)}
 .title-art{position:relative;z-index:1;width:min(100vw,177.734vh);aspect-ratio:1365 / 768}
@@ -46,11 +46,25 @@ canvas{width:100%;height:100%;object-fit:contain;image-rendering:pixelated;backg
 #log{height:125px;overflow:auto;font-size:11px;line-height:1.55;color:#b8bdc7}
 #log p{margin:0 0 5px;border-bottom:1px solid #ffffff0b;padding-bottom:4px}
 #log .good{color:#8fe0a7}#log .bad{color:#ff9292}#log .gold{color:#f0d18b}
-#hint{position:absolute;left:15px;bottom:13px;max-width:calc(100% - 185px);background:#080a0dcc;border:1px solid #ffffff22;border-radius:7px;padding:8px 11px;color:#c7cbd1;font-size:11px;line-height:1.5;pointer-events:none}
+#hint{position:absolute;left:15px;bottom:53px;max-width:calc(100% - 185px);background:#080a0dcc;border:1px solid #ffffff22;border-radius:7px;padding:8px 11px;color:#c7cbd1;font-size:11px;line-height:1.5;pointer-events:none}
 #topbar{position:absolute;z-index:2;top:12px;left:14px;right:14px;display:flex;justify-content:space-between;pointer-events:none}
 .pill{background:#090b10d9;border:1px solid #ffffff2b;border-radius:7px;padding:8px 11px;font-size:11px;color:#e8d4ad}
-#overlay{position:fixed;inset:0;background:radial-gradient(ellipse at center,#22202aee,#050609f7);z-index:12;display:none;align-items:center;justify-content:center;padding:20px}
-.screen{width:min(760px,100%);max-height:94vh;overflow:auto;border:1px solid #80633b;background:linear-gradient(145deg,#1c1c24,#0d0f15);box-shadow:0 25px 100px #000;border-radius:12px;padding:clamp(20px,4vw,42px)}
+#minimapPanel{position:absolute;z-index:3;top:104px;right:14px;width:180px;padding:8px;background:#090b10e8;border:1px solid #80633b;border-radius:8px}
+#minimapPanel strong{display:block;color:#e5bd72;font:600 10px Cinzel,serif;letter-spacing:1px;margin:0 0 5px}
+#minimap{display:block;width:160px;height:120px;image-rendering:pixelated;background:#10131a;border-radius:3px}
+#combatHud{position:absolute;z-index:3;left:15px;bottom:13px;background:#090b10dc;border:1px solid #80633b;border-radius:7px;padding:8px 11px;color:#e8d4ad;font-size:11px;line-height:1.5}
+#assetPanel{position:fixed;z-index:9;left:14px;bottom:14px;width:min(470px,calc(100vw - 28px));max-height:34vh;overflow:auto;background:#11131af2;border:1px solid #aa7348;border-radius:8px;color:#e6d9c4;font-size:11px;line-height:1.55}
+#assetPanel[hidden]{display:none}
+#assetPanel summary{padding:9px 12px;color:#f1c28d;cursor:pointer;font-weight:700}
+#assetPanel ul{margin:0;padding:0 28px 10px 32px}
+#assetPanel li{overflow-wrap:anywhere;color:#c5c5cb}
+#assetPanel code{color:#f0d49b;font-size:10px}
+#assetPanel .asset-spec{color:#aab0bd}
+#overlay{position:fixed;inset:0;background:radial-gradient(ellipse at center,#22202aee,#050609f7);z-index:12;display:none;align-items:center;justify-content:center;padding:10px}
+.screen{width:min(760px,100%);max-height:calc(100vh - 20px);max-height:calc(100dvh - 20px);overflow:auto;border:1px solid #80633b;background:linear-gradient(145deg,#1c1c24,#0d0f15);box-shadow:0 25px 100px #000;border-radius:12px;padding:clamp(20px,4vw,42px)}
+.screen:has(.creation-layout){padding:clamp(16px,3vw,26px)}
+.screen:has(.creation-layout) h2{margin-bottom:8px}
+.screen:has(.creation-layout) .menuButtons{margin-top:12px}
 .kicker{font:600 11px Cinzel,serif;letter-spacing:4px;color:#b99a66;text-transform:uppercase}
 h1{font:800 clamp(36px,7vw,66px) Cinzel,serif;color:#e6c27d;letter-spacing:5px;margin:8px 0;text-shadow:0 5px 25px #a36b2c55}
 .screen h2{font:700 24px Cinzel,serif;color:#e6c27d;margin:0 0 12px}
@@ -69,19 +83,28 @@ h1{font:800 clamp(36px,7vw,66px) Cinzel,serif;color:#e6c27d;letter-spacing:5px;m
 .setting-row input[type=checkbox]{width:20px;height:20px;accent-color:#e5bd72}
 .setting-row select{max-width:145px;padding:8px;border:1px solid #80633b;border-radius:6px;background:#171b22;color:#f7e5c2;font:inherit}
 .creation-layout{display:grid;grid-template-columns:170px minmax(0,1fr);gap:20px;align-items:start}
-.creation-preview{display:grid;justify-items:center;gap:8px;padding:12px;border:1px solid #51442f;border-radius:9px;background:#10131b}
-.creation-preview canvas{width:140px;height:140px;border-radius:7px;background:radial-gradient(ellipse,#34415a,#11141c 72%)}
+.creation-preview{display:grid;justify-items:center;gap:4px;padding:8px;border:1px solid #51442f;border-radius:9px;background:#10131b}
+.creation-preview canvas{width:110px;height:100px;border-radius:7px;background:radial-gradient(ellipse,#34415a,#11141c 72%)}
 .creation-preview strong{color:#e5c17d;text-align:center;overflow-wrap:anywhere}
 .creation-preview small{color:#aab0bd;text-align:center}
-.character-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.character-fields label{display:grid;gap:6px;color:#d7d9e0;font-size:12px}
-.character-fields input,.character-fields select{width:100%;padding:10px;border:1px solid #51442f;border-radius:6px;background:#11141c;color:#f7e5c2;font:inherit}
+.character-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.character-fields label{display:grid;gap:4px;color:#d7d9e0;font-size:12px}
+.character-fields input,.character-fields select{width:100%;padding:8px;border:1px solid #51442f;border-radius:6px;background:#11141c;color:#f7e5c2;font:inherit}
+.class-picker{min-width:0;margin:12px 0 0;padding:8px;border:1px solid #51442f;border-radius:9px}
+.class-picker legend{padding:0 7px;color:var(--gold);font:600 13px Cinzel,serif}
+.class-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.class-card{display:grid;align-content:start;gap:3px;min-width:0;padding:7px;border:1px solid #51442f;border-radius:8px;background:#11141c;cursor:pointer}
+.class-card:has(input:checked){border-color:#d2aa65;background:#33291f;box-shadow:inset 0 0 0 1px #d2aa6544}
+.class-card input{margin:0;accent-color:#e5bd72}
+.class-card-name{color:#f0d49b;font-weight:700}
+.class-card small{color:#aeb3be;font-size:9px;line-height:1.15}
 .item{border:1px solid #51442f;border-radius:7px;padding:10px;background:#11141c;font-size:12px}
 .item b{display:block;color:#e5c17d;margin-bottom:5px}
 .item span{color:#b7bbc4;line-height:1.5}
 #toast{position:fixed;z-index:20;top:20px;left:50%;transform:translateX(-50%);background:#171b22;border:1px solid #a9854c;padding:10px 18px;border-radius:8px;color:#f2d69e;font-size:12px;opacity:0;transition:.25s;pointer-events:none}
 #toast.show{opacity:1}
-@media(max-width:760px){#statusHud{top:58px;left:10px;padding:9px;width:min(205px,calc(100% - 20px))}#statusHud .statline{font-size:11px}#panelToggle{top:56px;right:10px;padding:8px 10px}#helpButton{right:10px;bottom:10px;padding:9px 11px}#side{top:102px;right:10px;width:min(310px,calc(100vw - 20px));max-height:calc(100dvh - 164px);padding:10px}.panel{padding:9px}.actions{grid-template-columns:repeat(2,1fr)}#hint{font-size:9px;bottom:8px}.panel h3{font-size:11px}.creation-layout{grid-template-columns:110px minmax(0,1fr);gap:12px}.creation-preview{padding:8px}.creation-preview canvas{width:90px;height:90px}.character-fields{grid-template-columns:1fr;gap:8px}.character-fields input,.character-fields select{padding:8px}}
+@media(max-width:760px){#statusHud{top:58px;left:10px;padding:9px;width:min(205px,calc(100% - 20px))}#statusHud .statline{font-size:11px}#panelToggle{top:56px;right:10px;padding:8px 10px}#helpButton{right:10px;bottom:10px;padding:9px 11px}#side{top:102px;right:10px;width:min(310px,calc(100vw - 20px));max-height:calc(100dvh - 164px);padding:10px}.panel{padding:9px}.actions{grid-template-columns:repeat(2,1fr)}#hint{font-size:9px;bottom:56px;max-width:calc(100% - 20px)}#combatHud{bottom:8px;left:10px;font-size:9px;padding:6px 8px}#minimapPanel{top:104px;right:10px;transform:scale(.8);transform-origin:top right}.panel h3{font-size:11px}.creation-layout{grid-template-columns:110px minmax(0,1fr);gap:12px}.creation-preview{padding:8px}.creation-preview canvas{width:90px;height:90px}.character-fields{grid-template-columns:1fr;gap:8px}.character-fields input,.character-fields select{padding:8px}}
+@media(max-width:600px){.class-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.class-card{padding:8px}}
 </style>
 </head>
 <body>
@@ -89,16 +112,24 @@ h1{font:800 clamp(36px,7vw,66px) Cinzel,serif;color:#e6c27d;letter-spacing:5px;m
  <main id="stage">
   <canvas id="world" width="960" height="600" aria-label="Mundo de Drakmor"></canvas>
   <div id="topbar"><div class="pill" id="location">VALE DE CINZAS</div><div class="pill" id="coins">◈ 0 ouro</div></div>
+  <section id="minimapPanel" aria-label="Minimapa">
+   <strong>EXPLORAÇÃO · MAPA</strong>
+   <canvas id="minimap" width="160" height="120" aria-label="Posição no Vale de Eldoria"></canvas>
+  </section>
   <section class="panel" id="statusHud" aria-label="Status do personagem">
-   <h3 id="heroName">Aventureiro · Nv. 1</h3>
+   <h3 id="heroName">Aventureiro · Guerreiro · Nv. 1</h3>
    <div class="statline"><span>Vida</span><span id="hpText">100 / 100</span></div><div class="bar"><div class="fill hp" id="hpBar"></div></div>
    <div class="statline"><span>Mana</span><span id="mpText">30 / 30</span></div><div class="bar"><div class="fill mp" id="mpBar"></div></div>
    <div class="statline"><span>Experiência</span><span id="xpText">0 / 50</span></div><div class="bar"><div class="fill xp" id="xpBar"></div></div>
-   <div class="statline"><span>Ataque</span><b id="attackText">12</b></div>
+   <div class="statline"><span>Ataque</span><b id="attackText">16</b></div>
+   <div class="statline"><span>Força</span><b id="strengthText">16</b></div>
+   <div class="statline"><span>Inteligência</span><b id="intelligenceText">4</b></div>
+   <div class="statline"><span>Agilidade</span><b id="agilityText">7</b></div>
   </section>
   <button id="panelToggle" type="button" aria-controls="side" aria-expanded="false" onclick="toggleSidePanel()">Painel · J</button>
   <button id="helpButton" type="button" onclick="showHelp()">Comandos · H</button>
-  <div id="hint">WASD / Setas mover · Espaço atacar · Q magia · E interagir · I bolsa · 1/2 itens · R descansar · F salvar · M mapa · J painel · H ajuda</div>
+  <div id="hint">WASD / Setas mover · Clique esquerdo / Espaço atacar · Q habilidade · E interagir · I bolsa · 1/2 itens · R descansar · F salvar · M mapa · J painel · H ajuda</div>
+  <div id="combatHud">ATACAR · CLIQUE/ESPAÇO &nbsp; HABILIDADE · Q</div>
  </main>
  <aside id="side">
   <div><div class="brand">DRAKMOR</div><div class="sub">AS CINZAS DO PRIMEIRO REI</div></div>
@@ -112,6 +143,7 @@ h1{font:800 clamp(36px,7vw,66px) Cinzel,serif;color:#e6c27d;letter-spacing:5px;m
   <section class="panel"><h3>Crônicas recentes</h3><div id="log"></div></section>
  </aside>
 </div>
+<details id="assetPanel" hidden><summary id="assetSummary">Assets de pixel art necessários</summary><ul id="assetList"></ul></details>
 <div id="titleScreen" aria-label="Tela inicial do jogo">
  <div class="title-art">
   <img src="assets/title-screen.png" alt="RPG Aventura Sem Fim. A jornada começa em uma vila sob a lua.">
@@ -123,6 +155,8 @@ h1{font:800 clamp(36px,7vw,66px) Cinzel,serif;color:#e6c27d;letter-spacing:5px;m
 <div id="overlay"></div>
 <div id="dialogue"><strong id="speaker">Personagem</strong><p id="dialogueText"></p><div class="row"><button id="dialogueAlt" onclick="dialogueAltAction()" style="display:none">Recusar</button><button class="primary" onclick="nextDialogue()">Continuar</button></div></div>
 <div id="toast"></div>
+<script src="assets/asset-manager.js"></script>
+<script src="assets/asset-manifest.js"></script>
 <script>
 "use strict";
 /* ============================================================
@@ -130,29 +164,43 @@ h1{font:800 clamp(36px,7vw,66px) Cinzel,serif;color:#e6c27d;letter-spacing:5px;m
    Engine simples: Canvas, estados, colisão, combate, quests e save.
    ============================================================ */
 const canvas=document.getElementById("world"),ctx=canvas.getContext("2d");
-const W=canvas.width,H=canvas.height,TILE=48,MAP_W=30,MAP_H=22;
+const W=canvas.width,H=canvas.height,TILE=32,MAP_W=96,MAP_H=72;
+ctx.imageSmoothingEnabled=false;
 const keys={};
 let gameStarted=false,paused=false,dialogueQueue=[],dialogueDone=null;
 let lastTime=0,attackCooldown=0,spellCooldown=0,enemySpawnTimer=0;
+let uiUpdateTimer=0;
 const world={
  name:"Vale de Cinzas",chapter:1,day:1,
- map:[],objects:[],enemies:[],particles:[],
+ map:[],mapWidth:MAP_W,mapHeight:MAP_H,objects:[],enemies:[],particles:[],
  camera:{x:0,y:0},
+ regionId:"village",
 };
+const pixelAssets=new window.DrakmorAssetManager(window.DrakmorAssetsManifest);
+pixelAssets.ready.then(()=>{updateAssetNotice();if(document.getElementById("characterPreview"))updateCharacterPreview()});
 const outfits={
  blue:{name:"Manto azul",color:"#527fbd"},
  crimson:{name:"Manto carmesim",color:"#a94352"},
  forest:{name:"Túnica da floresta",color:"#39744c"},
- violet:{name:"Túnica arcana",color:"#7860ad"}
+ violet:{name:"Túnica arcana",color:"#7860ad"},
+ shadow:{name:"Traje das sombras",color:"#4c5067"}
 };
 const hairColors={dark:{name:"Preto",color:"#30241f"},brown:{name:"Castanho",color:"#77452e"},blonde:{name:"Loiro",color:"#d5ac55"}};
 const skinTones={light:{name:"Claro",color:"#e7bd9a"},warm:{name:"Moreno",color:"#c88f68"},deep:{name:"Escuro",color:"#80533e"}};
+const classes={
+ warrior:{name:"Guerreiro",description:"Forte no corpo a corpo e na defesa.",ability:"Q · Golpe de escudo (8 mana)",outfit:"crimson",weapon:"Espada de aço",armor:"Cota de malha",stats:{hp:125,mp:25,strength:16,intelligence:4,agility:7,defense:7,attack:16},growth:{hp:25,mp:3,strength:2,intelligence:0,agility:1,defense:1,attack:3}},
+ mage:{name:"Mago",description:"Magia elemental e grande reserva de mana.",ability:"Q · Explosão elemental (12 mana)",outfit:"violet",weapon:"Cajado rúnico",armor:"Manto arcano",stats:{hp:85,mp:65,strength:5,intelligence:18,agility:8,defense:2,attack:8},growth:{hp:13,mp:12,strength:0,intelligence:2,agility:1,defense:0,attack:2}},
+ archer:{name:"Arqueiro",description:"Precisão e ataques de longa distância.",ability:"Q · Disparo preciso (8 mana)",outfit:"forest",weapon:"Arco de teixo",armor:"Couro de batedor",stats:{hp:100,mp:30,strength:10,intelligence:7,agility:16,defense:3,attack:12},growth:{hp:17,mp:5,strength:1,intelligence:0,agility:2,defense:0,attack:3}},
+ rogue:{name:"Ladino",description:"Ágil, furtivo e especialista em críticos.",ability:"Q · Golpe sombrio (10 mana)",outfit:"shadow",weapon:"Adagas gêmeas",armor:"Couro das sombras",stats:{hp:90,mp:25,strength:11,intelligence:6,agility:18,defense:3,attack:12},growth:{hp:15,mp:4,strength:1,intelligence:0,agility:2,defense:0,attack:3}},
+ paladin:{name:"Paladino",description:"Resiste a golpes e restaura a própria vida.",ability:"Q · Luz sagrada (12 mana)",outfit:"blue",weapon:"Espada solar",armor:"Armadura sagrada",stats:{hp:125,mp:40,strength:14,intelligence:12,agility:6,defense:8,attack:14},growth:{hp:24,mp:8,strength:2,intelligence:1,agility:0,defense:1,attack:3}},
+ druid:{name:"Druida",description:"Usa raízes, natureza e magia de cura.",ability:"Q · Raízes vivas (12 mana)",outfit:"forest",weapon:"Cajado de espinheiro",armor:"Manto de folhas",stats:{hp:100,mp:55,strength:8,intelligence:15,agility:9,defense:4,attack:10},growth:{hp:17,mp:10,strength:0,intelligence:2,agility:1,defense:1,attack:2}}
+};
 const player={
  x:6*TILE,y:10*TILE,w:26,h:34,speed:190,
- hp:100,maxHp:100,mp:30,maxMp:30,xp:0,nextXp:50,
- level:1,baseAttack:12,defense:2,gold:12,
- facing:"down",invulnerable:0,potions:2,
- name:"Errante",gender:"Não binário",outfit:"blue",outfitColor:outfits.blue.color,hairStyle:"short",hairColor:hairColors.dark.color,skinTone:"light",skinColor:skinTones.light.color,weapon:"Lâmina gasta",armor:"Casaco de couro",
+ hp:125,maxHp:125,mp:25,maxMp:25,xp:0,nextXp:50,
+ level:1,baseAttack:16,strength:16,intelligence:4,agility:7,defense:7,gold:12,
+ facing:"down",invulnerable:0,potions:2,guardTimer:0,guardBonus:0,
+ name:"Errante",gender:"Não binário",classId:"warrior",outfit:"crimson",outfitColor:outfits.crimson.color,hairStyle:"short",hairColor:hairColors.dark.color,skinTone:"light",skinColor:skinTones.light.color,weapon:classes.warrior.weapon,armor:classes.warrior.armor,
  inventory:[{name:"Poção de vida",qty:2,desc:"Recupera 45 pontos de vida."},{name:"Pão de viagem",qty:2,desc:"Recupera 15 pontos de vida."}],
  quests:{elder:false,slimes:0,herbs:0,bandit:false,crypt:false},
  flags:{intro:false,elderReward:false,gateOpen:false,cryptBoss:false}
@@ -164,13 +212,24 @@ const npcs=[
  {id:"healer",name:"Ilyra, curandeira",x:7*TILE,y:14*TILE,color:"#8fc5b2",type:"healer"}
 ];
 const enemyTypes={
- slime:{name:"Gosma cinzenta",hp:32,attack:7,xp:12,gold:3,speed:48,color:"#86b878",radius:15},
- wolf:{name:"Lobo da névoa",hp:48,attack:10,xp:18,gold:5,speed:78,color:"#a2a6aa",radius:16},
- skeleton:{name:"Esqueleto errante",hp:65,attack:13,xp:25,gold:8,speed:55,color:"#d0c8ac",radius:16},
- bandit:{name:"Saqueador",hp:85,attack:15,xp:35,gold:14,speed:65,color:"#a65e50",radius:17},
- boss:{name:"Cavaleiro sem rosto",hp:260,attack:22,xp:130,gold:90,speed:48,color:"#8d6ab5",radius:25}
+ slime:{name:"Slime",hp:32,attack:7,xp:12,gold:3,speed:48,radius:14,respawn:9,behavior:"ambush",aggroRange:145,attackRange:40,attackCooldown:1.2},
+ goblin:{name:"Goblin",hp:48,attack:9,xp:17,gold:5,speed:68,radius:15,respawn:11,behavior:"pursue",aggroRange:245,attackRange:44,attackCooldown:1.05},
+ wolf:{name:"Lobo selvagem",hp:55,attack:11,xp:20,gold:6,speed:82,radius:16,respawn:12,behavior:"hunt",aggroRange:330,attackRange:52,attackCooldown:.9},
+ skeleton:{name:"Esqueleto",hp:65,attack:13,xp:25,gold:8,speed:55,radius:16,respawn:14,behavior:"guard",aggroRange:155,attackRange:46,attackCooldown:1.3},
+ bandit:{name:"Saqueador",hp:85,attack:15,xp:35,gold:14,speed:65,radius:17,respawn:16,behavior:"pursue",aggroRange:260,attackRange:46,attackCooldown:1},
+ boss:{name:"Cavaleiro sem rosto",hp:260,attack:22,xp:130,gold:90,speed:48,radius:25,respawn:0,behavior:"guard",aggroRange:370,attackRange:58,attackCooldown:1.45}
 };
-let currentZone="village",nearby=null;
+const regionNames={
+ village:"Vila de Eldoria",
+ north:"Campos do Norte",
+ whispering:"Floresta dos Sussurros",
+ river:"Rio de Eldoria",
+ east:"Trilha do Leste",
+ cave:"Caverna Esquecida",
+ crypt:"Cripta do Primeiro Rei"
+};
+const SOLID_TILES=new Set([8,12,13,14,15,16,17,18,20,21,23,25]);
+let currentZone="village",currentRegionId="village",nearby=null;
 function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a}
 function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
 function log(msg,type=""){const el=document.getElementById("log");const p=document.createElement("p");p.className=type;p.textContent=msg;el.prepend(p);while(el.children.length>35)el.lastChild.remove()}
@@ -178,51 +237,142 @@ function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t
 function rects(a,b){return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y}
 function center(o){return{x:o.x+o.w/2,y:o.y+o.h/2}}
 function makeMap(){
+ world.mapWidth=MAP_W;world.mapHeight=MAP_H;
  world.map=Array.from({length:MAP_H},(_,y)=>Array.from({length:MAP_W},(_,x)=>{
-  if(x===0||y===0||x===MAP_W-1||y===MAP_H-1)return 1;
-  return 0;
+  if(x===0||y===0||x===MAP_W-1||y===MAP_H-1)return 13;
+  return((x*13+y*7)%29===0)?2:0;
  }));
- // árvores e rochas; caminhos deixam o centro livre
- const blockers=[[3,3],[4,3],[3,4],[20,3],[21,3],[22,3],[23,4],[3,17],[4,17],[5,17],[24,16],[25,16],[25,17],[15,3],[16,3],[16,4],[2,10],[2,11],[27,10],[27,11]];
- blockers.forEach(([x,y])=>world.map[y][x]=1);
- // pequenos lagos
- for(let y=4;y<7;y++)for(let x=24;x<28;x++)if(!(x===24&&y===4))world.map[y][x]=2;
+ const setTile=(x,y,tile)=>{if(world.map[y]&&world.map[y][x]!==undefined)world.map[y][x]=tile};
+ const pave=(x1,y1,x2,y2,tile=5)=>{
+  for(let y=Math.min(y1,y2);y<=Math.max(y1,y2);y++)
+   for(let x=Math.min(x1,x2);x<=Math.max(x1,x2);x++)setTile(x,y,tile);
+ };
+ // Continuous roads connect the village, northern fields, forest, bridge, and cave.
+ pave(3,10,44,10);
+ pave(12,10,12,32);
+ pave(30,2,30,10);
+ pave(30,10,30,31);
+ pave(30,31,42,31);
+ pave(42,30,52,33,10);
+ pave(51,33,51,51);
+ pave(51,51,79,51);
+ pave(78,48,81,54);
+ setTile(79,50,23);
+ // A river divides the eastern trail; the marked bridge is the only crossing.
+ for(let y=1;y<MAP_H-1;y++)for(let x=46;x<=49;x++)setTile(x,y,8);
+ pave(46,30,49,33,10);
+ // A small fishing lake and a dock; impassable water remains distinct from roads.
+ for(let y=38;y<=43;y++)for(let x=19;x<=25;x++)if((x-22)*(x-22)+(y-40)*(y-40)<13)setTile(x,y,8);
+ setTile(24,41,26);
+ // Fields and farm plots around the northern trail.
+ for(let y=4;y<=7;y++)for(let x=33;x<=38;x++)setTile(x,y,25);
+ // Houses are assembled from real tileset cells; walls and roofs block movement.
+ const house=(x,y,roof)=>{
+  for(let dx=0;dx<4;dx++){setTile(x+dx,y,roof);setTile(x+dx,y+1,20);setTile(x+dx,y+2,20)}
+  setTile(x+1,y+2,22);
+ };
+ house(5,3,21);house(12,3,21);house(5,15,21);house(18,15,21);
+ // Tree clusters form forest corridors without blocking established roads.
+ for(let y=14;y<60;y++)for(let x=25;x<94;x++){
+  if(x>=46&&x<=49)continue;
+  if(world.map[y][x]!==0&&world.map[y][x]!==1&&world.map[y][x]!==2)continue;
+  const clearRoad=(y===10&&x<46)||(x===12&&y>=10&&y<=32)||
+   (x===30&&y>=10&&y<=31)||(y>=30&&y<=33&&x>=42&&x<=52)||
+   (x===51&&y>=33&&y<=51)||(y===51&&x>=51&&x<=81);
+  const settlement=x<23&&y<22;
+  const field=x<44&&y<13;
+  const caveApproach=x>76&&y>46;
+  if(!clearRoad&&!settlement&&!field&&!caveApproach&&((x*31+y*17)%11)<3)
+   setTile(((x+y)%3===0)?13:12);
+ }
+ // Rocks surround the cave mouth rather than sealing its approach.
+ for(const [x,y] of [[76,48],[76,49],[76,53],[76,54],[82,48],[82,49],[82,53],[82,54]])setTile(x,y,14);
  world.objects=[
-  {type:"sign",x:5*TILE,y:9*TILE,w:30,h:30,text:"Placa da vila"},
-  {type:"herb",x:11*TILE,y:15*TILE,w:22,h:22,active:true},
-  {type:"herb",x:22*TILE,y:7*TILE,w:22,h:22,active:true},
-  {type:"herb",x:25*TILE,y:13*TILE,w:22,h:22,active:true},
-  {type:"chest",x:22*TILE,y:18*TILE,w:30,h:26,active:true},
-  {type:"portal",x:27*TILE,y:19*TILE,w:42,h:42}
+  {type:"sign",x:5*TILE,y:9*TILE,w:32,h:32,text:"Placa da Vila de Eldoria"},
+  {type:"herb",x:16*TILE,y:17*TILE,w:32,h:32,active:true},
+  {type:"herb",x:40*TILE,y:15*TILE,w:32,h:32,active:true},
+  {type:"herb",x:58*TILE,y:45*TILE,w:32,h:32,active:true},
+  {type:"chest",x:22*TILE,y:19*TILE,w:32,h:32,active:true},
+  {type:"portal",x:78*TILE,y:50*TILE,w:32,h:32}
  ];
+ world.regionId="village";currentRegionId="village";world.minimapDirty=true;
+}
+function makeCryptMap(){
+ world.mapWidth=30;world.mapHeight=22;
+ world.map=Array.from({length:world.mapHeight},(_,y)=>Array.from({length:world.mapWidth},(_,x)=>{
+  if(x===0||y===0||x===world.mapWidth-1||y===world.mapHeight-1)return 30;
+  if((x*17+y*23)%37===0)return 28;
+  return 29;
+ }));
+ for(let x=3;x<=26;x++)world.map[5][x]=29;
+ for(let y=5;y<=18;y++)world.map[y][12]=29;
+ for(let x=12;x<=25;x++)world.map[18][x]=29;
+ world.objects=[{type:"exitPortal",x:4*TILE,y:5*TILE,w:32,h:32}];
+ world.minimapDirty=true;
+ world.regionId="crypt";
 }
 function newGame(){
- Object.assign(player,{x:6*TILE,y:10*TILE,hp:100,maxHp:100,mp:30,maxMp:30,xp:0,nextXp:50,level:1,baseAttack:12,defense:2,gold:12,potions:2,inventory:[{name:"Poção de vida",qty:2,desc:"Recupera 45 pontos de vida."},{name:"Pão de viagem",qty:2,desc:"Recupera 15 pontos de vida."}],quests:{elder:false,slimes:0,herbs:0,bandit:false,crypt:false},flags:{intro:false,elderReward:false,gateOpen:false,cryptBoss:false}});
- world.chapter=1;world.day=1;world.enemies=[];currentZone="village";makeMap();spawnInitialEnemies();gameStarted=true;
+ const characterClass=classes[player.classId]||classes.warrior,stats=characterClass.stats;
+ Object.assign(player,{
+  x:6*TILE,y:10*TILE,hp:stats.hp,maxHp:stats.hp,mp:stats.mp,maxMp:stats.mp,
+  xp:0,nextXp:50,level:1,baseAttack:stats.attack,strength:stats.strength,
+  intelligence:stats.intelligence,agility:stats.agility,defense:stats.defense,
+  weapon:characterClass.weapon,armor:characterClass.armor,gold:12,potions:2,
+  facing:"down",invulnerable:0,guardTimer:0,guardBonus:0,
+  inventory:[{name:"Poção de vida",qty:2,desc:"Recupera 45 pontos de vida."},{name:"Pão de viagem",qty:2,desc:"Recupera 15 pontos de vida."}],
+  quests:{elder:false,slimes:0,herbs:0,bandit:false,crypt:false},
+  flags:{intro:false,elderReward:false,gateOpen:false,cryptBoss:false}
+ });
+ world.name="Vale de Eldoria";world.chapter=1;world.day=1;world.enemies=[];world.overworldMap=null;world.overworldObjects=null;currentZone="village";makeMap();spawnInitialEnemies();gameStarted=true;
+ world.camera.x=clamp(player.x+player.w/2-W/2,0,world.mapWidth*TILE-W);
+ world.camera.y=clamp(player.y+player.h/2-H/2,0,world.mapHeight*TILE-H);
  document.getElementById("titleScreen").style.display="none";
  document.getElementById("overlay").style.display="none";document.getElementById("overlay").innerHTML="";paused=false;
- log("Você chegou ao Vale de Cinzas.","gold");startIntro();updateUI();requestAnimationFrame(loop);
+ log("Você chegou ao Vale de Eldoria.","gold");startIntro();updateUI();requestAnimationFrame(loop);
 }
 function showCharacterCreation(){
- const body=`<div class="creation-layout"><div class="creation-preview"><canvas id="characterPreview" width="160" height="140" aria-label="Prévia do personagem"></canvas><strong id="previewName"></strong><small id="previewDetails"></small></div><div class="character-fields"><label>Nome<input id="characterName" type="text" maxlength="18" autocomplete="off" placeholder="Seu nome"></label><label>Gênero<select id="characterGender"><option>Feminino</option><option>Masculino</option><option>Não binário</option></select></label><label>Roupa<select id="characterOutfit"><option value="blue">Manto azul</option><option value="crimson">Manto carmesim</option><option value="forest">Túnica da floresta</option><option value="violet">Túnica arcana</option></select></label><label>Cabelo<select id="characterHairStyle"><option value="short">Curto</option><option value="long">Longo</option></select></label><label>Cor do cabelo<select id="characterHairColor"><option value="dark">Preto</option><option value="brown">Castanho</option><option value="blonde">Loiro</option></select></label><label>Tom de pele<select id="characterSkin"><option value="light">Claro</option><option value="warm">Moreno</option><option value="deep">Escuro</option></select></label></div></div><div class="menuButtons"><button onclick="closeModal()">Voltar</button><button class="primary" onclick="createCharacter()">Jogar</button></div>`;
+ const classCards=Object.entries(classes).map(([id,characterClass])=>{
+  const stats=characterClass.stats;
+  return `<label class="class-card"><input type="radio" name="characterClass" value="${id}" ${id===player.classId?"checked":""}><span class="class-card-name">${characterClass.name}</span><small>${characterClass.description}</small><small>Vida ${stats.hp} · Mana ${stats.mp}</small><small>FOR ${stats.strength} · INT ${stats.intelligence} · AGI ${stats.agility} · DEF ${stats.defense}</small><small>${characterClass.weapon} · ${characterClass.armor}</small><small>${characterClass.ability}</small></label>`;
+ }).join("");
+ const body=`
+  <div class="creation-layout">
+   <div class="creation-preview"><canvas id="characterPreview" width="120" height="110" aria-label="Prévia do personagem"></canvas><strong id="previewName"></strong><small id="previewDetails"></small></div>
+   <div class="character-fields">
+    <label>Nome<input id="characterName" type="text" maxlength="18" autocomplete="off" placeholder="Seu nome"></label>
+    <label>Gênero<select id="characterGender"><option>Feminino</option><option>Masculino</option><option>Não binário</option></select></label>
+    <label>Roupa<select id="characterOutfit"><option value="blue">Manto azul</option><option value="crimson">Manto carmesim</option><option value="forest">Túnica da floresta</option><option value="violet">Túnica arcana</option><option value="shadow">Traje das sombras</option></select></label>
+    <label>Cabelo<select id="characterHairStyle"><option value="short">Curto</option><option value="long">Longo</option></select></label>
+    <label>Cor do cabelo<select id="characterHairColor"><option value="dark">Preto</option><option value="brown">Castanho</option><option value="blonde">Loiro</option></select></label>
+    <label>Tom de pele<select id="characterSkin"><option value="light">Claro</option><option value="warm">Moreno</option><option value="deep">Escuro</option></select></label>
+   </div>
+  </div>
+  <fieldset class="class-picker"><legend>Escolha uma classe</legend><div class="class-grid">${classCards}</div></fieldset>
+  <div class="menuButtons"><button onclick="closeModal()">Voltar</button><button class="primary" onclick="createCharacter()">Jogar</button></div>`;
  showModal("Crie seu personagem",body);
  document.getElementById("characterName").value=player.name==="Errante"?"":player.name;
  document.getElementById("characterGender").value=player.gender;
- document.getElementById("characterOutfit").value=player.outfit;
+ document.getElementById("characterOutfit").value=(classes[player.classId]||classes.warrior).outfit;
  document.getElementById("characterHairStyle").value=player.hairStyle;
  document.getElementById("characterHairColor").value=Object.keys(hairColors).find(key=>hairColors[key].color===player.hairColor)||"dark";
  document.getElementById("characterSkin").value=player.skinTone;
  document.querySelectorAll("#overlay .character-fields input,#overlay .character-fields select").forEach(control=>control.addEventListener("input",updateCharacterPreview));
  document.querySelectorAll("#overlay .character-fields select").forEach(control=>control.addEventListener("change",updateCharacterPreview));
+ document.querySelectorAll("#overlay input[name=characterClass]").forEach(control=>control.addEventListener("change",()=>{
+  document.getElementById("characterOutfit").value=classes[control.value].outfit;
+  updateCharacterPreview();
+ }));
  updateCharacterPreview();
 }
 function getCharacterDraft(){
  const outfit=outfits[document.getElementById("characterOutfit").value]||outfits.blue;
  const hair=hairColors[document.getElementById("characterHairColor").value]||hairColors.dark;
  const skin=skinTones[document.getElementById("characterSkin").value]||skinTones.light;
+ const classId=document.querySelector('input[name="characterClass"]:checked').value;
  return{
   name:document.getElementById("characterName").value.trim(),
   gender:document.getElementById("characterGender").value,
+  classId,
   outfit:document.getElementById("characterOutfit").value,
   outfitColor:outfit.color,
   hairStyle:document.getElementById("characterHairStyle").value,
@@ -236,11 +386,16 @@ function updateCharacterPreview(){
  if(!preview)return;
  const character=getCharacterDraft(),previewCtx=preview.getContext("2d");
  previewCtx.clearRect(0,0,preview.width,preview.height);
- previewCtx.save();previewCtx.translate(80,42);previewCtx.scale(2,2);drawHero(previewCtx,-13,-10,character,"down",false);previewCtx.restore();
+ previewCtx.imageSmoothingEnabled=false;
+ if(!pixelAssets.drawFrame(previewCtx,"player",0,0,64,64,28,15,64,64)){
+  previewCtx.fillStyle="#aab0bd";previewCtx.font="9px Inter";previewCtx.textAlign="center";
+  previewCtx.fillText("Sprite PNG ausente",preview.width/2,preview.height/2);
+ }
  document.getElementById("previewName").textContent=character.name||"Seu personagem";
  const outfit=outfits[character.outfit]||outfits.blue;
  const hair=Object.values(hairColors).find(option=>option.color===character.hairColor)||hairColors.dark;
- document.getElementById("previewDetails").textContent=`${character.gender} · ${outfit.name} · cabelo ${hair.name.toLowerCase()}`;
+ const characterClass=classes[character.classId]||classes.warrior;
+ document.getElementById("previewDetails").textContent=`${characterClass.name} · ${character.gender} · ${outfit.name} · cabelo ${hair.name.toLowerCase()}`;
 }
 function createCharacter(){
  const character=getCharacterDraft();
@@ -250,14 +405,27 @@ function createCharacter(){
 }
 function spawnInitialEnemies(){
  world.enemies=[];
- for(let i=0;i<5;i++)spawnEnemy("slime",rand(15,25)*TILE,rand(13,18)*TILE);
- for(let i=0;i<2;i++)spawnEnemy("wolf",rand(18,25)*TILE,rand(3,6)*TILE);
+ spawnEnemy("slime",26*TILE,12*TILE);
+ spawnEnemy("goblin",33*TILE,13*TILE);
+ spawnEnemy("wolf",38*TILE,16*TILE);
 }
 function spawnEnemy(type,x,y){
- const d=enemyTypes[type];world.enemies.push({type,name:d.name,x,y,w:d.radius*2,h:d.radius*2,hp:d.hp,maxHp:d.hp,attack:d.attack,xp:d.xp,gold:d.gold,speed:d.speed,color:d.color,aggro:false,attackTimer:0,dead:false});
+ const d=enemyTypes[type];
+ const spawn=findOpenSpawn(x,y),size=d.radius*2;
+ world.enemies.push({type,name:d.name,x:spawn.x,y:spawn.y,spawnX:spawn.x,spawnY:spawn.y,w:size,h:size,hp:d.hp,maxHp:d.hp,attack:d.attack,xp:d.xp,gold:d.gold,speed:d.speed,behavior:d.behavior,aggroRange:d.aggroRange,attackRange:d.attackRange,attackCooldown:d.attackCooldown,aggro:false,attackTimer:0,dead:false,deadTimer:0,respawn:d.respawn,state:"idle",facing:"down",animationTime:0});
+}
+function findOpenSpawn(x,y){
+ const tx=Math.floor(x/TILE),ty=Math.floor(y/TILE);
+ for(let radius=0;radius<=6;radius++)for(let dy=-radius;dy<=radius;dy++)for(let dx=-radius;dx<=radius;dx++){
+  if(radius&&Math.abs(dx)!==radius&&Math.abs(dy)!==radius)continue;
+  const testX=tx+dx,testY=ty+dy;
+  if(world.map[testY]&&world.map[testY][testX]!==undefined&&!SOLID_TILES.has(world.map[testY][testX]))
+   return{x:testX*TILE,y:testY*TILE};
+ }
+ return{x:clamp(x,TILE,world.mapWidth*TILE-2*TILE),y:clamp(y,TILE,world.mapHeight*TILE-2*TILE)};
 }
 function startIntro(){
- say("Narrador","O vento atravessa as casas vazias do Vale de Cinzas. Você desperta junto ao antigo marco da estrada, com uma moeda negra na mão. Nela, uma frase foi gravada: “Quando o sino tocar pela terceira vez, não confie nos mortos.”",()=>say("Narrador","Ao longe, um sino toca. Uma vez. A vila parece prender a respiração."));
+ say("Narrador","O vento atravessa as casas antigas da Vila de Eldoria. Você desperta junto ao marco da estrada, com uma moeda negra na mão. Nela, uma frase foi gravada: “Quando o sino tocar pela terceira vez, não confie nos mortos.”",()=>say("Narrador","Ao longe, um sino toca. Uma vez. A vila parece prender a respiração."));
 }
 function say(speaker,text,done){dialogueQueue.push({speaker,text,done});if(dialogueQueue.length===1)showDialogue()}
 function showDialogue(){const d=dialogueQueue[0];if(!d)return;document.getElementById("speaker").textContent=d.speaker;document.getElementById("dialogueText").textContent=d.text;document.getElementById("dialogue").style.display="block";paused=true}
@@ -278,6 +446,7 @@ function interact(){
  else if(nearby.type==="chest")openChest(nearby);
  else if(nearby.type==="sign")say("Placa","VALE DE CINZAS — “A estrada termina onde a floresta começa. Não siga as luzes azuis.”");
  else if(nearby.type==="portal")enterCrypt();
+ else if(nearby.type==="exitPortal")exitCrypt();
 }
 function talkElder(){
  if(!player.quests.elder){
@@ -318,12 +487,48 @@ function openChest(o){
 function enterCrypt(){
  if(!player.flags.gateOpen){toast("O acesso está selado. Converse com Oren e Bren.");return}
  if(currentZone==="crypt")return;
- currentZone="crypt";world.name="Cripta do Primeiro Rei";player.x=5*TILE;player.y=5*TILE;
- world.enemies=[];for(let i=0;i<5;i++)spawnEnemy("skeleton",rand(9,24)*TILE,rand(7,17)*TILE);
+ world.overworldMap=world.map;world.overworldObjects=world.objects;
+ currentZone="crypt";currentRegionId="crypt";world.name="Cripta do Primeiro Rei";makeCryptMap();player.x=5*TILE;player.y=5*TILE;
+ world.enemies=[];for(let i=0;i<5;i++)spawnEnemy("skeleton",(8+i*3)*TILE,(7+(i%3)*4)*TILE);
  if(!player.flags.cryptBoss)spawnEnemy("boss",24*TILE,17*TILE);
- document.getElementById("location").textContent=world.name.toUpperCase();log("Você desceu à Cripta do Primeiro Rei.","gold");toast("A atmosfera ficou mais pesada.");
+ world.camera.x=0;world.camera.y=0;document.getElementById("location").textContent=world.name.toUpperCase();log("Você desceu à Cripta do Primeiro Rei.","gold");toast("A atmosfera ficou mais pesada.");
 }
-function exitCrypt(){currentZone="village";world.name="Vale de Cinzas";player.x=27*TILE;player.y=18*TILE;world.enemies=[];spawnInitialEnemies();document.getElementById("location").textContent=world.name.toUpperCase()}
+function exitCrypt(){
+ currentZone="village";world.name="Vale de Eldoria";
+ if(world.overworldMap){world.map=world.overworldMap;world.objects=world.overworldObjects;world.mapWidth=MAP_W;world.mapHeight=MAP_H}
+ else makeMap();
+ world.minimapDirty=true;player.x=78*TILE;player.y=52*TILE;world.enemies=[];spawnRegionEnemies("cave");updateRegion();
+ document.getElementById("location").textContent=regionNames.cave.toUpperCase()
+}
+function getRegionAt(x,y){
+ const tx=Math.floor((x+player.w/2)/TILE),ty=Math.floor((y+player.h/2)/TILE);
+ if(tx<24&&ty<24)return"village";
+ if(ty<14&&tx<46)return"north";
+ if(tx>=46&&tx<=49)return"river";
+ if(tx>=76&&ty>=46)return"cave";
+ if(tx<46)return"whispering";
+ if(tx<76)return"east";
+ return"cave";
+}
+function updateRegion(){
+ if(currentZone==="crypt")return;
+ const next=getRegionAt(player.x,player.y);
+ if(next===currentRegionId)return;
+ currentRegionId=next;world.regionId=next;
+ document.getElementById("location").textContent=regionNames[next].toUpperCase();
+ log("Região: "+regionNames[next]+".","gold");
+ spawnRegionEnemies(next);
+}
+function spawnRegionEnemies(region){
+ const groups={
+  north:[["slime",38,8],["goblin",27,11],["wolf",41,12]],
+  whispering:[["slime",28,19],["goblin",35,24],["wolf",39,18],["slime",30,34]],
+  east:[["goblin",60,24],["wolf",68,39],["slime",57,45]],
+  cave:[["skeleton",73,48],["skeleton",84,57],["goblin",88,49]]
+ };
+ world.enemies=[];
+ for(const[type,x,y]of groups[region]||[])spawnEnemy(type,x*TILE,y*TILE);
+}
 function addItem(name,qty,desc){let it=player.inventory.find(i=>i.name===name);if(it)it.qty+=qty;else player.inventory.push({name,qty,desc})}
 function useItem(name,keepInventory=true){
  const it=player.inventory.find(i=>i.name===name&&i.qty>0);if(!it)return;
@@ -339,28 +544,30 @@ function openInventory(){
 }
 function showModal(title,body){const ov=document.getElementById("overlay");ov.style.display="flex";ov.innerHTML=`<div class="screen"><div class="kicker">DRAKMOR · REGISTRO DE JORNADA</div><h2>${title}</h2>${body}</div>`;paused=true}
 function closeModal(){document.getElementById("overlay").style.display="none";document.getElementById("overlay").innerHTML="";paused=false}
-const settings={showHints:true,uiSize:"normal"};
+const settings={showHints:true,uiSize:"normal",moveSpeed:"normal"};
 function applySettings(){
  document.getElementById("hint").hidden=!settings.showHints;
  document.getElementById("game").classList.toggle("ui-large",settings.uiSize==="large");
+ player.speed={slow:130,normal:190,fast:260}[settings.moveSpeed]||190;
 }
 function loadSettings(){
  try{
   const raw=localStorage.getItem("drakmorSettings");
-  if(raw){const saved=JSON.parse(raw);settings.showHints=saved.showHints!==false;settings.uiSize=saved.uiSize==="large"?"large":"normal"}
+  if(raw){const saved=JSON.parse(raw);settings.showHints=saved.showHints!==false;settings.uiSize=saved.uiSize==="large"?"large":"normal";settings.moveSpeed=["slow","normal","fast"].includes(saved.moveSpeed)?saved.moveSpeed:"normal"}
  }catch(error){toast("Não foi possível carregar as configurações salvas.")}
  applySettings();
 }
 function saveSettings(){
  settings.showHints=document.getElementById("settingHints").checked;
  settings.uiSize=document.getElementById("settingUiSize").value;
+ settings.moveSpeed=document.getElementById("settingMoveSpeed").value;
  applySettings();
  try{localStorage.setItem("drakmorSettings",JSON.stringify(settings))}
  catch(error){toast("As configurações foram aplicadas, mas não puderam ser salvas.")}
  closeModal();
 }
 function showSettings(){
- showModal("Configurações",`<label class="setting-row"><span><b>Dicas de comandos</b><small>Mostrar os atalhos na tela durante o jogo.</small></span><input id="settingHints" type="checkbox" ${settings.showHints?"checked":""}></label><label class="setting-row"><span><b>Tamanho da interface</b><small>Ajusta o tamanho do painel de status e dos comandos.</small></span><select id="settingUiSize"><option value="normal" ${settings.uiSize==="normal"?"selected":""}>Normal</option><option value="large" ${settings.uiSize==="large"?"selected":""}>Grande</option></select></label><div class="menuButtons"><button onclick="toggleFullscreen()" id="fullscreenToggle">Ativar tela cheia</button><button class="primary" onclick="saveSettings()">Salvar</button><button onclick="closeModal()">Voltar</button></div>`);
+ showModal("Configurações",`<label class="setting-row"><span><b>Dicas de comandos</b><small>Mostrar os atalhos na tela durante o jogo.</small></span><input id="settingHints" type="checkbox" ${settings.showHints?"checked":""}></label><label class="setting-row"><span><b>Tamanho da interface</b><small>Ajusta o tamanho do painel de status e dos comandos.</small></span><select id="settingUiSize"><option value="normal" ${settings.uiSize==="normal"?"selected":""}>Normal</option><option value="large" ${settings.uiSize==="large"?"selected":""}>Grande</option></select></label><label class="setting-row"><span><b>Velocidade de movimento</b><small>Ajusta a velocidade de exploração do personagem.</small></span><select id="settingMoveSpeed"><option value="slow" ${settings.moveSpeed==="slow"?"selected":""}>Lenta</option><option value="normal" ${settings.moveSpeed==="normal"?"selected":""}>Normal</option><option value="fast" ${settings.moveSpeed==="fast"?"selected":""}>Rápida</option></select></label><div class="menuButtons"><button onclick="toggleFullscreen()" id="fullscreenToggle">Ativar tela cheia</button><button class="primary" onclick="saveSettings()">Salvar</button><button onclick="closeModal()">Voltar</button></div>`);
  updateFullscreenButton();
 }
 function updateFullscreenButton(){
@@ -382,107 +589,325 @@ function exitGame(){
  },100);
 }
 function showMap(){
- let body=currentZone==="village"?"Você está no <b>Vale de Cinzas</b>. A vila fica no centro-oeste. O ancião Oren está próximo ao marco; Mira vende provisões; Ilyra cura ferimentos. Ervas-lua brilham na clareira ao norte e ao leste. A passagem da cripta fica no extremo sudeste.":"Você está na <b>Cripta do Primeiro Rei</b>. Esqueletos guardam os corredores. Procure o Cavaleiro sem Rosto no salão inferior.";
+ let body=currentZone==="crypt"?"Você está na <b>Cripta do Primeiro Rei</b>. Esqueletos guardam os corredores. A saída fica perto da entrada.":"Você está em <b>"+regionNames[currentRegionId]+"</b>, no Vale de Eldoria. As estradas conectam a vila, os campos do norte, a Floresta dos Sussurros, o rio com sua ponte e a trilha até a Caverna Esquecida.";
  showModal("Mapa e regiões",`<p>${body}</p><p><b>Objetivo:</b> explore, converse com personagens e siga as pistas no painel Jornada atual.</p><div class="menuButtons"><button onclick="closeModal()">Voltar ao jogo</button></div>`);
 }
-function showHelp(){showModal("Como jogar",`<p><b>Movimentação:</b> WASD ou setas. <b>Ataque:</b> Espaço. <b>Magia:</b> Q. <b>Interagir:</b> E. <b>Inventário:</b> I. <b>Poção:</b> 1. <b>Pão:</b> 2.</p><p><b>Descansar:</b> R. <b>Salvar:</b> F. <b>Mapa:</b> M. <b>Painel:</b> J. <b>Ajuda:</b> H. Pressione Enter ou Espaço para avançar diálogos e Esc para fechar uma janela.</p><p>Chegue perto de personagens, baús, placas e plantas e pressione E. Inimigos perseguem você quando chegam perto. Ataque olhando na direção do inimigo. A magia consome mana e causa dano em uma pequena área à sua frente.</p><p>Derrotar inimigos concede XP e ouro. Ao subir de nível, seus atributos aumentam e vida/mana são restauradas.</p><div class="menuButtons"><button onclick="closeModal()">Entendi</button></div>`)}
-function showCredits(){showModal("Créditos",`<p><b>DRAKMOR — As Cinzas do Primeiro Rei</b></p><p>Um pequeno RPG de fantasia criado em HTML, CSS e JavaScript puro, usando Canvas 2D e desenhos procedurais.</p><p>História, personagens, mundo, interface e código: projeto original para estudo e expansão.</p><div class="menuButtons"><button onclick="backToMenu()">Voltar</button></div>`)}
+function showHelp(){const characterClass=classes[player.classId]||classes.warrior;showModal("Como jogar",`<p><b>Movimentação:</b> WASD ou setas. <b>Ataque:</b> clique esquerdo no mundo ou Espaço. <b>Habilidade de ${characterClass.name}:</b> ${characterClass.ability}. <b>Interagir:</b> E. <b>Inventário:</b> I. <b>Poção:</b> 1. <b>Pão:</b> 2.</p><p><b>Descansar:</b> R. <b>Salvar:</b> F. <b>Mapa:</b> M. <b>Painel:</b> J. <b>Ajuda:</b> H. Pressione Enter ou Espaço para avançar diálogos e Esc para fechar uma janela.</p><p>O alcance e o efeito do ataque mudam por classe. Chegue perto de personagens, baús, placas e plantas e pressione E. Inimigos perseguem você quando chegam perto e reaparecem após um intervalo.</p><p>Derrotar inimigos concede XP e ouro. Ao subir de nível, os atributos evoluem conforme sua classe, e vida/mana são restauradas.</p><div class="menuButtons"><button onclick="closeModal()">Entendi</button></div>`)}
+function showCredits(){showModal("Créditos",`<p><b>DRAKMOR — As Cinzas do Primeiro Rei</b></p><p>Um RPG de fantasia criado em HTML, CSS e JavaScript, com Canvas 2D, mapa por tiles e carregamento de pixel art PNG.</p><p>História, personagens, mundo, interface e código: projeto original para estudo e expansão.</p><div class="menuButtons"><button onclick="backToMenu()">Voltar</button></div>`)}
 function backToMenu(){closeModal()}
-function attack(){
- if(!gameStarted||paused||attackCooldown>0)return;attackCooldown=.42;
+function findFacingEnemy(maxRange,lateralRange=45){
  const dir={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]}[player.facing],px=player.x+player.w/2,py=player.y+player.h/2;
- let hit=0;
- for(const e of world.enemies){if(e.dead)continue;const ex=e.x+e.w/2,ey=e.y+e.h/2,dx=ex-px,dy=ey-py,dist=Math.hypot(dx,dy);if(dist<75&&dx*dir[0]+dy*dir[1]>-10){damageEnemy(e,player.baseAttack+rand(-2,5));hit++}}
- burst(px+dir[0]*35,py+dir[1]*35,"#f3d18a",8);if(!hit)log("Seu golpe cortou o ar.");}
+ let target=null,nearest=Infinity;
+ for(const enemy of world.enemies){
+  if(enemy.dead)continue;
+  const dx=enemy.x+enemy.w/2-px,dy=enemy.y+enemy.h/2-py;
+  const forward=dx*dir[0]+dy*dir[1],lateral=Math.abs(dx*dir[1]-dy*dir[0]),distance=Math.hypot(dx,dy);
+  if(forward>0&&forward<=maxRange&&lateral<=lateralRange&&distance<nearest){target=enemy;nearest=distance}
+ }
+ return target;
+}
+function damageEnemiesInArea(x,y,radius,damage){
+ let hits=0;
+ for(const enemy of world.enemies){
+  if(enemy.dead)continue;
+  if(Math.hypot(enemy.x+enemy.w/2-x,enemy.y+enemy.h/2-y)<=radius){damageEnemy(enemy,damage);hits++}
+ }
+ return hits;
+}
+function attack(){
+ if(!gameStarted||paused||attackCooldown>0)return;
+ player.attackTimer=.24;
+ const classId=classes[player.classId]?player.classId:"warrior";
+ const dir={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]}[player.facing],px=player.x+player.w/2,py=player.y+player.h/2;
+ attackCooldown=Math.max(.28,.5-player.agility*.008);
+ const attackColors={mage:"#9c7aff",archer:"#f2d27c",druid:"#83c878"};
+ if(classId==="mage"||classId==="archer"||classId==="druid"){
+  const ranges={mage:220,archer:330,druid:190};
+  const enemy=findFacingEnemy(ranges[classId],classId==="archer"?36:55);
+  if(enemy){
+   const damage=classId==="mage"?player.baseAttack+player.intelligence:classId==="archer"?player.baseAttack+Math.round(player.agility*.7):player.baseAttack+Math.round(player.intelligence*.7);
+   damageEnemy(enemy,damage);burst(enemy.x+enemy.w/2,enemy.y+enemy.h/2,attackColors[classId],8);
+  }else{burst(px+dir[0]*45,py+dir[1]*45,attackColors[classId],8);log("Seu ataque não encontrou um alvo à frente.")}
+  return;
+ }
+ let hits=0;
+ const meleeDamage=player.baseAttack+Math.round(player.strength*.55)+rand(-2,3);
+ if(classId==="rogue"){
+  const enemy=findFacingEnemy(82,60);
+  if(enemy){
+   const critical=Math.random()<Math.min(.7,player.agility/40),damage=critical?meleeDamage*2:meleeDamage;
+   damageEnemy(enemy,damage);hits=1;
+   if(critical)log("Ataque crítico do Ladino!","gold");
+  }
+ }else{
+  for(const enemy of world.enemies){
+   if(enemy.dead)continue;
+   const dx=enemy.x+enemy.w/2-px,dy=enemy.y+enemy.h/2-py;
+   if(Math.hypot(dx,dy)<78&&dx*dir[0]+dy*dir[1]>-10){damageEnemy(enemy,meleeDamage);hits++}
+  }
+ }
+ burst(px+dir[0]*35,py+dir[1]*35,classId==="paladin"?"#ffe17c":"#f3d18a",8);
+ if(!hits)log("Seu golpe cortou o ar.");
+}
 function castSpell(){
- if(!gameStarted||paused||spellCooldown>0)return;if(player.mp<10){toast("Mana insuficiente.");return}
- player.mp-=10;spellCooldown=1.2;const dir={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]}[player.facing],px=player.x+player.w/2+dir[0]*38,py=player.y+player.h/2+dir[1]*38;let hit=0;
- for(const e of world.enemies){if(e.dead)continue;const d=Math.hypot(e.x+e.w/2-px,e.y+e.h/2-py);if(d<90){damageEnemy(e,28+player.level*4);hit++}}
- burst(px,py,"#80c9ff",24);log(hit?"A magia atingiu "+hit+" inimigo(s)!":"Você lançou uma esfera arcana.","good");updateUI();
+ if(!gameStarted||paused||spellCooldown>0)return;
+ const classId=classes[player.classId]?player.classId:"warrior",costs={warrior:8,mage:12,archer:8,rogue:10,paladin:12,druid:12},cost=costs[classId];
+ if(player.mp<cost){toast("Mana insuficiente.");return}
+ player.mp-=cost;spellCooldown=1.2;player.attackTimer=.32;
+ const dir={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]}[player.facing],px=player.x+player.w/2,py=player.y+player.h/2;
+ let hits=0,color="#f3d18a",message="";
+ if(classId==="warrior"){
+  color="#f0bb62";player.guardBonus=4;player.guardTimer=4;hits=damageEnemiesInArea(px+dir[0]*45,py+dir[1]*45,88,player.baseAttack+player.strength);message="Golpe de escudo";
+ }else if(classId==="mage"){
+  color="#a47aff";hits=damageEnemiesInArea(px+dir[0]*62,py+dir[1]*62,105,16+player.intelligence*2);message="Explosão elemental";
+ }else if(classId==="archer"){
+  color="#f2d27c";const enemy=findFacingEnemy(390,42);
+  if(enemy){damageEnemy(enemy,player.baseAttack+player.agility*2);hits=1}
+  message="Disparo preciso";
+ }else if(classId==="rogue"){
+  color="#c7a6ff";const enemy=findFacingEnemy(115,65);
+  if(enemy){damageEnemy(enemy,Math.round((player.baseAttack+player.agility*1.5)*1.6));hits=1}
+  message="Golpe sombrio";
+ }else if(classId==="paladin"){
+  color="#ffe17c";player.hp=Math.min(player.maxHp,player.hp+35+player.intelligence);
+  hits=damageEnemiesInArea(px,py,105,12+Math.round(player.intelligence*1.5));message="Luz sagrada";
+ }else{
+  color="#83c878";player.hp=Math.min(player.maxHp,player.hp+20);
+  hits=damageEnemiesInArea(px+dir[0]*48,py+dir[1]*48,100,12+Math.round(player.intelligence*1.5));message="Raízes vivas";
+ }
+ burst(px+dir[0]*48,py+dir[1]*48,color,24);
+ log(`${message}: ${hits?`atingiu ${hits} inimigo(s)`:"nenhum inimigo atingido"}.`,"good");updateUI();
+ if(classId==="warrior")log("Sua defesa aumentou por 4 segundos.","good");
 }
 function damageEnemy(e,amount){
+ if(e.dead)return;
  e.hp-=amount;e.aggro=true;burst(e.x+e.w/2,e.y+e.h/2,"#f3b2a2",5);
  log(`${e.name}: -${amount} HP`,"good");
- if(e.hp<=0){e.dead=true;player.xp+=e.xp;player.gold+=e.gold;if(e.type==="slime")player.quests.slimes++;if(e.type==="boss"){player.flags.cryptBoss=true;player.quests.crypt=true;say("Narrador","O Cavaleiro sem Rosto cai de joelhos. A armadura se desfaz em cinzas. Sob ela, não existe corpo — apenas uma chama azul, que sussurra seu nome antes de desaparecer. A moeda em sua mão se parte ao meio. A primeira fechadura foi quebrada, mas algo muito maior acaba de acordar.");world.chapter=2;log("Chefe derrotado! Capítulo II desbloqueado.","gold");}
+ if(e.hp<=0){e.dead=true;e.deadTimer=e.respawn;e.state="dead";player.xp+=e.xp;player.gold+=e.gold;if(e.type==="slime")player.quests.slimes++;if(e.type==="boss"){player.flags.cryptBoss=true;player.quests.crypt=true;say("Narrador","O Cavaleiro sem Rosto cai de joelhos. A armadura se desfaz em cinzas. Sob ela, não existe corpo — apenas uma chama azul, que sussurra seu nome antes de desaparecer. A moeda em sua mão se parte ao meio. A primeira fechadura foi quebrada, mas algo muito maior acaba de acordar.");world.chapter=2;log("Chefe derrotado! Capítulo II desbloqueado.","gold");}
   log(`${e.name} derrotado: +${e.xp} XP, +${e.gold} ouro.`,"good");checkLevel();if(e.type==="slime"&&Math.random()<.35)addItem("Núcleo de gosma",1,"Fragmento gelatinoso pedido pelo ancião.");
  }
  updateUI();
 }
-function checkLevel(){while(player.xp>=player.nextXp){player.xp-=player.nextXp;player.level++;player.nextXp=Math.floor(player.nextXp*1.45);player.maxHp+=18;player.maxMp+=7;player.baseAttack+=4;player.defense+=1;player.hp=player.maxHp;player.mp=player.maxMp;say("Sistema","SUBIU DE NÍVEL! Seus atributos aumentaram. Vida e mana foram restauradas.");log("Você alcançou o nível "+player.level+"!","gold")}}
+function checkLevel(){
+ const growth=(classes[player.classId]||classes.warrior).growth;
+ while(player.xp>=player.nextXp){
+  player.xp-=player.nextXp;player.level++;player.nextXp=Math.floor(player.nextXp*1.45);
+  player.maxHp+=growth.hp;player.maxMp+=growth.mp;player.baseAttack+=growth.attack;
+  player.strength+=growth.strength;player.intelligence+=growth.intelligence;player.agility+=growth.agility;player.defense+=growth.defense;
+  player.hp=player.maxHp;player.mp=player.maxMp;say("Sistema","SUBIU DE NÍVEL! Seus atributos aumentaram. Vida e mana foram restauradas.");log("Você alcançou o nível "+player.level+"!","gold")
+ }
+}
 function gainXP(n){player.xp+=n;checkLevel();updateUI()}
-function burst(x,y,color,n){for(let i=0;i<n;i++)world.particles.push({x,y,vx:(Math.random()-.5)*180,vy:(Math.random()-.5)*180,life:.35+Math.random()*.35,color})}
+function burst(x,y,color,n){world.particles.push({x,y,life:.42,maxLife:.42,frame:0,color})}
 function rest(){if(!gameStarted||paused)return;if(world.enemies.some(e=>!e.dead&&Math.hypot(e.x-player.x,e.y-player.y)<180)){toast("Perigo por perto! Não é seguro descansar.");return}player.hp=player.maxHp;player.mp=player.maxMp;world.day++;log("Você descansou. Um novo dia começa.","good");updateUI()}
 function enemyUpdate(dt){
- for(const e of world.enemies){if(e.dead)continue;const dx=player.x-e.x,dy=player.y-e.y,d=Math.hypot(dx,dy);if(d<230)e.aggro=true;if(e.aggro&&d>35){const nx=dx/d,ny=dy/d;const speed=e.speed*(e.type==="boss"?.8:1);moveEntity(e,nx*speed*dt,ny*speed*dt)}
-  e.attackTimer-=dt;if(d<45&&e.attackTimer<=0&&player.invulnerable<=0){player.hp=Math.max(0,player.hp-Math.max(1,e.attack-player.defense));player.invulnerable=.7;e.attackTimer=1.1;burst(player.x+13,player.y+17,"#f16d6d",8);log(`${e.name} causou ${Math.max(1,e.attack-player.defense)} de dano.`,"bad");if(player.hp<=0)playerDown();updateUI()}
+ for(const e of world.enemies){
+  if(e.dead){
+   if(e.respawn>0){e.deadTimer-=dt;if(e.deadTimer<=0){e.hp=e.maxHp;e.x=e.spawnX;e.y=e.spawnY;e.dead=false;e.aggro=false;e.attackTimer=0;e.state="idle";e.animationTime=0}}
+   continue;
+  }
+  const dx=player.x-e.x,dy=player.y-e.y,d=Math.hypot(dx,dy);
+  if(d<e.aggroRange)e.aggro=true;
+  if(e.behavior==="guard"&&d>e.aggroRange*1.8)e.aggro=false;
+  if(e.aggro&&d>36){
+   const nx=dx/d,ny=dy/d;
+   const behaviorSpeed=e.behavior==="hunt"&&d<140?1.2:1;
+   const speed=e.speed*(e.type==="boss"?.8:behaviorSpeed);
+   e.state="walk";
+   e.facing=Math.abs(nx)>Math.abs(ny)?(nx<0?"left":"right"):(ny<0?"up":"down");
+   moveEntity(e,nx*speed*dt,ny*speed*dt);
+  }else if(d<=36)e.state="attack";
+  else e.state="idle";
+  e.animationTime+=dt;
+  e.attackTimer-=dt;
+  if(d<e.attackRange&&e.attackTimer<=0&&player.invulnerable<=0){
+   const damage=Math.max(1,e.attack-player.defense-(player.guardTimer>0?player.guardBonus:0));
+   player.hp=Math.max(0,player.hp-damage);player.invulnerable=.7;e.attackTimer=e.attackCooldown;e.state="attack";
+   burst(player.x+player.w/2,player.y+player.h/2,"#f16d6d",1);log(`${e.name} causou ${damage} de dano.`,"bad");
+   if(player.hp<=0)playerDown();updateUI();
+  }
  }
- world.enemies=world.enemies.filter(e=>!e.dead||e.type==="boss");
 }
-function playerDown(){paused=true;say("Narrador","A escuridão toma seus sentidos. Quando desperta, você está de volta à vila. Parte do ouro foi perdida, mas sua jornada ainda não terminou.",()=>{player.hp=player.maxHp;player.mp=player.maxMp;player.gold=Math.floor(player.gold*.75);player.x=6*TILE;player.y=10*TILE;paused=false;updateUI()})}
+function playerDown(){paused=true;say("Narrador","A escuridão toma seus sentidos. Quando desperta, você está de volta à vila. Parte do ouro foi perdida, mas sua jornada ainda não terminou.",()=>{if(currentZone==="crypt")exitCrypt();player.hp=player.maxHp;player.mp=player.maxMp;player.gold=Math.floor(player.gold*.75);player.x=6*TILE;player.y=10*TILE;player.guardTimer=0;paused=false;updateRegion();updateUI()})}
 function moveEntity(e,dx,dy){
- const nx={x:e.x+dx,y:e.y,w:e.w,h:e.h};if(!collides(nx))e.x=clamp(nx.x,TILE,WORLD_PIXEL_W-e.w-TILE);
- const ny={x:e.x,y:e.y+dy,w:e.w,h:e.h};if(!collides(ny))e.y=clamp(ny.y,TILE,WORLD_PIXEL_H-e.h-TILE);
+ const nx={x:e.x+dx,y:e.y,w:e.w,h:e.h};if(!collides(nx))e.x=clamp(nx.x,TILE,world.mapWidth*TILE-e.w-TILE);
+ const ny={x:e.x,y:e.y+dy,w:e.w,h:e.h};if(!collides(ny))e.y=clamp(ny.y,TILE,world.mapHeight*TILE-e.h-TILE);
 }
-const WORLD_PIXEL_W=MAP_W*TILE,WORLD_PIXEL_H=MAP_H*TILE;
 function collides(r){
  const x0=Math.floor(r.x/TILE),x1=Math.floor((r.x+r.w-1)/TILE),y0=Math.floor(r.y/TILE),y1=Math.floor((r.y+r.h-1)/TILE);
- for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){if(!world.map[y]||world.map[y][x]===undefined||world.map[y][x]===1||world.map[y][x]===2)return true}
+ for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){if(!world.map[y]||world.map[y][x]===undefined||SOLID_TILES.has(world.map[y][x]))return true}
+ if(currentZone!=="crypt")for(const npc of npcs)if(rects(r,{x:npc.x+3,y:npc.y+5,w:18,h:23}))return true;
  return false;
 }
 function playerUpdate(dt){
- let dx=0,dy=0;if(keys.w||keys.ArrowUp){dy=-1;player.facing="up"}if(keys.s||keys.ArrowDown){dy=1;player.facing="down"}if(keys.a||keys.ArrowLeft){dx=-1;player.facing="left"}if(keys.d||keys.ArrowRight){dx=1;player.facing="right"}
- if(dx&&dy){dx*=.707;dy*=.707}moveEntity(player,dx*player.speed*dt,dy*player.speed*dt);
- player.invulnerable=Math.max(0,player.invulnerable-dt);attackCooldown=Math.max(0,attackCooldown-dt);spellCooldown=Math.max(0,spellCooldown-dt);
+ let dx=0,dy=0;if(keys.w||keys.ArrowUp)dy=-1;if(keys.s||keys.ArrowDown)dy=1;if(keys.a||keys.ArrowLeft)dx=-1;if(keys.d||keys.ArrowRight)dx=1;
+ if(dx&&dy){dx*=Math.SQRT1_2;dy*=Math.SQRT1_2}
+ if(dx||dy){player.facing=Math.abs(dx)>Math.abs(dy)?(dx<0?"left":"right"):(dy<0?"up":"down");player.state="walk";player.walkTime=(player.walkTime||0)+dt}
+ else{player.state="idle";player.walkTime=0}
+ moveEntity(player,dx*player.speed*dt,dy*player.speed*dt);
+ player.invulnerable=Math.max(0,player.invulnerable-dt);player.guardTimer=Math.max(0,player.guardTimer-dt);player.attackTimer=Math.max(0,(player.attackTimer||0)-dt);
+ attackCooldown=Math.max(0,attackCooldown-dt);spellCooldown=Math.max(0,spellCooldown-dt);
 }
-function update(dt){if(!gameStarted||paused)return;playerUpdate(dt);enemyUpdate(dt);for(const p of world.particles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt}world.particles=world.particles.filter(p=>p.life>0);updateUI();nearby=null}
+function update(dt){
+ if(!gameStarted||paused)return;
+ playerUpdate(dt);enemyUpdate(dt);updateRegion();
+ for(let i=world.particles.length-1;i>=0;i--){
+  const effect=world.particles[i];effect.life-=dt;effect.frame=Math.min(5,Math.floor((1-effect.life/effect.maxLife)*6));
+  if(effect.life<=0)world.particles.splice(i,1);
+ }
+ updateCamera(dt);uiUpdateTimer+=dt;
+ if(uiUpdateTimer>=.1){uiUpdateTimer=0;updateUI()}
+ nearby=null;
+}
+function updateCamera(dt){
+ const maxX=Math.max(0,world.mapWidth*TILE-W),maxY=Math.max(0,world.mapHeight*TILE-H);
+ const targetX=clamp(player.x+player.w/2-W/2,0,maxX),targetY=clamp(player.y+player.h/2-H/2,0,maxY);
+ const easing=Math.min(1,dt*8);
+ world.camera.x=clamp(world.camera.x+(targetX-world.camera.x)*easing,0,maxX);
+ world.camera.y=clamp(world.camera.y+(targetY-world.camera.y)*easing,0,maxY);
+}
 function draw(){
  ctx.clearRect(0,0,W,H);
- const camX=clamp(player.x-W/2,0,WORLD_PIXEL_W-W),camY=clamp(player.y-H/2,0,WORLD_PIXEL_H-H);world.camera.x=camX;world.camera.y=camY;
- ctx.save();ctx.translate(-camX,-camY);
- for(let y=0;y<MAP_H;y++)for(let x=0;x<MAP_W;x++){const tile=world.map[y][x],px=x*TILE,py=y*TILE;
-  ctx.fillStyle=tile===1?"#263d2a":tile===2?"#284d59":((x+y)%2?"#385b3b":"#3b603e");ctx.fillRect(px,py,TILE,TILE);
-  ctx.strokeStyle="#ffffff08";ctx.strokeRect(px,py,TILE,TILE);
-  if(tile===1){ctx.fillStyle="#172a1d";ctx.beginPath();ctx.arc(px+24,py+23,18,0,Math.PI*2);ctx.fill();ctx.fillStyle="#456c43";ctx.beginPath();ctx.arc(px+22,py+19,15,0,Math.PI*2);ctx.fill();ctx.fillStyle="#684c32";ctx.fillRect(px+20,py+30,7,16)}
-  if(tile===2){ctx.fillStyle="#4e8990";ctx.fillRect(px+5,py+8,35,3)}
+ ctx.imageSmoothingEnabled=false;
+ if(pixelAssets.image("tiles")){
+  drawTileMap();
+  for(const object of world.objects)drawObject(object);
+  drawWorldActors();
+  drawCombatEffects();
+ }else drawMissingWorldNotice();
+ drawMinimap();
+}
+const facingRows={down:0,up:1,left:2,right:3};
+const propFrames={sign:0,herb:1,chest:2,portal:3,exitPortal:5};
+function drawTileMap(){
+ const camera=world.camera;
+ const startX=Math.max(0,Math.floor(camera.x/TILE)),startY=Math.max(0,Math.floor(camera.y/TILE));
+ const endX=Math.min(world.mapWidth,Math.ceil((camera.x+W)/TILE)+1);
+ const endY=Math.min(world.mapHeight,Math.ceil((camera.y+H)/TILE)+1);
+ for(let y=startY;y<endY;y++)for(let x=startX;x<endX;x++){
+  const tile=world.map[y][x],screenX=x*TILE-camera.x,screenY=y*TILE-camera.y;
+  pixelAssets.drawFrame(ctx,"tiles",Math.floor(tile/8),tile%8,32,32,screenX,screenY);
  }
- // trilha de terra
- ctx.fillStyle="#796344";ctx.fillRect(5*TILE,9*TILE,17*TILE,2*TILE);ctx.fillRect(16*TILE,9*TILE,3*TILE,9*TILE);
- // construções
- drawHouse(7*TILE,5*TILE,"#754b3a");drawHouse(12*TILE,5*TILE,"#66516b");drawHouse(6*TILE,13*TILE,"#80623d");
- for(const o of world.objects)drawObject(o);
- for(const n of npcs)drawCharacter(n.x,n.y,n.color,n.name);
- for(const e of world.enemies)if(!e.dead)drawEnemy(e);
- drawPlayer();
- for(const p of world.particles){ctx.globalAlpha=Math.max(0,p.life);ctx.fillStyle=p.color;ctx.fillRect(p.x,p.y,4,4)}ctx.globalAlpha=1;
- ctx.restore();
- // vinheta
- const g=ctx.createRadialGradient(W/2,H/2,130,W/2,H/2,560);g.addColorStop(0,"#0000");g.addColorStop(1,"#05080b88");ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
 }
-function drawHouse(x,y,roof){ctx.fillStyle="#b59a6e";ctx.fillRect(x,y+22,130,90);ctx.fillStyle=roof;ctx.beginPath();ctx.moveTo(x-10,y+25);ctx.lineTo(x+65,y-25);ctx.lineTo(x+140,y+25);ctx.closePath();ctx.fill();ctx.fillStyle="#34291f";ctx.fillRect(x+53,y+65,25,47);ctx.fillStyle="#d8bd7c";ctx.fillRect(x+17,y+48,23,22)}
-function drawCharacter(x,y,color,name){ctx.fillStyle="#0006";ctx.beginPath();ctx.ellipse(x+14,y+30,15,6,0,0,Math.PI*2);ctx.fill();ctx.fillStyle=color;ctx.fillRect(x+5,y+6,19,24);ctx.fillStyle="#e1b99a";ctx.fillRect(x+7,y-5,15,14);ctx.fillStyle="#29232a";ctx.fillRect(x+7,y-6,15,5);ctx.font="11px Inter";ctx.textAlign="center";ctx.fillStyle="#fff1d1";ctx.fillText(name,x+14,y-12)}
-function drawHero(target,x,y,appearance,facing="down",invulnerable=false){
- target.fillStyle="#0007";target.beginPath();target.ellipse(x+13,y+31,15,6,0,0,Math.PI*2);target.fill();
- if(appearance.hairStyle==="long"){target.fillStyle=appearance.hairColor||hairColors.dark.color;target.fillRect(x+4,y-2,4,16);target.fillRect(x+21,y-2,4,16)}
- target.fillStyle=invulnerable?"#fff":appearance.outfitColor||outfits.blue.color;target.fillRect(x+4,y+7,19,24);
- target.fillStyle=appearance.skinColor||skinTones.light.color;target.fillRect(x+6,y-5,16,15);
- target.fillStyle=appearance.hairColor||hairColors.dark.color;target.fillRect(x+5,y-7,18,6);
- target.fillStyle="#352b25";target.fillRect(x+7,y+24,13,3);
- target.fillStyle="#d9dce2";
- if(facing==="right")target.fillRect(x+22,y+14,15,3);
- else if(facing==="left")target.fillRect(x-10,y+14,15,3);
- else if(facing==="up")target.fillRect(x+12,y-12,3,14);
- else target.fillRect(x+12,y+27,3,14);
+function drawWorldActors(){
+ const camera=world.camera,actors=world.renderActors||(world.renderActors=[]);
+ let count=0;
+ for(const npc of npcs)if(currentZone!=="crypt")count=addRenderActor(actors,count,"npc",npc,npc.y);
+ for(const enemy of world.enemies)if(!enemy.dead)count=addRenderActor(actors,count,"enemy",enemy,enemy.y+enemy.h);
+ count=addRenderActor(actors,count,"player",player,player.y+player.h);
+ actors.length=count;actors.sort(actorSort);
+ for(const entry of actors){
+  const actor=entry.actor,x=actor.x-camera.x,y=actor.y-camera.y;
+  if(x<-80||y<-80||x>W+80||y>H+80)continue;
+  if(entry.kind==="player")drawActorSprite("player",actor,true);
+  else if(entry.kind==="enemy")drawActorSprite(actor.type,actor,false);
+  else drawActorSprite("npcs",actor,false,true);
+ }
 }
-function drawPlayer(){drawHero(ctx,player.x,player.y,player,player.facing,player.invulnerable>0)}
-function drawEnemy(e){const x=e.x,y=e.y;ctx.fillStyle="#0007";ctx.beginPath();ctx.ellipse(x+e.w/2,y+e.h-2,e.w*.48,6,0,0,Math.PI*2);ctx.fill();ctx.fillStyle=e.color;ctx.beginPath();ctx.arc(x+e.w/2,y+e.h/2,e.w/2,0,Math.PI*2);ctx.fill();ctx.fillStyle="#211b20";ctx.fillRect(x+e.w*.28,y+e.h*.38,4,4);ctx.fillRect(x+e.w*.62,y+e.h*.38,4,4);if(e.hp<e.maxHp){ctx.fillStyle="#281b1b";ctx.fillRect(x,y-8,e.w,4);ctx.fillStyle="#e45b5b";ctx.fillRect(x,y-8,e.w*(e.hp/e.maxHp),4)}}
-function drawObject(o){if(o.type==="herb"&&o.active){ctx.fillStyle="#b7e7a2";ctx.beginPath();ctx.arc(o.x+10,o.y+10,8,0,Math.PI*2);ctx.fill();ctx.fillStyle="#6d9c5d";ctx.fillRect(o.x+9,o.y+10,3,13)}else if(o.type==="chest"){ctx.fillStyle=o.active?"#95602e":"#493b2c";ctx.fillRect(o.x,o.y+8,o.w,o.h-8);ctx.fillStyle="#d6ad55";ctx.fillRect(o.x,o.y+13,o.w,4)}else if(o.type==="portal"){ctx.strokeStyle=player.flags.gateOpen?"#75b7e8":"#655b4a";ctx.lineWidth=5;ctx.beginPath();ctx.ellipse(o.x+21,o.y+21,17,21,0,0,Math.PI*2);ctx.stroke();ctx.fillStyle="#7ebce055";ctx.fill()}else if(o.type==="sign"){ctx.fillStyle="#775132";ctx.fillRect(o.x+12,o.y,5,28);ctx.fillStyle="#c4a06a";ctx.fillRect(o.x,o.y,30,15)}}
+function addRenderActor(actors,index,kind,actor,y){
+ const entry=actors[index]||(actors[index]={});
+ entry.kind=kind;entry.actor=actor;entry.y=y;
+ return index+1;
+}
+function actorSort(a,b){return a.y-b.y}
+function drawActorSprite(assetKey,actor,isPlayer,isNpc=false){
+ const row=facingRows[actor.facing]??0;
+ let frame=0;
+ if(isPlayer){
+  if(actor.attackTimer>0)frame=4+Math.floor((.32-actor.attackTimer)*20)%3;
+  else if(actor.state==="walk")frame=1+Math.floor(actor.walkTime*8)%3;
+ }else if(!isNpc){
+  if(actor.state==="attack")frame=4+Math.floor(actor.animationTime*10)%3;
+  else if(actor.state==="walk")frame=1+Math.floor(actor.animationTime*8)%3;
+ }
+ const width=actor.w||32,height=actor.h||32;
+ const x=actor.x+(width-64)/2-world.camera.x,y=actor.y+height-64-world.camera.y;
+ pixelAssets.drawFrame(ctx,assetKey,row,frame,64,64,x,y);
+ if(!isNpc&&!isPlayer){
+  const barWidth=34,barX=x+15,barY=y-7;
+  ctx.fillStyle="#17131a";ctx.fillRect(barX,barY,barWidth,4);
+  ctx.fillStyle="#d95757";ctx.fillRect(barX,barY,barWidth*Math.max(0,actor.hp/actor.maxHp),4);
+ }
+}
+function drawObject(object){
+ if(object.type==="herb"&&!object.active)return;
+ let frame=propFrames[object.type];
+ if(object.type==="portal"&&player.flags.gateOpen)frame=4;
+ if(object.type==="exitPortal"&&currentZone!=="crypt")return;
+ if(frame===undefined)return;
+ pixelAssets.drawFrame(ctx,"props",Math.floor(frame/8),frame%8,32,32,object.x-world.camera.x,object.y-world.camera.y);
+}
+function drawCombatEffects(){
+ for(const effect of world.particles){
+  const x=effect.x-32-world.camera.x,y=effect.y-32-world.camera.y;
+  if(x<-64||y<-64||x>W+64||y>H+64)continue;
+  pixelAssets.drawFrame(ctx,"combat",0,effect.frame,64,64,x,y,64,64);
+ }
+}
+function drawMissingWorldNotice(){
+ ctx.fillStyle="#090b10";
+ ctx.fillRect(0,0,W,H);
+ ctx.fillStyle="#f0d49b";ctx.font="700 23px Inter";ctx.textAlign="center";
+ ctx.fillText("Vale de Eldoria — pixel art pendente",W/2,H/2-20);
+ ctx.fillStyle="#c7cbd1";ctx.font="14px Inter";
+ ctx.fillText("Os controles, colisões, regiões e combate estão ativos.",W/2,H/2+12);
+ ctx.fillText("Abra “Assets visuais necessários” para ver os PNGs e tamanhos.",W/2,H/2+36);
+}
+const minimapColors={
+ grass:[51,83,54],grassAlt:[57,91,59],water:[44,95,118],path:[137,110,73],
+ solid:[31,48,36],bridge:[154,119,70],cave:[62,58,66],crop:[82,94,49]
+};
+function drawMinimap(){
+ const minimap=document.getElementById("minimap"),mapCtx=minimap.getContext("2d");
+ if(!world.map.length)return;
+ if(world.minimapDirty||!world.minimapImage){
+  const image=mapCtx.createImageData(minimap.width,minimap.height);
+  for(let py=0;py<minimap.height;py++)for(let px=0;px<minimap.width;px++){
+   const tx=Math.min(world.mapWidth-1,Math.floor(px/minimap.width*world.mapWidth));
+   const ty=Math.min(world.mapHeight-1,Math.floor(py/minimap.height*world.mapHeight));
+   const tile=world.map[ty][tx];
+   const color=tile===8?minimapColors.water:tile===10||tile===11?minimapColors.bridge:
+    tile===5||tile===4?minimapColors.path:tile===23||tile===29?minimapColors.cave:
+    tile===25?minimapColors.crop:SOLID_TILES.has(tile)?minimapColors.solid:
+    (tx+ty)%2?minimapColors.grass:minimapColors.grassAlt;
+   const offset=(py*minimap.width+px)*4;
+   image.data[offset]=color[0];image.data[offset+1]=color[1];image.data[offset+2]=color[2];image.data[offset+3]=255;
+  }
+  world.minimapImage=image;world.minimapDirty=false;
+ }
+ mapCtx.putImageData(world.minimapImage,0,0);
+ const px=Math.floor((player.x+player.w/2)/(world.mapWidth*TILE)*minimap.width);
+ const py=Math.floor((player.y+player.h/2)/(world.mapHeight*TILE)*minimap.height);
+ mapCtx.fillStyle="#d96c68";
+ for(const enemy of world.enemies)if(!enemy.dead){
+  const ex=Math.floor((enemy.x+enemy.w/2)/(world.mapWidth*TILE)*minimap.width);
+  const ey=Math.floor((enemy.y+enemy.h/2)/(world.mapHeight*TILE)*minimap.height);
+  mapCtx.fillRect(ex,ey,2,2);
+ }
+ mapCtx.fillStyle="#f4d28a";mapCtx.fillRect(px-1,py-1,3,3);
+}
+function updateAssetNotice(){
+ const panel=document.getElementById("assetPanel"),summary=document.getElementById("assetSummary"),list=document.getElementById("assetList");
+ const missing=pixelAssets.missing();
+ if(!missing.length){panel.hidden=true;return}
+ panel.hidden=false;
+ summary.textContent=`Assets visuais pendentes (${missing.length}) — clique para ver caminhos e dimensões`;
+ list.replaceChildren();
+ for(const asset of missing){
+  const item=document.createElement("li"),path=document.createElement("code"),spec=document.createElement("span");
+  path.textContent=asset.path;spec.className="asset-spec";spec.textContent=` — ${asset.spec} (${asset.error.includes("Esperado")?asset.error:"PNG não encontrado ou ilegível"})`;
+  item.append(path,spec);list.appendChild(item);
+ }
+}
 function loop(t){if(!gameStarted)return;const dt=Math.min((t-lastTime)/1000||0,.04);lastTime=t;update(dt);draw();requestAnimationFrame(loop)}
 function updateUI(){
- document.getElementById("heroName").textContent=player.name+" · Nv. "+player.level;
+ const characterClass=classes[player.classId]||classes.warrior;
+ document.getElementById("heroName").textContent=player.name+" · "+characterClass.name+" · Nv. "+player.level;
+ document.getElementById("location").textContent=(currentZone==="crypt"?regionNames.crypt:regionNames[currentRegionId]).toUpperCase();
  document.getElementById("hpText").textContent=player.hp+" / "+player.maxHp;document.getElementById("hpBar").style.width=100*player.hp/player.maxHp+"%";
  document.getElementById("mpText").textContent=player.mp+" / "+player.maxMp;document.getElementById("mpBar").style.width=100*player.mp/player.maxMp+"%";
  document.getElementById("xpText").textContent=player.xp+" / "+player.nextXp;document.getElementById("xpBar").style.width=100*player.xp/player.nextXp+"%";
- document.getElementById("attackText").textContent=player.baseAttack;document.getElementById("coins").textContent="◈ "+player.gold+" ouro";
+ document.getElementById("attackText").textContent=player.baseAttack;document.getElementById("strengthText").textContent=player.strength;document.getElementById("intelligenceText").textContent=player.intelligence;document.getElementById("agilityText").textContent=player.agility;document.getElementById("coins").textContent="◈ "+player.gold+" ouro";
  let q="Fale com o ancião Oren na vila para descobrir o que está acontecendo.";
  if(player.quests.elder&&!player.flags.elderReward)q=`<strong>Ecos na Estrada</strong><br>Núcleos de gosma: ${player.quests.slimes}/3<br>Ervas-lua: ${player.quests.herbs}/2<br><span style="color:#9299a6">Derrote gosmas e colete as plantas brilhantes.</span>`;
  if(player.flags.elderReward&&!player.flags.gateOpen)q="<strong>A chave da cripta</strong><br>Converse com o guarda Bren para abrir a passagem.";
@@ -491,18 +916,23 @@ function updateUI(){
  document.getElementById("questText").innerHTML=q;
 }
 function saveGame(){
- const data={player,chapter:world.chapter,day:world.day,currentZone,herbs:world.objects.filter(o=>o.type==="herb").map(o=>o.active),chest:world.objects.find(o=>o.type==="chest")?.active};
+ const data={mapVersion:2,player,chapter:world.chapter,day:world.day,currentZone,regionId:currentRegionId,herbs:world.objects.filter(o=>o.type==="herb").map(o=>o.active),chest:world.objects.find(o=>o.type==="chest")?.active};
  localStorage.setItem("drakmorSave",JSON.stringify(data));toast("Jornada salva neste navegador.");log("Progresso salvo.","good");
 }
 function continueGame(){
  const raw=localStorage.getItem("drakmorSave");if(!raw){toast("Nenhum jogo salvo encontrado.");return}
  try{
-  const d=JSON.parse(raw);Object.assign(player,d.player);world.chapter=d.chapter||1;world.day=d.day||1;currentZone=d.currentZone||"village";makeMap();
+  const d=JSON.parse(raw);Object.assign(player,d.player);
+  if(!d.mapVersion){player.x*=TILE/48;player.y*=TILE/48}
+  world.chapter=d.chapter||1;world.day=d.day||1;currentZone=d.currentZone==="crypt"?"crypt":"village";makeMap();
   if(d.herbs)world.objects.filter(o=>o.type==="herb").forEach((o,i)=>o.active=d.herbs[i]);
   const chest=world.objects.find(o=>o.type==="chest");if(chest&&d.chest!==undefined)chest.active=d.chest;
-  spawnInitialEnemies();
-  if(currentZone==="crypt"){world.name="Cripta do Primeiro Rei";world.enemies=[];for(let i=0;i<4;i++)spawnEnemy("skeleton",rand(9,24)*TILE,rand(7,17)*TILE);if(!player.flags.cryptBoss)spawnEnemy("boss",24*TILE,17*TILE)}
-  gameStarted=true;document.getElementById("titleScreen").style.display="none";document.getElementById("location").textContent=world.name.toUpperCase();
+  if(currentZone==="crypt"){world.overworldMap=world.map;world.overworldObjects=world.objects;makeCryptMap()}
+  if(currentZone==="crypt"){world.name="Cripta do Primeiro Rei";world.enemies=[];for(let i=0;i<4;i++)spawnEnemy("skeleton",(9+i*3)*TILE,(7+(i%3)*3)*TILE);if(!player.flags.cryptBoss)spawnEnemy("boss",24*TILE,17*TILE);currentRegionId="crypt"}
+  else{currentRegionId=d.regionId||getRegionAt(player.x,player.y);world.regionId=currentRegionId;if(currentRegionId==="village")spawnInitialEnemies();else spawnRegionEnemies(currentRegionId)}
+  world.camera.x=currentZone==="crypt"?0:clamp(player.x+player.w/2-W/2,0,world.mapWidth*TILE-W);
+  world.camera.y=currentZone==="crypt"?0:clamp(player.y+player.h/2-H/2,0,world.mapHeight*TILE-H);
+  gameStarted=true;document.getElementById("titleScreen").style.display="none";document.getElementById("location").textContent=(currentZone==="crypt"?regionNames.crypt:regionNames[currentRegionId]).toUpperCase();
   log("Jornada carregada.","good");updateUI();requestAnimationFrame(loop);
  }catch(error){toast("O arquivo de salvamento está corrompido.")}
 }
@@ -538,9 +968,11 @@ function keyDown(e){
 }
 function keyUp(e){const k=e.key.length===1?e.key.toLowerCase():e.key;keys[k]=false}
 window.addEventListener("keydown",keyDown);window.addEventListener("keyup",keyUp);
+canvas.addEventListener("pointerdown",event=>{if(event.button===0){event.preventDefault();attack()}});
+window.addEventListener("blur",()=>{for(const key of Object.keys(keys))keys[key]=false});
 document.addEventListener("fullscreenchange",updateFullscreenButton);
 loadSettings();
-makeMap();updateUI();
+makeMap();updateUI();drawMinimap();
 </script>
 </body>
 </html>

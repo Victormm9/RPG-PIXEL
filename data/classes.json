@@ -1,0 +1,256 @@
+{
+  "classes": {
+    "warrior": {
+      "name": "Guerreiro",
+      "description": "Forte no combate corpo a corpo e na defesa.",
+      "ability": {
+        "name": "Golpe de escudo",
+        "description": "Um golpe defensivo que protege o guerreiro.",
+        "mana_cost": 8
+      },
+      "stats": {
+        "hp": 125,
+        "mp": 25,
+        "strength": 16,
+        "intelligence": 4,
+        "agility": 7,
+        "defense": 7,
+        "attack": 16
+      },
+      "growth": {
+        "hp": 25,
+        "mp": 3,
+        "strength": 2,
+        "intelligence": 0,
+        "agility": 1,
+        "defense": 1,
+        "attack": 3
+      },
+      "equipment": {
+        "shirt_id": "shirt_crimson",
+        "armor_id": "armor_chainmail",
+        "pants_id": "pants_charcoal",
+        "boots_id": "boots_leather",
+        "cloak_id": "none",
+        "weapon_id": "weapon_steel_sword",
+        "accessory_id": "accessory_iron_shield"
+      },
+      "appearance": {
+        "skin_tone_id": "light",
+        "hair_style_id": "short",
+        "hair_color_id": "brown",
+        "eye_color_id": "brown"
+      }
+    },
+    "mage": {
+      "name": "Mago",
+      "description": "Especialista em magia elemental e mana.",
+      "ability": {
+        "name": "Explosão elemental",
+        "description": "Libera energia mágica em uma área.",
+        "mana_cost": 12
+      },
+      "stats": {
+        "hp": 85,
+        "mp": 65,
+        "strength": 5,
+        "intelligence": 18,
+        "agility": 8,
+        "defense": 2,
+        "attack": 8
+      },
+      "growth": {
+        "hp": 13,
+        "mp": 12,
+        "strength": 0,
+        "intelligence": 2,
+        "agility": 1,
+        "defense": 0,
+        "attack": 2
+      },
+      "equipment": {
+        "shirt_id": "shirt_arcane",
+        "armor_id": "armor_none",
+        "pants_id": "pants_blue",
+        "boots_id": "boots_blue",
+        "cloak_id": "cloak_blue",
+        "weapon_id": "weapon_arcane_staff",
+        "accessory_id": "accessory_blue_amulet"
+      },
+      "appearance": {
+        "skin_tone_id": "warm",
+        "hair_style_id": "long",
+        "hair_color_id": "black",
+        "eye_color_id": "blue"
+      }
+    },
+    "archer": {
+      "name": "Arqueiro",
+      "description": "Preciso e letal a longa distância.",
+      "ability": {
+        "name": "Disparo preciso",
+        "description": "Um disparo de longo alcance com dano elevado.",
+        "mana_cost": 8
+      },
+      "stats": {
+        "hp": 100,
+        "mp": 30,
+        "strength": 10,
+        "intelligence": 7,
+        "agility": 16,
+        "defense": 3,
+        "attack": 12
+      },
+      "growth": {
+        "hp": 17,
+        "mp": 5,
+        "strength": 1,
+        "intelligence": 0,
+        "agility": 2,
+        "defense": 0,
+        "attack": 3
+      },
+      "equipment": {
+        "shirt_id": "shirt_forest",
+        "armor_id": "armor_leather",
+        "pants_id": "pants_brown",
+        "boots_id": "boots_forest",
+        "cloak_id": "none",
+        "weapon_id": "weapon_yew_bow",
+        "accessory_id": "accessory_quiver"
+      },
+      "appearance": {
+        "skin_tone_id": "light",
+        "hair_style_id": "short",
+        "hair_color_id": "brown",
+        "eye_color_id": "green"
+      }
+    },
+    "rogue": {
+      "name": "Ladino",
+      "description": "Ágil, furtivo e especialista em ataques críticos.",
+      "ability": {
+        "name": "Golpe sombrio",
+        "description": "Um ataque rápido que pode causar dano crítico.",
+        "mana_cost": 10
+      },
+      "stats": {
+        "hp": 90,
+        "mp": 25,
+        "strength": 11,
+        "intelligence": 6,
+        "agility": 18,
+        "defense": 3,
+        "attack": 12
+      },
+      "growth": {
+        "hp": 15,
+        "mp": 4,
+        "strength": 1,
+        "intelligence": 0,
+        "agility": 2,
+        "defense": 0,
+        "attack": 3
+      },
+      "equipment": {
+        "shirt_id": "shirt_shadow",
+        "armor_id": "armor_leather",
+        "pants_id": "pants_charcoal",
+        "boots_id": "boots_shadow",
+        "cloak_id": "cloak_shadow",
+        "weapon_id": "weapon_twin_daggers",
+        "accessory_id": "accessory_shadow_mask"
+      },
+      "appearance": {
+        "skin_tone_id": "warm",
+        "hair_style_id": "messy",
+        "hair_color_id": "black",
+        "eye_color_id": "gray"
+      }
+    },
+    "paladin": {
+      "name": "Paladino",
+      "description": "Resistente, combina defesa e poderes sagrados.",
+      "ability": {
+        "name": "Luz sagrada",
+        "description": "Uma luz que fere inimigos e restaura vida.",
+        "mana_cost": 12
+      },
+      "stats": {
+        "hp": 125,
+        "mp": 40,
+        "strength": 14,
+        "intelligence": 12,
+        "agility": 6,
+        "defense": 8,
+        "attack": 14
+      },
+      "growth": {
+        "hp": 24,
+        "mp": 8,
+        "strength": 2,
+        "intelligence": 1,
+        "agility": 0,
+        "defense": 1,
+        "attack": 3
+      },
+      "equipment": {
+        "shirt_id": "shirt_white",
+        "armor_id": "armor_solar_plate",
+        "pants_id": "pants_charcoal",
+        "boots_id": "boots_plate",
+        "cloak_id": "cloak_white",
+        "weapon_id": "weapon_solar_sword",
+        "accessory_id": "accessory_iron_shield"
+      },
+      "appearance": {
+        "skin_tone_id": "light",
+        "hair_style_id": "short",
+        "hair_color_id": "blonde",
+        "eye_color_id": "brown"
+      }
+    },
+    "druid": {
+      "name": "Druida",
+      "description": "Controla as forças da natureza e a cura.",
+      "ability": {
+        "name": "Raízes vivas",
+        "description": "Raízes prendem inimigos e restauram vida.",
+        "mana_cost": 12
+      },
+      "stats": {
+        "hp": 100,
+        "mp": 55,
+        "strength": 8,
+        "intelligence": 15,
+        "agility": 9,
+        "defense": 4,
+        "attack": 10
+      },
+      "growth": {
+        "hp": 17,
+        "mp": 10,
+        "strength": 0,
+        "intelligence": 2,
+        "agility": 1,
+        "defense": 1,
+        "attack": 2
+      },
+      "equipment": {
+        "shirt_id": "shirt_forest",
+        "armor_id": "armor_leaf",
+        "pants_id": "pants_forest",
+        "boots_id": "boots_forest",
+        "cloak_id": "cloak_leaves",
+        "weapon_id": "weapon_thorn_staff",
+        "accessory_id": "accessory_nature_brooch"
+      },
+      "appearance": {
+        "skin_tone_id": "warm",
+        "hair_style_id": "braided",
+        "hair_color_id": "brown",
+        "eye_color_id": "green"
+      }
+    }
+  }
+}
