@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Drakmor — Prévia 3D</title>
+<style>
+:root{color-scheme:dark;--gold:#e5bd72;--panel:#11131ae8;--muted:#c7cbd1}
+*{box-sizing:border-box}
+html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#9bb8c8;color:#f2e6cf;font:14px Inter,system-ui,sans-serif}
+#world{display:block;width:100%;height:100%;touch-action:none}
+#hud{position:fixed;inset:14px 14px auto;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;pointer-events:none}
+.panel{min-width:210px;padding:12px 14px;background:var(--panel);border:1px solid #a9854c;border-radius:9px;box-shadow:0 8px 26px #0005}
+.title{font:700 15px Georgia,serif;letter-spacing:1.5px;color:var(--gold)}
+.sub{margin-top:4px;color:#c4c6ce;font-size:11px}
+.health-label{display:flex;justify-content:space-between;margin:12px 0 5px;color:#eee;font-size:12px}
+.bar{height:9px;overflow:hidden;border:1px solid #ffffff35;border-radius:8px;background:#39252a}
+#health{width:100%;height:100%;background:linear-gradient(90deg,#9f323a,#ee7470);transition:width .18s}
+#rightHud{display:grid;justify-items:end;gap:8px}
+a,.button{pointer-events:auto;color:#f4dfb2;text-decoration:none;background:var(--panel);border:1px solid #a9854c;border-radius:7px;padding:9px 12px}
+a:hover,.button:hover{background:#33291f}
+#help{position:fixed;left:14px;bottom:14px;max-width:min(620px,calc(100vw - 28px));padding:10px 13px;background:var(--panel);border:1px solid #ffffff35;border-radius:8px;color:var(--muted);font-size:12px;line-height:1.6}
+#notice{position:fixed;left:50%;bottom:100px;transform:translateX(-50%);max-width:calc(100vw - 30px);padding:11px 16px;background:#11131af2;border:1px solid #a9854c;border-radius:8px;color:#f2e6cf;text-align:center;opacity:0;transition:opacity .15s;pointer-events:none}
+#notice.visible{opacity:1}
+#prompt{position:fixed;left:50%;top:58%;transform:translate(-50%,-50%);padding:7px 10px;background:#11131ad9;border-radius:6px;color:#ffe4a8;font-size:12px;opacity:0;pointer-events:none}
+#prompt.visible{opacity:1}
+#error{display:none;position:fixed;inset:20px;place-items:center;text-align:center;padding:24px;background:#15151bf2;border:1px solid #a74b4b;border-radius:10px;color:#ffd9d9}
+@media(max-width:600px){#hud{inset:8px 8px auto}.panel{min-width:0;padding:9px 10px}.panel:first-child{width:min(230px,62vw)}.title{font-size:13px}#help{left:8px;bottom:8px;font-size:10px}.sub{max-width:190px}}
+</style>
+</head>
+<body>
+<canvas id="world" aria-label="Prévia 3D de Drakmor"></canvas>
+<header id="hud">
+ <section class="panel">
+  <div class="title">DRAKMOR · VALE DE ELDORIA</div>
+  <div class="sub">Protótipo 3D · terceira pessoa</div>
+  <div class="health-label"><span>Vida</span><span id="healthText">100 / 100</span></div>
+  <div class="bar"><div id="health"></div></div>
+ </section>
+ <div id="rightHud"><a href="index.html">Voltar ao jogo 2D</a><div class="panel sub">Exploração · Capítulo I</div></div>
+</header>
+<div id="help">WASD / setas: mover · Espaço: atacar · E: falar/interagir · Arraste o mouse: girar câmera · Rodinha: zoom</div>
+<div id="prompt"></div>
+<div id="notice" role="status" aria-live="polite"></div>
+<div id="error" role="alert"></div>
+<script>
+"use strict";
+(() => {
+ const canvas=document.getElementById("world"),gl=canvas.getContext("webgl",{antialias:true,alpha:false});
+ const errorBox=document.getElementById("error");
+ if(!gl){errorBox.style.display="grid";errorBox.textContent="Este navegador não disponibilizou WebGL. Ative a aceleração gráfica ou abra o jogo em um navegador atualizado.";return;}
+
+ const vertexSource=`
+  attribute vec3 aPosition;
+  attribute float aShade;
+  uniform mat4 uModel;
+  uniform mat4 uView;
+  uniform mat4 uViewProjection;
+  uniform vec3 uColor;
+  varying vec3 vColor;
+  varying vec3 vViewPosition;
+  void main(){
+   vec4 world=uModel*vec4(aPosition,1.0);
+   vec4 view=uView*world;
+   gl_Position=uViewProjection*world;
+   vColor=uColor*aShade;
+   vViewPosition=view.xyz;
+  }`;
+ const fragmentSource=`
+  precision mediump float;
+  uniform vec3 uFogColor;
+  varying vec3 vColor;
+  varying vec3 vViewPosition;
+  void main(){
+   float fog=smoothstep(45.0,110.0,length(vViewPosition));
+   gl_FragColor=vec4(mix(vColor,uFogColor,fog),1.0);
+  }`;
+ function compileShader(type,source){
+  const shader=gl.createShader(type);
+  gl.shaderSource(shader,source);gl.compileShader(shader);
+  if(!gl.getShaderParameter(shader,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(shader)||"Falha ao compilar shader.");
+  return shader;
+ }
+ let program;
+ try{
+  program=gl.createProgram();
+  gl.attachShader(program,compileShader(gl.VERTEX_SHADER,vertexSource));
+  gl.attachShader(program,compileShader(gl.FRAGMENT_SHADER,fragmentSource));
+  gl.linkProgram(program);
+  if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw new Error(gl.getProgramInfoLog(program)||"Falha ao iniciar o renderizador 3D.");
+ }catch(error){errorBox.style.display="grid";errorBox.textContent=error.message;return;}
+ gl.useProgram(program);
+ const locations={
+  position:gl.getAttribLocation(program,"aPosition"),shade:gl.getAttribLocation(program,"aShade"),
+  model:gl.getUniformLocation(program,"uModel"),view:gl.getUniformLocation(program,"uView"),
+  viewProjection:gl.getUniformLocation(program,"uViewProjection"),color:gl.getUniformLocation(program,"uColor"),
+  fogColor:gl.getUniformLocation(program,"uFogColor")
+ };
+
+ function geometry(vertices){
+  const positions=[],shades=[];
+  for(const [a,b,c,shade] of vertices){positions.push(...a,...b,...c);shades.push(shade,shade,shade);}
+  const positionBuffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,positionBuffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(positions),gl.STATIC_DRAW);
+  const shadeBuffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,shadeBuffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(shades),gl.STATIC_DRAW);
+  return {positionBuffer,shadeBuffer,count:shades.length};
+ }
+ function makeCube(){
+  const faces=[
+   {p:[[-.5,.5,-.5],[.5,.5,-.5],[.5,.5,.5],[-.5,.5,.5]],s:.98},
+   {p:[[-.5,-.5,.5],[.5,-.5,.5],[.5,.5,.5],[-.5,.5,.5]],s:.78},
+   {p:[[.5,-.5,-.5],[-.5,-.5,-.5],[-.5,.5,-.5],[.5,.5,-.5]],s:.64},
+   {p:[[-.5,-.5,-.5],[-.5,-.5,.5],[-.5,.5,.5],[-.5,.5,-.5]],s:.72},
+   {p:[[.5,-.5,.5],[.5,-.5,-.5],[.5,.5,-.5],[.5,.5,.5]],s:.84},
+   {p:[[-.5,-.5,-.5],[.5,-.5,-.5],[.5,-.5,.5],[-.5,-.5,.5]],s:.52}
+  ];
+  const triangles=[];
+  for(const face of faces){const [a,b,c,d]=face.p;triangles.push([a,b,c,face.s],[a,c,d,face.s]);}
+  return geometry(triangles);
+ }
+ function makeSphere(){
+  const triangles=[],rings=8,slices=12;
+  for(let r=0;r<rings;r++){
+   const v0=r/rings,v1=(r+1)/rings,lat0=Math.PI*(v0-.5),lat1=Math.PI*(v1-.5);
+   for(let s=0;s<slices;s++){
+    const lon0=2*Math.PI*s/slices,lon1=2*Math.PI*(s+1)/slices;
+    const point=(lat,lon)=>[Math.cos(lat)*Math.cos(lon),Math.sin(lat),Math.cos(lat)*Math.sin(lon)];
+    const a=point(lat0,lon0),b=point(lat0,lon1),c=point(lat1,lon1),d=point(lat1,lon0);
+    const shade=.68+Math.max(0,(a[1]+b[1]+c[1]+d[1])/4)*.3;
+    triangles.push([a,b,c,shade],[a,c,d,shade]);
+   }
+  }
+  return geometry(triangles);
+ }
+ const shapes={box:makeCube(),sphere:makeSphere()};
+ const deg=Math.PI/180;
+ const identity=()=>new Float32Array([1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]);
+ function multiply(a,b){
+  const out=new Float32Array(16);
+  for(let col=0;col<4;col++)for(let row=0;row<4;row++)
+   out[col*4+row]=a[row]*b[col*4]+a[4+row]*b[col*4+1]+a[8+row]*b[col*4+2]+a[12+row]*b[col*4+3];
+  return out;
+ }
+ function translation(x,y,z){const m=identity();m[12]=x;m[13]=y;m[14]=z;return m;}
+ function scaling(x,y,z){const m=identity();m[0]=x;m[5]=y;m[10]=z;return m;}
+ function rotateY(r){const m=identity(),c=Math.cos(r),s=Math.sin(r);m[0]=c;m[2]=-s;m[8]=s;m[10]=c;return m;}
+ function rotateZ(r){const m=identity(),c=Math.cos(r),s=Math.sin(r);m[0]=c;m[1]=s;m[4]=-s;m[5]=c;return m;}
+ function modelMatrix(mesh){
+  return multiply(translation(mesh.x,mesh.y,mesh.z),multiply(rotateY(mesh.yaw||0),multiply(rotateZ(mesh.roll||0),scaling(mesh.sx,mesh.sy,mesh.sz))));
+ }
+ function perspective(fov,aspect,near,far){
+  const f=1/Math.tan(fov/2),nf=1/(near-far),m=new Float32Array(16);
+  m[0]=f/aspect;m[5]=f;m[10]=(far+near)*nf;m[11]=-1;m[14]=2*far*near*nf;return m;
+ }
+ function normalize(v){const l=Math.hypot(v[0],v[1],v[2])||1;return [v[0]/l,v[1]/l,v[2]/l];}
+ function cross(a,b){return [a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];}
+ function dot(a,b){return a[0]*b[0]+a[1]*b[1]+a[2]*b[2];}
+ function lookAt(eye,target){
+  const z=normalize([eye[0]-target[0],eye[1]-target[1],eye[2]-target[2]]);
+  const x=normalize(cross([0,1,0],z)),y=cross(z,x),m=identity();
+  m[0]=x[0];m[1]=y[0];m[2]=z[0];m[4]=x[1];m[5]=y[1];m[6]=z[1];
+  m[8]=x[2];m[9]=y[2];m[10]=z[2];m[12]=-dot(x,eye);m[13]=-dot(y,eye);m[14]=-dot(z,eye);return m;
+ }
+ function rgb(hex){const n=parseInt(hex.slice(1),16);return [((n>>16)&255)/255,((n>>8)&255)/255,(n&255)/255];}
+ function mesh(type,x,y,z,sx,sy,sz,color,yaw=0,roll=0){return {type,x,y,z,sx,sy,sz,color:rgb(color),yaw,roll};}
+ const scene=[],colliders=[];
+ const addBox=(...args)=>scene.push(mesh("box",...args));
+ const addSphere=(...args)=>scene.push(mesh("sphere",...args));
+ addBox(0,-.38,0,100,.7,100,"#547d48");
+ addBox(0,-.015,2,4,.04,40,"#9b8058");
+ addBox(0,-.01,-7,26,.05,4,"#9b8058");
+ addBox(-4,-.01,-7,3,.06,3,"#a58a61");
+ addBox(4,-.01,-7,3,.06,3,"#a58a61");
+ function addHouse(x,z,wallColor){
+  addBox(x,1.1,z,4.4,2.2,3.8,wallColor);
+  addBox(x-1.05,2.42,z,2.55,.42,4.5,"#704735",0,.43);
+  addBox(x+1.05,2.42,z,2.55,.42,4.5,"#704735",0,-.43);
+  addBox(x,1.2,z-1.94,.9,1.65,.12,"#4c3025");
+  addBox(x-1.28,1.55,z-1.96,.68,.58,.1,"#7ab7c5");
+  addBox(x+1.28,1.55,z-1.96,.68,.58,.1,"#7ab7c5");
+  colliders.push({type:"rect",minX:x-2.65,maxX:x+2.65,minZ:z-2.3,maxZ:z+2.3});
+ }
+ addHouse(-8,-9,"#bd9b70");addHouse(8,-9,"#9b876d");
+ function addTree(x,z){
+  addBox(x,.85,z,.42,1.7,.42,"#69492e");
+  addSphere(x,2.35,z,2.4,2.6,2.4,"#3e7543");
+  addSphere(x-.5,2.15,z+.1,1.7,1.8,1.8,"#4d884b");
+  colliders.push({type:"circle",x,z,r:1});
+ }
+ [[-15,-16],[-13,-2],[-17,10],[-10,17],[14,-17],[16,-3],[13,13],[20,5],[-21,4],[22,-12]].forEach(p=>addTree(p[0],p[1]));
+ for(let i=0;i<18;i++){
+  const z=-19+i*2.15;
+  if(Math.abs(z+9)<5)continue;
+  addBox(-2.6,.27,z,.22,.55,.22,"#7b6648");addBox(2.6,.27,z,.22,.55,.22,"#7b6648");
+ }
+ const player={x:0,z:13,yaw:0,hp:100,maxHp:100,attackTime:0};
+ const npc={x:0,z:-8.5,yaw:Math.PI};
+ const enemy={x:5,z:1.5,yaw:0,hp:60,maxHp:60,alive:true,cooldown:0};
+ const keys=new Set();
+ let cameraYaw=0,cameraPitch=.35,cameraDistance=7,dragging=false,lastPointerX=0,lastPointerY=0;
+ let messageTimer=0,gameTime=0,lastFrame=0;
+ const notice=document.getElementById("notice"),prompt=document.getElementById("prompt");
+ function say(text,duration=2600){notice.textContent=text;notice.classList.add("visible");messageTimer=duration;}
+ function setHealth(){
+  document.getElementById("healthText").textContent=`${player.hp} / ${player.maxHp}`;
+  document.getElementById("health").style.width=`${Math.max(0,player.hp)/player.maxHp*100}%`;
+ }
+ function distance(a,b){return Math.hypot(a.x-b.x,a.z-b.z);}
+ function blocked(x,z){
+  if(x < -27||x>27||z < -27||z>27)return true;
+  return colliders.some(c=>c.type==="circle"?Math.hypot(x-c.x,z-c.z)<c.r+.42:
+   x>c.minX-.42&&x<c.maxX+.42&&z>c.minZ-.42&&z<c.maxZ+.42);
+ }
+ function attack(){
+  if(player.attackTime>0)return;
+  player.attackTime=.42;
+  if(enemy.alive&&distance(player,enemy)<3.2){
+   const dx=enemy.x-player.x,dz=enemy.z-player.z;
+   const facingX=Math.sin(player.yaw),facingZ=-Math.cos(player.yaw);
+   if((dx*facingX+dz*facingZ)/Math.max(.01,Math.hypot(dx,dz))>.15){
+    enemy.hp=Math.max(0,enemy.hp-24);
+    if(!enemy.hp){enemy.alive=false;say("O saqueador caiu. A trilha para Eldoria está livre.");}
+    else say(`Acerto! O saqueador ainda tem ${enemy.hp} de vida.`);
+    return;
+   }
+  }
+  say("Ataque no vazio. Aproxime-se e fique de frente para o inimigo.",1300);
+ }
+ function interact(){
+  if(distance(player,npc)<2.7){say("Ancião: As estradas estão perigosas. Ajude a proteger a vila, e as crônicas de Drakmor serão suas.");return;}
+  if(enemy.alive&&distance(player,enemy)<3.2){say("Saqueador: Saia do meu caminho!",1500);return;}
+  say("Não há ninguém por perto para conversar.",1300);
+ }
+ function point(actor,lx,y,lz){
+  const c=Math.cos(actor.yaw),s=Math.sin(actor.yaw);
+  return {x:actor.x+lx*c+lz*s,y,z:actor.z-lx*s+lz*c};
+ }
+ function part(actor,type,lx,y,lz,sx,sy,sz,color,roll=0){
+  const p=point(actor,lx,y,lz);
+  drawMesh(mesh(type,p.x,p.y,p.z,sx,sy,sz,color,actor.yaw,roll));
+ }
+ function drawActor(actor,palette,walking,attacking,isEnemy=false){
+  part(actor,"sphere",0,.09,0,.78,.12,.68,"#26352b");
+  const swing=walking?Math.sin(gameTime*9)*.3:0;
+  part(actor,"box",0,1.02,0,.68,.82,.4,palette.coat);
+  part(actor,"box",0,1.16,-.215,.42,.38,.07,palette.trim);
+  part(actor,"sphere",0,1.72,-.01,.48,.5,.44,palette.skin);
+  part(actor,"sphere",0,1.91,.015,.5,.19,.48,palette.hair);
+  part(actor,"box",-.47,1.02,0,.23,.65,.25,palette.skin,swing);
+  part(actor,"box",.47,1.02,0,.23,.65,.25,palette.skin,-swing+(attacking?.65:0));
+  part(actor,"box",-.19,.38,0,.27,.68,.3,palette.legs,-swing);
+  part(actor,"box",.19,.38,0,.27,.68,.3,palette.legs,swing);
+  if(!isEnemy){
+   part(actor,"box",.62,.83,-.2,.11,.82,.13,"#c7cbd0",attacking?-.35:.15);
+   part(actor,"box",.62,.39,-.2,.3,.12,.25,"#80613e",attacking?-.35:.15);
+  }else{
+   part(actor,"box",-.37,1.72,-.05,.16,.12,.08,"#f1d27b");
+   part(actor,"box",.37,1.72,-.05,.16,.12,.08,"#f1d27b");
+  }
+ }
+ function drawMesh(item){
+  const shape=shapes[item.type];
+  gl.bindBuffer(gl.ARRAY_BUFFER,shape.positionBuffer);gl.enableVertexAttribArray(locations.position);gl.vertexAttribPointer(locations.position,3,gl.FLOAT,false,0,0);
+  gl.bindBuffer(gl.ARRAY_BUFFER,shape.shadeBuffer);gl.enableVertexAttribArray(locations.shade);gl.vertexAttribPointer(locations.shade,1,gl.FLOAT,false,0,0);
+  gl.uniformMatrix4fv(locations.model,false,modelMatrix(item));gl.uniform3fv(locations.color,item.color);gl.drawArrays(gl.TRIANGLES,0,shape.count);
+ }
+ function resize(){
+  const ratio=Math.min(window.devicePixelRatio||1,2),width=Math.max(1,Math.floor(innerWidth*ratio)),height=Math.max(1,Math.floor(innerHeight*ratio));
+  if(canvas.width!==width||canvas.height!==height){canvas.width=width;canvas.height=height;}
+ }
+ function render(){
+  resize();gl.viewport(0,0,canvas.width,canvas.height);gl.enable(gl.DEPTH_TEST);
+  gl.clearColor(.60,.74,.81,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+  const target=[player.x,1.05,player.z],horizontal=Math.cos(cameraPitch)*cameraDistance;
+  const eye=[player.x+Math.sin(cameraYaw)*horizontal,target[1]+Math.sin(cameraPitch)*cameraDistance,player.z+Math.cos(cameraYaw)*horizontal];
+  const view=lookAt(eye,target),projection=perspective(58*deg,canvas.width/canvas.height,.1,120);
+  gl.uniformMatrix4fv(locations.view,false,view);gl.uniformMatrix4fv(locations.viewProjection,false,multiply(projection,view));gl.uniform3f(locations.fogColor,.60,.74,.81);
+  for(const item of scene)drawMesh(item);
+  drawActor(npc,{coat:"#657c72",trim:"#d6c18d",skin:"#d2a27a",hair:"#d1d0c4",legs:"#444d4b"},false,false);
+  if(enemy.alive){
+   enemy.yaw=Math.atan2(player.x-enemy.x,-(player.z-enemy.z));
+   drawActor(enemy,{coat:"#704e37",trim:"#b78547",skin:"#b88968",hair:"#49382c",legs:"#47372f"},false,false,true);
+  }
+  drawActor(player,{coat:"#385b83",trim:"#d4b66d",skin:"#d7a47f",hair:"#493729",legs:"#353b48"},keys.has("w")||keys.has("arrowup")||keys.has("s")||keys.has("arrowdown")||keys.has("a")||keys.has("arrowleft")||keys.has("d")||keys.has("arrowright"),player.attackTime>0);
+ }
+ function update(dt){
+  gameTime+=dt;
+  if(player.attackTime>0)player.attackTime=Math.max(0,player.attackTime-dt);
+  let forward=(keys.has("w")||keys.has("arrowup")?1:0)-(keys.has("s")||keys.has("arrowdown")?1:0);
+  let side=(keys.has("d")||keys.has("arrowright")?1:0)-(keys.has("a")||keys.has("arrowleft")?1:0);
+  const length=Math.hypot(forward,side)||1;forward/=length;side/=length;
+  const fx=-Math.sin(cameraYaw),fz=-Math.cos(cameraYaw),rx=Math.cos(cameraYaw),rz=-Math.sin(cameraYaw);
+  const dx=(fx*forward+rx*side)*5.2*dt,dz=(fz*forward+rz*side)*5.2*dt;
+  if(dx||dz){player.yaw=Math.atan2(dx,-dz);if(!blocked(player.x+dx,player.z))player.x+=dx;if(!blocked(player.x,player.z+dz))player.z+=dz;}
+  if(enemy.alive&&distance(player,enemy)<2.45){
+   enemy.cooldown-=dt;
+   if(enemy.cooldown<=0){enemy.cooldown=1.35;player.hp=Math.max(0,player.hp-6);setHealth();say("O saqueador acertou você!",1100);if(!player.hp){player.hp=100;player.x=0;player.z=13;setHealth();say("Você recuou para a vila e recuperou as forças.");}}
+  }else enemy.cooldown=Math.max(0,enemy.cooldown-dt);
+  if(messageTimer>0){messageTimer-=dt*1000;if(messageTimer<=0)notice.classList.remove("visible");}
+  const nearNpc=distance(player,npc)<2.7,nearEnemy=enemy.alive&&distance(player,enemy)<3.2;
+  prompt.textContent=nearNpc?"E · Conversar com o Ancião":nearEnemy?"E · Falar com o saqueador":"";
+  prompt.classList.toggle("visible",nearNpc||nearEnemy);
+ }
+ function loop(time){
+  const dt=Math.min((time-lastFrame)/1000||0,.05);lastFrame=time;
+  update(dt);render();requestAnimationFrame(loop);
+ }
+ window.addEventListener("keydown",event=>{
+  const key=event.key.toLowerCase();
+  if([" ","arrowup","arrowdown","arrowleft","arrowright"].includes(key))event.preventDefault();
+  keys.add(key);
+  if(key===" "&&!event.repeat)attack();
+  if(key==="e"&&!event.repeat)interact();
+ });
+ window.addEventListener("keyup",event=>keys.delete(event.key.toLowerCase()));
+ window.addEventListener("blur",()=>keys.clear());
+ canvas.addEventListener("pointerdown",event=>{dragging=true;lastPointerX=event.clientX;lastPointerY=event.clientY;canvas.setPointerCapture(event.pointerId);});
+ canvas.addEventListener("pointermove",event=>{
+  if(!dragging)return;
+  cameraYaw-=(event.clientX-lastPointerX)*.006;cameraPitch=Math.max(.12,Math.min(.72,cameraPitch+(event.clientY-lastPointerY)*.004));
+  lastPointerX=event.clientX;lastPointerY=event.clientY;
+ });
+ canvas.addEventListener("pointerup",()=>dragging=false);
+ canvas.addEventListener("pointercancel",()=>dragging=false);
+ canvas.addEventListener("wheel",event=>{cameraDistance=Math.max(4.5,Math.min(11,cameraDistance+Math.sign(event.deltaY)*.55));event.preventDefault();},{passive:false});
+ setHealth();say("Explore o caminho até a vila. O Ancião está esperando.",4000);requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

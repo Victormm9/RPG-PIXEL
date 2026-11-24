@@ -4,7 +4,11 @@ O jogo web existente continua em `index.html`, `style.css` e `script.js`. A apli
 
 ## RPG web
 
-Sirva a pasta do projeto em HTTP (por exemplo, com a extensão Live Server do VS Code) e abra `index.html` no navegador. A área exterior agora usa um mapa contínuo de 96 × 72 tiles de 32 px e câmera, com Vila de Eldoria, Campos do Norte, Floresta dos Sussurros, rio, ponte e caminho até a Caverna Esquecida. WASD/setas movem, Espaço ou clique esquerdo atacam, e E interage; as missões, seis classes, salvamento no navegador e cripta existente foram preservados.
+Sirva a pasta do projeto em HTTP (por exemplo, com a extensão Live Server do VS Code) e abra `index.html` no navegador. A área exterior usa um mapa contínuo de 128 × 96 tiles de 32 px e câmera, com Vila de Eldoria, Campos do Norte, Floresta dos Sussurros, rio, ponte, Caverna Esquecida e as Montanhas do Eco. Após derrotar o chefe da cripta, reúna os três fragmentos do sino, vença o guardião e ajude Lia; isso abre o Capítulo III, com a Fenda Além da Pedra, o Rei sem Voz e o resgate de Joren. A Carga Perdida é uma missão secundária nas montanhas. Armas, armaduras e amuletos podem ser encontrados, comprados com Doran e equipados: seus bônus alteram ataque, defesa, atributos e limites de mana/vida. Nina conta rumores diferentes conforme o dia, Nilo reage às missões e a mercadora reduz os preços após a caravana ser ajudada. Itens aparecem no mundo e no minimapa; poções e pão podem ser coletados, e a poção azul recupera mana. Saves anteriores continuam compatíveis. Cada classe ganha habilidades próprias nos níveis 3, 5, 8 e 10, além da habilidade inicial. WASD/setas movem, Espaço ou clique esquerdo atacam, E interage e Q/Z/X/C/V ativam habilidades; seis classes, salvamento no navegador e a cripta existente foram preservados.
+
+### Prévia de migração para 3D
+
+Na tela inicial, escolha **Experimentar a prévia 3D** para testar uma primeira área em terceira pessoa. O protótipo usa WebGL sem bibliotecas externas, com movimento, câmera giratória, uma conversa e um inimigo de teste. WASD/setas movem, Espaço ataca, E interage, arraste o mouse para girar a câmera e use a rodinha para aproximar/afastar. Essa área é uma etapa experimental independente: ainda não compartilha o progresso, os personagens ou os salvamentos do jogo 2D.
 
 A iluminação e as partículas ambientais mudam conforme a região; na cripta, um brilho suave acompanha o personagem para reforçar a sensação de exploração subterrânea. Os impactos de combate também exibem faíscas pixeladas na cor do ataque.
 

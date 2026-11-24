@@ -1,6 +1,6 @@
 # Vale de Eldoria — mapa e arte
 
-O mapa lógico é uma grade conectada de 96 × 72 tiles de 32 × 32 px. A camada de dados permite caminhar pela Vila de Eldoria, Floresta dos Sussurros, Campos do Norte, Rio, caminhos, ponte e entrada da Caverna Esquecida. A cripta da história continua como região separada.
+O mapa lógico exterior é uma grade conectada de 128 × 96 tiles de 32 × 32 px. A camada de dados permite caminhar pela Vila de Eldoria, Floresta dos Sussurros, Campos do Norte, Rio, caminhos, ponte, Caverna Esquecida e Montanhas do Eco. A cripta e a Fenda Além da Pedra do Capítulo III usam mapas separados.
 
 ## Sprites PNG necessários
 

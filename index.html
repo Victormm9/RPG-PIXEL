@@ -20,6 +20,8 @@ canvas{width:min(100vw,160vh);height:min(100vh,62.5vw);object-fit:contain;image-
 .title-hitbox{position:absolute;left:38%;width:24.5%;height:9.5%;padding:0;border:2px solid transparent;border-radius:9px;background:transparent;color:transparent}
 .title-hitbox:hover,.title-hitbox:focus-visible{filter:none;transform:none;border-color:#ffd16e;background:#ffd16e12;box-shadow:0 0 20px #ffc45a99;outline:none}
 .title-hitbox.start{top:53.4%}.title-hitbox.settings{top:63.4%}.title-hitbox.exit{top:73.3%}
+.three-d-entry{position:fixed;z-index:2;right:18px;bottom:16px;padding:9px 13px;border:1px solid #d2aa6577;border-radius:7px;background:#11131ae8;color:#f4dfb2;font-size:12px;text-decoration:none}
+.three-d-entry:hover,.three-d-entry:focus-visible{background:#33291f;color:#fff4d9;outline:2px solid #ffd16e}
 #statusHud{position:absolute;z-index:3;top:58px;left:14px;width:min(230px,calc(100% - 28px));margin:0;padding:12px;background:rgba(12,14,20,.88);backdrop-filter:blur(8px)}
 #statusHud .statline{font-size:12px}
 #statusHud .bar{height:10px}
@@ -43,6 +45,12 @@ canvas{width:min(100vw,160vh);height:min(100vh,62.5vw);object-fit:contain;image-
 #questText strong{color:#f0d49b}
 .actions{display:grid;grid-template-columns:1fr 1fr;gap:7px}
 .actions button{font-size:11px;padding:9px 5px}
+.skill-list{display:grid;gap:6px}
+.skill-button{display:grid;grid-template-columns:30px 1fr;align-items:center;gap:2px 8px;padding:7px;text-align:left;background:#11141c;border-color:#51442f}
+.skill-button kbd{grid-row:span 2;display:grid;place-items:center;min-height:26px;border:1px solid #80633b;border-radius:5px;color:var(--gold);font:700 12px Inter,system-ui,sans-serif}
+.skill-button strong{color:#f0d49b;font-size:11px}
+.skill-button small{color:#aeb3be;font-size:10px;line-height:1.35}
+.skill-button:disabled{opacity:.58}
 #log{height:125px;overflow:auto;font-size:11px;line-height:1.55;color:#b8bdc7}
 #log p{margin:0 0 5px;border-bottom:1px solid #ffffff0b;padding-bottom:4px}
 #log .good{color:#8fe0a7}#log .bad{color:#ff9292}#log .gold{color:#f0d18b}
@@ -126,21 +134,23 @@ h1{font:800 clamp(36px,7vw,66px) Cinzel,serif;color:#e6c27d;letter-spacing:5px;m
    <div class="statline"><span>Força</span><b id="strengthText">16</b></div>
    <div class="statline"><span>Inteligência</span><b id="intelligenceText">4</b></div>
    <div class="statline"><span>Agilidade</span><b id="agilityText">7</b></div>
+   <div class="statline"><span>Defesa</span><b id="defenseText">7</b></div>
   </section>
   <button id="panelToggle" type="button" aria-controls="side" aria-expanded="false" onclick="toggleSidePanel()">Painel · J</button>
   <button id="helpButton" type="button" onclick="showHelp()">Comandos · H</button>
-  <div id="hint">WASD / Setas mover · Clique esquerdo / Espaço atacar · Q habilidade · E interagir · I bolsa · 1/2 itens · R descansar · F salvar · M mapa · J painel · H ajuda</div>
-  <div id="combatHud">ATACAR · CLIQUE/ESPAÇO &nbsp; HABILIDADE · Q</div>
+  <div id="hint">WASD / Setas mover · Espaço atacar · Habilidades Q/Z/X/C/V · E interagir · I bolsa · Itens 1/2/3 · R descansar · F salvar · M mapa · J painel · H ajuda</div>
+  <div id="combatHud">ATACAR · ESPAÇO &nbsp; HABILIDADES · Q / Z / X / C / V</div>
  </main>
  <aside id="side">
   <div><div class="brand">DRAKMOR</div><div class="sub">AS CINZAS DO PRIMEIRO REI</div></div>
   <section class="panel"><h3>Jornada atual</h3><div id="questText">Fale com o ancião.</div></section>
   <section class="panel"><h3>Ações</h3><div class="actions">
-   <button onclick="attack()">⚔ Atacar · Espaço</button><button onclick="castSpell()">✧ Magia · Q</button>
+   <button onclick="attack()">⚔ Atacar · Espaço</button><button onclick="castSpell()">✧ Habilidade · Q</button>
    <button onclick="interact()">E · Interagir</button><button onclick="openInventory()">I · Bolsa</button>
    <button onclick="rest()">R · Descansar</button><button onclick="saveGame()">F · Salvar</button>
    <button onclick="showMap()">M · Mapa</button>
   </div></section>
+  <section class="panel"><h3>Habilidades da classe</h3><div id="skillList" class="skill-list"></div><p class="smallnote">Novas habilidades nos níveis 3, 5, 8 e 10.</p></section>
   <section class="panel"><h3>Crônicas recentes</h3><div id="log"></div></section>
  </aside>
 </div>
@@ -152,6 +162,7 @@ h1{font:800 clamp(36px,7vw,66px) Cinzel,serif;color:#e6c27d;letter-spacing:5px;m
   <button class="title-hitbox settings" type="button" aria-label="Configurações" title="Configurações" onclick="showSettings()"></button>
   <button class="title-hitbox exit" type="button" aria-label="Sair" title="Sair" onclick="exitGame()"></button>
  </div>
+  <a class="three-d-entry" href="prototipo-3d.html">Experimentar a prévia 3D</a>
 </div>
 <div id="overlay"></div>
 <div id="dialogue"><strong id="speaker">Personagem</strong><p id="dialogueText"></p><div class="row"><button id="dialogueAlt" onclick="dialogueAltAction()" style="display:none">Recusar</button><button class="primary" onclick="nextDialogue()">Continuar</button></div></div>
@@ -165,7 +176,7 @@ h1{font:800 clamp(36px,7vw,66px) Cinzel,serif;color:#e6c27d;letter-spacing:5px;m
    Engine simples: Canvas, estados, colisão, combate, quests e save.
    ============================================================ */
 const canvas=document.getElementById("world"),ctx=canvas.getContext("2d");
-const W=canvas.width,H=canvas.height,TILE=32,MAP_W=96,MAP_H=72;
+const W=canvas.width,H=canvas.height,TILE=32,MAP_W=128,MAP_H=96;
 ctx.imageSmoothingEnabled=false;
 const keys={};
 let gameStarted=false,paused=false,dialogueQueue=[],dialogueDone=null;
@@ -174,7 +185,7 @@ let uiUpdateTimer=0;
 const world={
  name:"Vale de Cinzas",chapter:1,day:1,
  map:[],mapWidth:MAP_W,mapHeight:MAP_H,objects:[],enemies:[],projectiles:[],particles:[],
- camera:{x:0,y:0},
+ camera:{x:0,y:0},overworldMap:null,overworldObjects:null,returnPoint:null,
  regionId:"village",
 };
 const pixelAssets=new window.DrakmorAssetManager(window.DrakmorAssetsManifest);
@@ -197,21 +208,86 @@ const classes={
  paladin:{name:"Paladino",description:"Resiste a golpes e restaura a própria vida.",basicAttack:"Corte sagrado",ability:"Q · Luz sagrada (12 mana)",outfit:"blue",weapon:"Espada solar",armor:"Armadura sagrada",stats:{hp:125,mp:40,strength:14,intelligence:12,agility:6,defense:8,attack:14},growth:{hp:24,mp:8,strength:2,intelligence:1,agility:0,defense:1,attack:3}},
  druid:{name:"Druida",description:"Usa raízes, natureza e magia de cura.",basicAttack:"Espinho natural",ability:"Q · Raízes vivas (12 mana)",outfit:"forest",weapon:"Cajado de espinheiro",armor:"Manto de folhas",stats:{hp:100,mp:55,strength:8,intelligence:15,agility:9,defense:4,attack:10},growth:{hp:17,mp:10,strength:0,intelligence:2,agility:1,defense:1,attack:2}}
 };
+const defineClassSkill=(id,name,level,key,cost,color,effect,description,options={})=>({
+ id,name,level,key,cost,color,effect,description,...options
+});
+const classSkills={
+ warrior:[
+  defineClassSkill("warrior-shield","Golpe de escudo",1,"q",8,"#f0bb62","guard-area","Dano frontal e defesa reforçada.",{radius:88,offset:45,multiplier:1.05,attribute:"strength",scale:.7,guard:4,duration:4,cooldown:1.2}),
+  defineClassSkill("warrior-spin","Giro de aço",3,"z",12,"#e4e9ef","area","Atinge inimigos próximos ao redor.",{radius:112,offset:0,multiplier:1.3,attribute:"strength",scale:.7,cooldown:1.5}),
+  defineClassSkill("warrior-crush","Carga rompante",5,"x",14,"#f3d18a","area","Um golpe pesado contra inimigos à frente.",{radius:84,offset:78,multiplier:1.75,attribute:"strength",scale:.8,cooldown:1.7}),
+  defineClassSkill("warrior-wall","Muralha de ferro",8,"c",16,"#c7d4e5","guard","Aumenta a defesa por seis segundos.",{guard:10,duration:6,cooldown:2}),
+  defineClassSkill("warrior-quake","Terremoto",10,"v",24,"#e3a65b","area","Abala uma grande área à frente.",{radius:180,offset:55,multiplier:2.4,attribute:"strength",scale:.9,cooldown:2.5})
+ ],
+ mage:[
+  defineClassSkill("mage-explosion","Explosão elemental",1,"q",12,"#a47aff","area","Detona magia em uma área à frente.",{radius:105,offset:62,multiplier:1.1,attribute:"intelligence",scale:1.2,cooldown:1.2}),
+  defineClassSkill("mage-firebolt","Bola de fogo",3,"z",14,"#ff925c","projectile","Lança fogo contra um alvo distante.",{range:260,cone:58,multiplier:1.8,attribute:"intelligence",scale:1.3,cooldown:1.5}),
+  defineClassSkill("mage-arcane","Onda arcana",5,"x",16,"#c38aff","area","Uma onda mágica atravessa a frente.",{radius:132,offset:72,multiplier:1.65,attribute:"intelligence",scale:1.25,cooldown:1.7}),
+  defineClassSkill("mage-frost","Nova de gelo",8,"c",20,"#8edbff","area","Explode em frio ao redor do mago.",{radius:158,offset:0,multiplier:1.9,attribute:"intelligence",scale:1.3,cooldown:2}),
+  defineClassSkill("mage-meteor","Meteoro",10,"v",26,"#ff795c","area","Invoca um impacto arcano de grande alcance.",{radius:195,offset:112,multiplier:2.5,attribute:"intelligence",scale:1.4,cooldown:2.5})
+ ],
+ archer:[
+  defineClassSkill("archer-precise","Disparo preciso",1,"q",8,"#f2d27c","projectile","Flecha rápida contra o alvo à frente.",{range:390,cone:42,multiplier:1.45,attribute:"agility",scale:1.2,cooldown:1.2}),
+  defineClassSkill("archer-triple","Rajada tripla",3,"z",12,"#ffe5a0","volley","Dispara contra até três alvos alinhados.",{range:320,cone:72,targets:3,multiplier:.9,attribute:"agility",scale:.9,cooldown:1.5}),
+  defineClassSkill("archer-rain","Chuva de flechas",5,"x",15,"#f2d27c","area","Atinge um grupo a média distância.",{radius:132,offset:142,multiplier:1.45,attribute:"agility",scale:1.05,cooldown:1.7}),
+  defineClassSkill("archer-pierce","Flecha perfurante",8,"c",18,"#fff0bd","projectile","Um disparo de precisão de longo alcance.",{range:450,cone:32,multiplier:2.4,attribute:"agility",scale:1.4,cooldown:2}),
+  defineClassSkill("archer-storm","Tempestade de flechas",10,"v",24,"#ffd06a","area","Uma saraivada cobre uma grande área.",{radius:185,offset:175,multiplier:2,attribute:"agility",scale:1.2,cooldown:2.5})
+ ],
+ rogue:[
+  defineClassSkill("rogue-shadow","Golpe sombrio",1,"q",10,"#c7a6ff","target","Golpe forte contra um alvo à frente.",{range:115,cone:65,multiplier:1.6,attribute:"agility",scale:1.15,cooldown:1.2}),
+  defineClassSkill("rogue-backstab","Ataque pelas costas",3,"z",12,"#e2d4ff","target","Ataque preciso contra um único inimigo.",{range:100,cone:38,multiplier:2.15,attribute:"agility",scale:1.2,cooldown:1.5}),
+  defineClassSkill("rogue-dance","Dança de lâminas",5,"x",15,"#d4c3f5","area","Cortes rápidos atingem os inimigos próximos.",{radius:108,offset:30,multiplier:1.45,attribute:"agility",scale:1,cooldown:1.7}),
+  defineClassSkill("rogue-smoke","Bomba de fumaça",8,"c",18,"#b2a1c8","guard-area","Causa dano e facilita esquivar por cinco segundos.",{radius:96,offset:0,multiplier:1.2,attribute:"agility",scale:.9,guard:9,duration:5,cooldown:2}),
+  defineClassSkill("rogue-execution","Execução",10,"v",24,"#f3d2ff","target","Um golpe devastador de curto alcance.",{range:130,cone:48,multiplier:3.1,attribute:"agility",scale:1.4,cooldown:2.5})
+ ],
+ paladin:[
+  defineClassSkill("paladin-light","Luz sagrada",1,"q",12,"#ffe17c","heal-area","Fere inimigos próximos e restaura vida.",{radius:105,offset:0,multiplier:.95,attribute:"intelligence",scale:.8,heal:35,healScale:1,cooldown:1.2}),
+  defineClassSkill("paladin-charge","Investida sagrada",3,"z",14,"#fff0a6","guard-area","Golpe frontal com defesa temporária.",{radius:104,offset:78,multiplier:1.45,attribute:"strength",scale:.65,guard:4,duration:3,cooldown:1.5}),
+  defineClassSkill("paladin-aegis","Égide",5,"x",16,"#ffe7a0","heal-guard","Recupera vida e fortalece sua defesa.",{heal:30,healScale:1,guard:8,duration:5,cooldown:1.7}),
+  defineClassSkill("paladin-judgment","Julgamento",8,"c",20,"#fff2ad","area","Uma onda sagrada atinge a área à frente.",{radius:158,offset:48,multiplier:1.9,attribute:"intelligence",scale:1,cooldown:2}),
+  defineClassSkill("paladin-nova","Nova divina",10,"v",26,"#fff5c9","heal-area","Explosão sagrada que fere e cura.",{radius:190,offset:0,multiplier:2.2,attribute:"intelligence",scale:1.1,heal:50,healScale:1.5,cooldown:2.5})
+ ],
+ druid:[
+  defineClassSkill("druid-roots","Raízes vivas",1,"q",12,"#83c878","heal-area","Raízes ferem inimigos e curam o druida.",{radius:100,offset:48,multiplier:1,attribute:"intelligence",scale:1,heal:20,healScale:1,cooldown:1.2}),
+  defineClassSkill("druid-thorns","Espinhos perfurantes",3,"z",13,"#a5da76","projectile","Lança um espinho natural contra um alvo.",{range:220,cone:58,multiplier:1.55,attribute:"intelligence",scale:1.15,cooldown:1.5}),
+  defineClassSkill("druid-embrace","Abraço da natureza",5,"x",15,"#a5e29b","heal","Restaura uma grande quantidade de vida.",{heal:48,healScale:1.4,cooldown:1.7}),
+  defineClassSkill("druid-growth","Crescimento selvagem",8,"c",20,"#83c878","area","Espinhos irrompem em uma área ampla.",{radius:155,offset:82,multiplier:1.8,attribute:"intelligence",scale:1.15,cooldown:2}),
+  defineClassSkill("druid-avatar","Avatar da floresta",10,"v",25,"#b4f08c","heal-area","Uma explosão natural fere e restaura vida.",{radius:185,offset:0,multiplier:2,attribute:"intelligence",scale:1.2,heal:52,healScale:1.5,cooldown:2.5})
+ ]
+};
+const equipmentCatalog={
+ "Lâmina do Saqueador":{slot:"weapon",attack:5,classes:["warrior","paladin","rogue"],description:"Uma lâmina pesada recuperada dos saqueadores."},
+ "Cajado de Brasa":{slot:"weapon",attack:3,intelligence:3,classes:["mage","druid"],description:"Um cajado que concentra calor arcano."},
+ "Arco do Batedor":{slot:"weapon",attack:4,agility:2,classes:["archer"],description:"Arco leve, preciso e feito para longas distâncias."},
+ "Armadura de Escamas":{slot:"armor",defense:4,classes:Object.keys(classes),description:"Escamas de aço sobre couro reforçado."},
+ "Manto da Fenda":{slot:"armor",defense:2,maxMp:10,classes:Object.keys(classes),description:"Um manto frio que reforça a defesa e a reserva de mana."},
+ "Anel do Viajante":{slot:"charm",attack:2,defense:1,classes:Object.keys(classes),description:"Um anel gasto, mas ainda protegido por magia."},
+ "Medalhão da Vigília":{slot:"charm",maxHp:20,defense:1,classes:Object.keys(classes),description:"Um medalhão que fortalece quem protege os outros."},
+ "Broche do Sino":{slot:"charm",attack:3,defense:2,classes:Object.keys(classes),description:"Um broche moldado com metal do Sino do Eco."},
+ "Relíquia do Primeiro Rei":{slot:"charm",attack:5,defense:3,intelligence:2,classes:Object.keys(classes),description:"A última lembrança de Joren e a prova de que a maldição terminou."}
+};
+let renderedSkillSignature="";
 const player={
  x:6*TILE,y:10*TILE,w:26,h:34,speed:190,
  hp:125,maxHp:125,mp:25,maxMp:25,xp:0,nextXp:50,
  level:1,baseAttack:16,strength:16,intelligence:4,agility:7,defense:7,gold:12,
  facing:"down",invulnerable:0,potions:2,guardTimer:0,guardBonus:0,
- name:"Errante",gender:"Não binário",classId:"warrior",outfit:"crimson",outfitColor:outfits.crimson.color,hairStyle:"short",hairColor:hairColors.dark.color,skinTone:"light",skinColor:skinTones.light.color,weapon:classes.warrior.weapon,armor:classes.warrior.armor,
+ name:"Errante",gender:"Não binário",classId:"warrior",outfit:"crimson",outfitColor:outfits.crimson.color,hairStyle:"short",hairColor:hairColors.dark.color,skinTone:"light",skinColor:skinTones.light.color,weapon:classes.warrior.weapon,armor:classes.warrior.armor,equipment:{weapon:classes.warrior.weapon,armor:classes.warrior.armor,charm:null},
  inventory:[{name:"Poção de vida",qty:2,desc:"Recupera 45 pontos de vida."},{name:"Pão de viagem",qty:2,desc:"Recupera 15 pontos de vida."}],
- quests:{elder:false,slimes:0,herbs:0,bandit:false,crypt:false},
- flags:{intro:false,elderReward:false,gateOpen:false,cryptBoss:false}
+ collectedMapItems:[],
+ quests:{elder:false,slimes:0,herbs:0,bandit:false,crypt:false,bellFragments:0,bellCore:false,suppliesFound:0},
+ flags:{intro:false,elderReward:false,gateOpen:false,cryptBoss:false,bellQuestStarted:false,echoGuardianDefeated:false,bellRestored:false,supplyQuestStarted:false,supplyReward:false,riftUnlocked:false,riftBossDefeated:false,jorenRescued:false}
 };
 const npcs=[
  {id:"elder",name:"Ancião Oren",x:9*TILE,y:8*TILE,color:"#d5c6a2",type:"elder"},
  {id:"merchant",name:"Mira, a mercadora",x:13*TILE,y:8*TILE,color:"#d5a65e",type:"merchant"},
  {id:"guard",name:"Guarda Bren",x:18*TILE,y:11*TILE,color:"#8b9db5",type:"guard"},
- {id:"healer",name:"Ilyra, curandeira",x:7*TILE,y:14*TILE,color:"#8fc5b2",type:"healer"}
+ {id:"healer",name:"Ilyra, curandeira",x:7*TILE,y:14*TILE,color:"#8fc5b2",type:"healer"},
+ {id:"child",name:"Nina",x:4*TILE,y:12*TILE,color:"#d98e72",type:"child"},
+ {id:"smith",name:"Doran, o ferreiro",x:21*TILE,y:11*TILE,color:"#b7875c",type:"smith"},
+ {id:"scout",name:"Batedora Lia",x:98*TILE,y:50*TILE,color:"#a6bf7b",type:"scout"},
+ {id:"survivor",name:"Nilo, o caravaneiro",x:109*TILE,y:51*TILE,color:"#c28c65",type:"survivor"},
+ {id:"joren",name:"Joren",x:29*TILE,y:19*TILE,color:"#9db4a0",type:"joren",zone:"rift"}
 ];
 const enemyTypes={
  slime:{name:"Slime",hp:32,attack:7,xp:12,gold:3,speed:48,radius:14,respawn:9,behavior:"ambush",aggroRange:145,attackRange:40,attackCooldown:1.2},
@@ -222,11 +298,11 @@ const enemyTypes={
  boss:{name:"Cavaleiro sem rosto",hp:260,attack:22,xp:130,gold:90,speed:48,radius:25,respawn:0,behavior:"guard",aggroRange:370,attackRange:58,attackCooldown:1.45}
 };
 const enemyDrops={
- slime:[{name:"Núcleo de gosma",description:"Fragmento gelatinoso pedido pelo ancião.",chance:.65}],
+ slime:[{name:"Núcleo de gosma",description:"Fragmento gelatinoso pedido pelo ancião.",chance:.65},{name:"Anel do Viajante",description:equipmentCatalog["Anel do Viajante"].description,chance:.08}],
  goblin:[{name:"Dente de goblin",description:"Um troféu bruto que pode ser vendido.",chance:.45}],
  wolf:[{name:"Presa de lobo",description:"Uma presa afiada, ainda manchada de terra.",chance:.5}],
- skeleton:[{name:"Fragmento ósseo",description:"Um pedaço antigo que ainda vibra com magia.",chance:.5}],
- bandit:[{name:"Chave antiga",description:"Uma chave encontrada entre os pertences do saqueador.",chance:.3}],
+ skeleton:[{name:"Fragmento ósseo",description:"Um pedaço antigo que ainda vibra com magia.",chance:.5},{name:"Armadura de Escamas",description:equipmentCatalog["Armadura de Escamas"].description,chance:.08}],
+ bandit:[{name:"Chave antiga",description:"Uma chave encontrada entre os pertences do saqueador.",chance:.3},{name:"Manto da Fenda",description:equipmentCatalog["Manto da Fenda"].description,chance:.08}],
  boss:[{name:"Selo antigo",description:"Um fragmento do selo que protegia a cripta.",chance:1}]
 };
 const regionNames={
@@ -236,9 +312,11 @@ const regionNames={
  river:"Rio de Eldoria",
  east:"Trilha do Leste",
  cave:"Caverna Esquecida",
- crypt:"Cripta do Primeiro Rei"
+ mountains:"Montanhas do Eco",
+ crypt:"Cripta do Primeiro Rei",
+ rift:"Fenda Além da Pedra"
 };
-const SOLID_TILES=new Set([8,12,13,14,15,16,17,18,20,21,23,25]);
+const SOLID_TILES=new Set([8,12,13,14,15,16,17,18,20,21,23,25,30]);
 let currentZone="village",currentRegionId="village",nearby=null;
 function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a}
 function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
@@ -246,6 +324,27 @@ function log(msg,type=""){const el=document.getElementById("log");const p=docume
 function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1800)}
 function rects(a,b){return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y}
 function center(o){return{x:o.x+o.w/2,y:o.y+o.h/2}}
+function normalizeEquipment(){
+ const characterClass=classes[player.classId]||classes.warrior;
+ if(!player.equipment||typeof player.equipment!=="object"||Array.isArray(player.equipment))
+  player.equipment={weapon:player.weapon||characterClass.weapon,armor:player.armor||characterClass.armor,charm:null};
+ player.equipment.weapon=player.equipment.weapon||player.weapon||characterClass.weapon;
+ player.equipment.armor=player.equipment.armor||player.armor||characterClass.armor;
+ if(!("charm" in player.equipment))player.equipment.charm=null;
+ player.weapon=player.equipment.weapon;player.armor=player.equipment.armor;
+}
+function equipmentBonus(attribute){
+ normalizeEquipment();
+ return Object.values(player.equipment).reduce((total,itemName)=>total+(equipmentCatalog[itemName]?.[attribute]||0),0);
+}
+function effectiveStat(attribute){return(player[attribute]||0)+equipmentBonus(attribute)}
+function effectiveAttack(){return player.baseAttack+equipmentBonus("attack")}
+function effectiveMaxHp(){return player.maxHp+equipmentBonus("maxHp")}
+function effectiveMaxMp(){return player.maxMp+equipmentBonus("maxMp")}
+function currentZoneNpcs(){
+ if(currentZone==="village")return npcs.filter(npc=>!npc.zone||npc.zone==="overworld");
+ return npcs.filter(npc=>npc.zone===currentZone&&(npc.id!=="joren"||player.flags.riftBossDefeated));
+}
 function makeMap(){
  world.mapWidth=MAP_W;world.mapHeight=MAP_H;
  world.map=Array.from({length:MAP_H},(_,y)=>Array.from({length:MAP_W},(_,x)=>{
@@ -257,7 +356,7 @@ function makeMap(){
   for(let y=Math.min(y1,y2);y<=Math.max(y1,y2);y++)
    for(let x=Math.min(x1,x2);x<=Math.max(x1,x2);x++)setTile(x,y,tile);
  };
- // Continuous roads connect the village, northern fields, forest, bridge, and cave.
+ // Continuous roads connect the village, northern fields, forest, bridge, cave, and mountains.
  pave(3,10,44,10);
  pave(12,10,12,32);
  pave(30,2,30,10);
@@ -265,9 +364,20 @@ function makeMap(){
  pave(30,31,42,31);
  pave(42,30,52,33,10);
  pave(51,33,51,51);
- pave(51,51,79,51);
+ pave(51,51,94,51);
  pave(78,48,81,54);
  setTile(79,50,23);
+ // The eastern trail crosses the sealed ridge and climbs to the old bell shrine.
+ pave(98,51,110,51);
+ pave(104,40,104,51);
+ pave(104,40,114,40);
+ pave(114,32,114,40);
+ pave(114,32,120,32);
+ pave(120,27,120,32);
+ pave(120,27,124,27);
+ pave(104,47,109,47);
+ pave(120,40,120,43);
+ pave(100,51,100,54);
  // A river divides the eastern trail; the marked bridge is the only crossing.
  for(let y=1;y<MAP_H-1;y++)for(let x=46;x<=49;x++)setTile(x,y,8);
  pave(46,30,49,33,10);
@@ -276,10 +386,26 @@ function makeMap(){
  setTile(24,41,26);
  // Fields and farm plots around the northern trail.
  for(let y=4;y<=7;y++)for(let x=33;x<=38;x++)setTile(x,y,25);
+ // The new mountain range is a rocky woodland around the old roads and shrine.
+ for(let y=14;y<MAP_H-1;y++)for(let x=96;x<MAP_W-1;x++){
+  if(world.map[y][x]!==0&&world.map[y][x]!==2)continue;
+  const formation=(x*7+y*13)%17;
+  if(formation<3)setTile(x,y,14);
+  else if(formation<7)setTile(x,y,((x+y)%2)?12:13);
+ }
+ pave(117,24,124,34);
+ // The ridge keeps the mountains sealed until the First Seal is broken.
+ for(let y=1;y<MAP_H-1;y++)for(let x=95;x<=97;x++)setTile(x,y,14);
+ if(player.flags.cryptBoss)for(let x=95;x<=97;x++)setTile(x,51,5);
+ setTile(98,50,5);
+ for(const [x,y] of [[100,54],[108,39],[123,27],[108,47],[120,43],[122,30],[109,51]])setTile(x,y,5);
  // Houses are assembled from real tileset cells; walls and roofs block movement.
  const house=(x,y,roof)=>{
-  for(let dx=0;dx<4;dx++){setTile(x+dx,y,roof);setTile(x+dx,y+1,20);setTile(x+dx,y+2,20)}
-  setTile(x+1,y+2,22);
+  for(let dx=0;dx<6;dx++){
+   setTile(x+dx,y,roof);setTile(x+dx,y+1,roof);
+   setTile(x+dx,y+2,20);setTile(x+dx,y+3,20);
+  }
+  setTile(x+2,y+3,22);
  };
  house(5,3,21);house(12,3,21);house(5,15,21);house(18,15,21);
  // Tree clusters form forest corridors without blocking established roads.
@@ -297,13 +423,23 @@ function makeMap(){
  }
  // Rocks surround the cave mouth rather than sealing its approach.
  for(const [x,y] of [[76,48],[76,49],[76,53],[76,54],[82,48],[82,49],[82,53],[82,54]])setTile(x,y,14);
+ const collectedMapItems=new Set(player.collectedMapItems||[]);
  world.objects=[
   {type:"sign",x:5*TILE,y:9*TILE,w:32,h:32,text:"Placa da Vila de Eldoria"},
   {type:"herb",x:16*TILE,y:17*TILE,w:32,h:32,active:true},
   {type:"herb",x:40*TILE,y:15*TILE,w:32,h:32,active:true},
   {type:"herb",x:58*TILE,y:45*TILE,w:32,h:32,active:true},
   {type:"chest",x:22*TILE,y:19*TILE,w:32,h:32,active:true},
-  {type:"portal",x:78*TILE,y:50*TILE,w:32,h:32}
+  {type:"portal",x:78*TILE,y:50*TILE,w:32,h:32},
+  {id:"village-health-potion",type:"loot",mapPickup:true,itemName:"Poção de vida",description:"Uma poção deixada perto da estrada da vila.",x:14*TILE,y:10*TILE,w:24,h:24,active:!collectedMapItems.has("village-health-potion")},
+  {id:"north-trail-bread",type:"loot",mapPickup:true,itemName:"Pão de viagem",description:"Um pão fresco encontrado no caminho para o norte.",x:34*TILE,y:10*TILE,w:24,h:24,active:!collectedMapItems.has("north-trail-bread")},
+  {id:"forest-mana-potion",type:"loot",mapPickup:true,itemName:"Poção de mana",description:"Uma poção azul escondida entre as trilhas.",x:30*TILE,y:27*TILE,w:24,h:24,active:!collectedMapItems.has("forest-mana-potion")},
+  {id:"echo-bell-fragment-1",type:"loot",mapPickup:true,itemName:"Fragmento do sino",description:"Um fragmento antigo, ainda vibrando com uma nota grave.",x:100*TILE,y:54*TILE,w:24,h:24,active:!collectedMapItems.has("echo-bell-fragment-1")},
+  {id:"echo-bell-fragment-2",type:"loot",mapPickup:true,itemName:"Fragmento do sino",description:"Um fragmento antigo, ainda vibrando com uma nota grave.",x:108*TILE,y:39*TILE,w:24,h:24,active:!collectedMapItems.has("echo-bell-fragment-2")},
+  {id:"echo-bell-fragment-3",type:"loot",mapPickup:true,itemName:"Fragmento do sino",description:"Um fragmento antigo, ainda vibrando com uma nota grave.",x:123*TILE,y:27*TILE,w:24,h:24,active:!collectedMapItems.has("echo-bell-fragment-3")},
+  {id:"lost-supplies-1",type:"loot",mapPickup:true,itemName:"Caixa de suprimentos",description:"Suprimentos perdidos pela caravana de Eldoria.",x:108*TILE,y:47*TILE,w:24,h:24,active:!collectedMapItems.has("lost-supplies-1")},
+  {id:"lost-supplies-2",type:"loot",mapPickup:true,itemName:"Caixa de suprimentos",description:"Suprimentos perdidos pela caravana de Eldoria.",x:120*TILE,y:43*TILE,w:24,h:24,active:!collectedMapItems.has("lost-supplies-2")},
+  {type:"riftPortal",x:122*TILE,y:30*TILE,w:32,h:32,active:true}
  ];
  world.regionId="village";currentRegionId="village";world.minimapDirty=true;
 }
@@ -322,19 +458,33 @@ function makeCryptMap(){
  world.minimapDirty=true;
  world.regionId="crypt";
 }
+function makeRiftMap(){
+ world.mapWidth=36;world.mapHeight=26;
+ world.map=Array.from({length:world.mapHeight},()=>Array(world.mapWidth).fill(30));
+ const carve=(x1,y1,x2,y2)=>{
+  for(let y=Math.min(y1,y2);y<=Math.max(y1,y2);y++)
+   for(let x=Math.min(x1,x2);x<=Math.max(x1,x2);x++)world.map[y][x]=29;
+ };
+ carve(3,3,11,9);carve(8,5,16,6);carve(14,4,21,10);
+ carve(15,8,17,19);carve(15,17,32,22);carve(25,13,32,22);
+ for(const [x,y] of [[6,4],[9,8],[18,5],[20,9],[20,18],[31,15]])world.map[y][x]=30;
+ world.objects=[{type:"riftExit",x:3*TILE,y:4*TILE,w:32,h:32}];
+ world.minimapDirty=true;world.regionId="rift";
+}
 function newGame(){
  const characterClass=classes[player.classId]||classes.warrior,stats=characterClass.stats;
  Object.assign(player,{
   x:6*TILE,y:10*TILE,hp:stats.hp,maxHp:stats.hp,mp:stats.mp,maxMp:stats.mp,
   xp:0,nextXp:50,level:1,baseAttack:stats.attack,strength:stats.strength,
   intelligence:stats.intelligence,agility:stats.agility,defense:stats.defense,
-  weapon:characterClass.weapon,armor:characterClass.armor,gold:12,potions:2,
+  weapon:characterClass.weapon,armor:characterClass.armor,equipment:{weapon:characterClass.weapon,armor:characterClass.armor,charm:null},gold:12,potions:2,
   facing:"down",invulnerable:0,guardTimer:0,guardBonus:0,
   inventory:[{name:"Poção de vida",qty:2,desc:"Recupera 45 pontos de vida."},{name:"Pão de viagem",qty:2,desc:"Recupera 15 pontos de vida."}],
-  quests:{elder:false,slimes:0,herbs:0,bandit:false,crypt:false},
-  flags:{intro:false,elderReward:false,gateOpen:false,cryptBoss:false}
+  collectedMapItems:[],
+  quests:{elder:false,slimes:0,herbs:0,bandit:false,crypt:false,bellFragments:0,bellCore:false,suppliesFound:0},
+  flags:{intro:false,elderReward:false,gateOpen:false,cryptBoss:false,bellQuestStarted:false,echoGuardianDefeated:false,bellRestored:false,supplyQuestStarted:false,supplyReward:false,riftUnlocked:false,riftBossDefeated:false,jorenRescued:false}
  });
- world.name="Vale de Eldoria";world.chapter=1;world.day=1;world.enemies=[];world.projectiles=[];world.overworldMap=null;world.overworldObjects=null;currentZone="village";makeMap();spawnInitialEnemies();gameStarted=true;
+ world.name="Vale de Eldoria";world.chapter=1;world.day=1;world.enemies=[];world.projectiles=[];world.overworldMap=null;world.overworldObjects=null;world.returnPoint=null;currentZone="village";makeMap();spawnInitialEnemies();gameStarted=true;
  world.camera.x=clamp(player.x+player.w/2-W/2,0,world.mapWidth*TILE-W);
  world.camera.y=clamp(player.y+player.h/2-H/2,0,world.mapHeight*TILE-H);
  document.getElementById("titleScreen").style.display="none";
@@ -545,6 +695,13 @@ function spawnEnemy(type,x,y){
  const spawn=findOpenSpawn(x,y),size=d.radius*2;
  world.enemies.push({type,name:d.name,x:spawn.x,y:spawn.y,spawnX:spawn.x,spawnY:spawn.y,w:size,h:size,hp:d.hp,maxHp:d.hp,attack:d.attack,xp:d.xp,gold:d.gold,speed:d.speed,behavior:d.behavior,aggroRange:d.aggroRange,attackRange:d.attackRange,attackCooldown:d.attackCooldown,aggro:false,attackTimer:0,attackEffectTimer:0,dead:false,deadTimer:0,respawn:d.respawn,state:"idle",facing:"down",animationTime:0});
 }
+function spawnEchoGuardian(announce=false){
+ if(player.flags.echoGuardianDefeated||world.enemies.some(enemy=>enemy.isEchoGuardian&&!enemy.dead))return;
+ spawnEnemy("boss",120*TILE,29*TILE);
+ const guardian=world.enemies[world.enemies.length-1];
+ Object.assign(guardian,{name:"Guardião do Sino",isEchoGuardian:true,hp:420,maxHp:420,attack:24,xp:180,gold:90,speed:82,aggroRange:420,attackRange:46,attackCooldown:1.35,respawn:0});
+ if(announce)say("Narrador","Os três fragmentos vibram em uníssono. No pátio das ruínas, uma armadura sem rosto se ergue: o sino chamou seu guardião.");
+}
 function findOpenSpawn(x,y){
  const tx=Math.floor(x/TILE),ty=Math.floor(y/TILE);
  for(let radius=0;radius<=6;radius++)for(let dy=-radius;dy<=radius;dy++)for(let dx=-radius;dx<=radius;dx++){
@@ -556,7 +713,7 @@ function findOpenSpawn(x,y){
  return{x:clamp(x,TILE,world.mapWidth*TILE-2*TILE),y:clamp(y,TILE,world.mapHeight*TILE-2*TILE)};
 }
 function startIntro(){
- say("Narrador","O vento atravessa as casas antigas da Vila de Eldoria. Você desperta junto ao marco da estrada, com uma moeda negra na mão. Nela, uma frase foi gravada: “Quando o sino tocar pela terceira vez, não confie nos mortos.”",()=>say("Narrador","Ao longe, um sino toca. Uma vez. A vila parece prender a respiração."));
+ say("Narrador","O vento atravessa as casas antigas da Vila de Eldoria. Você desperta junto ao marco da estrada, com uma moeda negra na mão. Nela, alguém gravou: “Quando o sino tocar pela terceira vez, não confie nos mortos.”",()=>say("Narrador","Um sino responde do outro lado das montanhas. Uma vez. Os cães se calam, e uma janela se fecha."));
 }
 function say(speaker,text,done){dialogueQueue.push({speaker,text,done});if(dialogueQueue.length===1)showDialogue()}
 function showDialogue(){const d=dialogueQueue[0];if(!d)return;document.getElementById("speaker").textContent=d.speaker;document.getElementById("dialogueText").textContent=d.text;document.getElementById("dialogue").style.display="block";paused=true}
@@ -565,37 +722,129 @@ function dialogueAltAction(){nextDialogue()}
 function interact(){
  if(!gameStarted||paused)return;
  const px=player.x+player.w/2,py=player.y+player.h/2;
- let candidates=[...npcs,...world.objects.filter(o=>o.active!==false)];
+ let candidates=[...currentZoneNpcs(),...world.objects.filter(o=>o.active!==false)];
  nearby=null;let best=62;
  for(const o of candidates){const ox=o.x+(o.w||24)/2,oy=o.y+(o.h||24)/2;const dist=Math.hypot(px-ox,py-oy);if(dist<best){best=dist;nearby=o}}
  if(!nearby){toast("Não há nada para interagir por perto.");return}
  if(nearby.type==="elder")talkElder();
  else if(nearby.type==="merchant")talkMerchant();
+ else if(nearby.type==="smith")talkSmith();
  else if(nearby.type==="guard")talkGuard();
  else if(nearby.type==="healer")talkHealer();
+ else if(nearby.type==="scout")talkScout();
+ else if(nearby.type==="child")talkChild();
+ else if(nearby.type==="survivor")talkSurvivor();
+ else if(nearby.type==="joren")talkJoren();
  else if(nearby.type==="herb")collectHerb(nearby);
  else if(nearby.type==="loot")collectLoot(nearby);
  else if(nearby.type==="chest")openChest(nearby);
  else if(nearby.type==="sign")say("Placa","VALE DE CINZAS — “A estrada termina onde a floresta começa. Não siga as luzes azuis.”");
  else if(nearby.type==="portal")enterCrypt();
+ else if(nearby.type==="riftPortal")enterRift();
  else if(nearby.type==="exitPortal")exitCrypt();
+ else if(nearby.type==="riftExit")exitRift();
 }
 function talkElder(){
  if(!player.quests.elder){
-  say("Ancião Oren","Você não é daqui. Vi a moeda em sua mão… Essa marca pertence à Ordem do Primeiro Rei. Escute: criaturas corrompidas rondam a estrada. Traga-me 3 núcleos de gosma e 2 ervas-lua. Talvez eu consiga entender por que a moeda escolheu você.",()=>{
+  say("Ancião Oren","Essa moeda pertence à Ordem do Primeiro Rei. Há cem anos, o rei mandou silenciar o Sino do Eco: ele trazia de volta vozes de pessoas mortas, mas cada badalada acordava algo sob a montanha. As criaturas da estrada estão corrompidas. Traga-me 3 núcleos de gosma e 2 ervas-lua; preciso descobrir por que a moeda escolheu você.",()=>{
    player.quests.elder=true;log("Missão iniciada: Ecos na Estrada.","gold");updateUI();
   });
  }else if(player.quests.slimes>=3&&player.quests.herbs>=2&&!player.flags.elderReward){
-  say("Ancião Oren","Os núcleos ainda pulsam. E estas ervas… sim, são ervas-lua. A corrupção está vindo das criptas sob a colina. Pegue esta chave. O guarda Bren conhece a entrada.",()=>{
+  say("Ancião Oren","Os núcleos ainda pulsam. A corrupção vem das criptas sob a colina. Pegue esta chave: Bren conhece a entrada. Se ouvir alguém querido chamando lá embaixo, não responda.",()=>{
    player.flags.elderReward=true;player.inventory.push({name:"Chave antiga",qty:1,desc:"Abre o acesso às criptas esquecidas."});player.gold+=35;gainXP(40);log("Missão concluída: Ecos na Estrada.","good");updateUI();
   });
+ }else if(player.flags.cryptBoss){
+  say("Ancião Oren","A chama azul era um eco, não um espírito. Vá às Montanhas do Eco e procure Lia, a última guardiã do sino. Talvez ela saiba como impedir a terceira badalada.");
  }else if(player.flags.elderReward){
   say("Ancião Oren","A cripta fica além do portão de pedra, a leste. Não deixe que o cavaleiro encontre a moeda.");
  }else say("Ancião Oren","Ainda preciso de 3 núcleos de gosma e 2 ervas-lua. Explore a estrada e a clareira.");
 }
 function talkMerchant(){
- say("Mira, a mercadora","Tenho algumas provisões. A estrada está perigosa. Uma poção custa 15 moedas. Quer comprar?",()=>{
-  if(player.gold>=15){player.gold-=15;addItem("Poção de vida",1,"Recupera 45 pontos de vida.");log("Você comprou uma poção.","good");updateUI()}else toast("Você não tem ouro suficiente.");
+ const price=player.flags.supplyReward?10:15;
+ const greeting=player.flags.jorenRescued?"Joren voltou! A vila deve muito a você.":
+  player.flags.cryptBoss?"Desde que o portão abriu, ninguém dorme bem. Leve provisões para a trilha.":
+  "Tenho algumas provisões. A estrada está perigosa.";
+ say("Mira, a mercadora",`${greeting} Uma poção custa ${price} moedas. Quer comprar?`,()=>{
+  if(player.gold>=price){player.gold-=price;addItem("Poção de vida",1,"Recupera 45 pontos de vida.");log("Você comprou uma poção.","good");updateUI()}else toast(`Você precisa de ${price} moedas.`);
+ });
+}
+function talkSmith(){openSmithShop()}
+function openSmithShop(){
+ const weaponByClass={
+  warrior:"Lâmina do Saqueador",paladin:"Lâmina do Saqueador",rogue:"Lâmina do Saqueador",
+  mage:"Cajado de Brasa",druid:"Cajado de Brasa",archer:"Arco do Batedor"
+ };
+ const stock=[
+  {name:weaponByClass[player.classId]||"Lâmina do Saqueador",price:55},
+  {name:player.classId==="mage"||player.classId==="druid"?"Manto da Fenda":"Armadura de Escamas",price:65},
+  {name:"Medalhão da Vigília",price:80}
+ ];
+ const items=stock.map(({name,price})=>{
+  const gear=equipmentCatalog[name],owned=player.inventory.some(item=>item.name===name)||Object.values(player.equipment||{}).includes(name);
+  const bonus=equipmentBonusText(gear);
+  return `<div class="item"><canvas class="item-icon" data-item-icon="${itemIconKey(name)}" width="32" height="32"></canvas><b>${name}</b><span>${bonus}</span><button type="button" data-buy-gear="${name}" data-price="${price}" ${owned?"disabled":""}>${owned?"Já possui":`Comprar · ${price} ouro`}</button></div>`;
+ }).join("");
+ const greeting=player.flags.jorenRescued?"Pelo ferreiro e por Eldoria: obrigado por trazê-lo de volta.":
+  player.flags.cryptBoss?"O metal do portão antigo ainda está quente. Posso reforçar seu equipamento.":
+  "Sou Doran. Uma boa peça pode decidir uma luta; confira os bônus antes de comprar.";
+ showModal("Forja de Doran",`<p>${greeting}</p><div class="modalgrid">${items}</div><div class="menuButtons"><button onclick="closeModal()">Fechar</button></div>`);
+ document.querySelectorAll("[data-buy-gear]").forEach(button=>button.addEventListener("click",()=>buyEquipment(button.dataset.buyGear,Number(button.dataset.price))));
+ document.querySelectorAll(".item-icon").forEach(icon=>drawPixelItemIcon(icon.getContext("2d"),icon.dataset.itemIcon,0,0,32));
+}
+function buyEquipment(name,price){
+ const gear=equipmentCatalog[name];
+ if(!gear||!gear.classes.includes(player.classId)){toast("Esse equipamento não está disponível para sua classe.");return}
+ if(player.gold<price){toast("Você não tem ouro suficiente.");return}
+ player.gold-=price;addItem(name,1,gear.description);log(`Doran vendeu ${name}.`,"good");updateUI();openSmithShop();
+}
+function talkScout(){
+ if(!player.flags.cryptBoss){
+  say("Batedora Lia","Sou Lia, batedora da estrada. O passo para as montanhas continua selado. Volte à vila e ajude Oren a encontrar a chave da cripta.");
+ }else if(!player.flags.bellQuestStarted){
+  say("Batedora Lia","Meu irmão Joren era o último sineiro. Ele levou os três fragmentos do Sino do Eco para as ruínas e nunca voltou. Reúna os fragmentos; se o guardião despertar, derrote-o e traga o núcleo que ele protege. Duas caixas da caravana também se perderam na trilha. Vou esperar aqui.",()=>{
+   player.flags.bellQuestStarted=true;player.flags.supplyQuestStarted=true;
+   log("Missões iniciadas: O Sino que Chama de Volta e A Carga Perdida.","gold");updateUI();
+  });
+ }else if(!player.flags.echoGuardianDefeated){
+  say("Batedora Lia",`Os fragmentos encontrados: ${player.quests.bellFragments}/3. A caravana também precisa das caixas: ${player.quests.suppliesFound}/2. Siga a trilha até o pátio das ruínas.`);
+ }else if(!player.quests.bellCore){
+  say("Batedora Lia","O guardião caiu, mas o núcleo dele ainda deve estar no pátio. Traga-o; sem essa peça, não posso silenciar o sino.");
+ }else if(!player.flags.bellRestored){
+  say("Batedora Lia","Joren tentou tocar o sino três vezes para trazer nossa mãe de volta. Encontrei apenas a moeda dele. Vamos fazer como Oren ensinou: uma badalada, para selar as vozes, nunca para chamá-las. Forjei um broche com o metal restante; leve-o com você.",()=>{
+   player.flags.bellRestored=true;player.flags.riftUnlocked=true;world.chapter=3;player.gold+=100;addItem("Poção de mana",1,"Recompensa de Lia por silenciar o Sino do Eco.");addItem("Broche do Sino",1,equipmentCatalog["Broche do Sino"].description);gainXP(140);
+   const portal=world.objects.find(object=>object.type==="riftPortal");if(portal)portal.active=true;
+   say("Batedora Lia","O sino abriu uma fenda atrás do altar. Joren está vivo do outro lado — siga a passagem e traga meu irmão para casa.");
+   log("Missão concluída: O Sino que Chama de Volta. Capítulo III iniciado.","good");updateUI();
+  });
+ }else if(!player.flags.riftBossDefeated)say("Batedora Lia","A fenda se abriu atrás do altar das ruínas. Encontre Joren e acabe com a voz que o mantém preso.");
+ else if(!player.flags.jorenRescued)say("Batedora Lia","O eco foi derrotado, mas Joren ainda não voltou. Ele deve estar ferido na câmara além da fenda.");
+ else say("Batedora Lia","Joren está em casa. Pela primeira vez em cem anos, o sino não responde. Obrigada por devolver o silêncio à montanha.");
+ if(player.flags.supplyQuestStarted&&!player.flags.supplyReward&&player.quests.suppliesFound>=2){
+  say("Batedora Lia","Você recuperou as duas caixas! Há remédios e mantimentos para quem ficou na estrada. Aceite estas moedas e uma poção como agradecimento.",()=>{
+   player.flags.supplyReward=true;player.gold+=55;addItem("Poção de vida",1,"Recompensa por recuperar a carga da caravana.");gainXP(55);
+   log("Missão concluída: A Carga Perdida.","good");updateUI();
+  });
+ }
+}
+function talkChild(){
+ const stories=player.flags.jorenRescued?
+  ["Joren me ensinou uma canção nova. Ela não tem sino no refrão!","Mira disse que hoje a vila vai dormir sem ouvir vozes."]
+  :player.flags.cryptBoss?
+   ["O portão das montanhas abriu. Vi uma luz azul lá longe...","O guarda Bren ficou acordado a noite toda, mas diz que está tudo bem."]
+   :["Oren diz que a estrada está doente. Você vai ajudar a vila?","Mira prometeu contar uma história quando os viajantes voltarem."];
+ say("Nina",stories[(world.day-1)%stories.length]);
+}
+function talkSurvivor(){
+ if(player.flags.jorenRescued)say("Nilo, o caravaneiro","A caravana está de volta à estrada. Agora os viajantes trazem notícias boas junto com as mercadorias.");
+ else if(player.flags.supplyReward)say("Nilo, o caravaneiro","Você recuperou nossa carga. Sem ela, não teríamos chegado vivos à vila.");
+ else say("Nilo, o caravaneiro","Sou o último da caravana. As caixas caíram pelo caminho das ruínas; Lia sabe onde procurar. Se ouvir uma voz conhecida na fenda, não siga.");
+}
+function talkJoren(){
+ if(!player.flags.riftBossDefeated){say("Joren","Não... deixe o Rei sem Voz terminar a terceira badalada!");return}
+ if(player.flags.jorenRescued){say("Joren","Vamos voltar para casa. Preciso contar a Lia o que realmente aconteceu com nossa mãe.");return}
+ say("Joren","Você me encontrou. A voz usava as lembranças da minha mãe para me manter aqui. O Rei sem Voz não era nosso rei — era o último eco da maldição. Leve esta relíquia; a moeda e o sino finalmente podem descansar.",()=>{
+  player.flags.jorenRescued=true;player.gold+=120;addItem("Relíquia do Primeiro Rei",1,equipmentCatalog["Relíquia do Primeiro Rei"].description);
+  gainXP(180);world.chapter=3;log("Joren resgatado. Capítulo III concluído.","good");updateUI();
  });
 }
 function talkGuard(){
@@ -606,22 +855,28 @@ function talkGuard(){
 }
 function talkHealer(){
  say("Ilyra, curandeira","A luz ainda responde às minhas mãos. Posso restaurar sua vida e mana por 10 moedas.",()=>{
-  if(player.gold>=10){player.gold-=10;player.hp=player.maxHp;player.mp=player.maxMp;log("Ilyra restaurou suas forças.","good");updateUI()}else toast("Você precisa de 10 moedas.");
+  if(player.gold>=10){player.gold-=10;player.hp=effectiveMaxHp();player.mp=effectiveMaxMp();log("Ilyra restaurou suas forças.","good");updateUI()}else toast("Você precisa de 10 moedas.");
  });
 }
 function collectHerb(o){
  o.active=false;player.quests.herbs++;addItem("Erva-lua",1,"Ingrediente prateado usado na missão do ancião.");log("Você coletou uma Erva-lua.","good");updateUI();
 }
 function collectLoot(o){
- o.active=false;addItem(o.itemName,1,o.description);log(`Item encontrado: ${o.itemName}.`,"good");updateUI();
+ o.active=false;
+ if(o.mapPickup&&o.id&&!player.collectedMapItems.includes(o.id))player.collectedMapItems.push(o.id);
+ if(o.itemName==="Fragmento do sino")player.quests.bellFragments++;
+ if(o.itemName==="Caixa de suprimentos")player.quests.suppliesFound++;
+ if(o.itemName==="Núcleo do sino")player.quests.bellCore=true;
+ addItem(o.itemName,1,o.description);log(`Item encontrado: ${o.itemName}.`,"good");updateUI();
+ if(o.itemName==="Fragmento do sino"&&player.quests.bellFragments===3&&currentRegionId==="mountains")spawnEchoGuardian(true);
 }
 function openChest(o){
  if(!o.active){toast("O baú está vazio.");return}
- o.active=false;player.gold+=rand(18,32);addItem("Poção de vida",1,"Recupera 45 pontos de vida.");say("Baú antigo","Dentro do baú há moedas antigas e uma poção intacta.");updateUI();
+ o.active=false;player.gold+=rand(18,32);addItem("Poção de vida",1,"Recupera 45 pontos de vida.");addItem("Anel do Viajante",1,equipmentCatalog["Anel do Viajante"].description);say("Baú antigo","Dentro do baú há moedas, uma poção e um anel antigo. Ele ainda parece proteger quem percorre a estrada.");updateUI();
 }
 function enterCrypt(){
  if(!player.flags.gateOpen){toast("O acesso está selado. Converse com Oren e Bren.");return}
- if(currentZone==="crypt")return;
+ if(currentZone!=="village")return;
  world.overworldMap=world.map;world.overworldObjects=world.objects;
  currentZone="crypt";currentRegionId="crypt";world.name="Cripta do Primeiro Rei";makeCryptMap();player.x=5*TILE;player.y=5*TILE;
  world.enemies=[];world.projectiles=[];for(let i=0;i<5;i++)spawnEnemy("skeleton",(8+i*3)*TILE,(7+(i%3)*4)*TILE);
@@ -635,8 +890,40 @@ function exitCrypt(){
  world.minimapDirty=true;player.x=78*TILE;player.y=52*TILE;world.enemies=[];spawnRegionEnemies("cave");updateRegion();
  document.getElementById("location").textContent=regionNames.cave.toUpperCase()
 }
+function enterRift(){
+ if(!player.flags.riftUnlocked){toast("A fenda ainda está selada. Converse com Lia.");return}
+ if(currentZone!=="village")return;
+ world.overworldMap=world.map;world.overworldObjects=world.objects;
+ world.returnPoint={x:player.x,y:player.y};
+ currentZone="rift";currentRegionId="rift";world.name=regionNames.rift;
+ makeRiftMap();player.x=4*TILE;player.y=5*TILE;spawnRiftEnemies();
+ world.camera.x=0;world.camera.y=0;document.getElementById("location").textContent=regionNames.rift.toUpperCase();
+ log("Você atravessou a Fenda Além da Pedra.","gold");toast("Uma voz familiar ecoa no vazio.");
+}
+function exitRift(){
+ if(currentZone!=="rift")return;
+ currentZone="village";world.name="Vale de Eldoria";
+ if(world.overworldMap){world.map=world.overworldMap;world.objects=world.overworldObjects;world.mapWidth=MAP_W;world.mapHeight=MAP_H}
+ else makeMap();
+ const returnPoint=world.returnPoint||{x:122*TILE,y:30*TILE};
+ player.x=returnPoint.x;player.y=returnPoint.y;
+ currentRegionId=getRegionAt(player.x,player.y);world.regionId=currentRegionId;world.minimapDirty=true;
+ world.enemies=[];spawnRegionEnemies(currentRegionId);world.returnPoint=null;
+ document.getElementById("location").textContent=regionNames[currentRegionId].toUpperCase();
+}
+function spawnRiftEnemies(){
+ world.enemies=[];world.projectiles=[];
+ if(player.flags.riftBossDefeated)return;
+ spawnEnemy("skeleton",10*TILE,5*TILE);
+ spawnEnemy("bandit",16*TILE,9*TILE);
+ spawnEnemy("skeleton",16*TILE,16*TILE);
+ spawnEnemy("boss",28*TILE,17*TILE);
+ const king=world.enemies[world.enemies.length-1];
+ Object.assign(king,{name:"Rei sem Voz",isEchoKing:true,hp:520,maxHp:520,attack:23,speed:45,aggroRange:440,attackRange:62,attackCooldown:1.55,respawn:0,xp:260,gold:150});
+}
 function getRegionAt(x,y){
  const tx=Math.floor((x+player.w/2)/TILE),ty=Math.floor((y+player.h/2)/TILE);
+ if(tx>=96)return"mountains";
  if(tx<24&&ty<24)return"village";
  if(ty<14&&tx<46)return"north";
  if(tx>=46&&tx<=49)return"river";
@@ -646,7 +933,7 @@ function getRegionAt(x,y){
  return"cave";
 }
 function updateRegion(){
- if(currentZone==="crypt")return;
+ if(currentZone==="crypt"||currentZone==="rift")return;
  const next=getRegionAt(player.x,player.y);
  if(next===currentRegionId)return;
  currentRegionId=next;world.regionId=next;
@@ -659,32 +946,87 @@ function spawnRegionEnemies(region){
   north:[["slime",38,8],["goblin",27,11],["wolf",41,12]],
   whispering:[["slime",28,19],["goblin",35,24],["wolf",39,18],["slime",30,34]],
   east:[["goblin",60,24],["wolf",68,39],["slime",57,45]],
-  cave:[["skeleton",73,48],["skeleton",84,57],["goblin",88,49]]
+  cave:[["skeleton",73,48],["skeleton",84,57],["goblin",88,49]],
+  mountains:[["wolf",101,44],["goblin",112,35],["skeleton",112,55],["wolf",123,45],["goblin",117,37]]
  };
  world.enemies=[];world.projectiles=[];
  for(const[type,x,y]of groups[region]||[])spawnEnemy(type,x*TILE,y*TILE);
+ if(region==="mountains"&&player.quests.bellFragments>=3&&!player.flags.echoGuardianDefeated)spawnEchoGuardian();
 }
-function addItem(name,qty,desc){let it=player.inventory.find(i=>i.name===name);if(it)it.qty+=qty;else player.inventory.push({name,qty,desc})}
+function openMountainGate(){
+ const overworld=currentZone==="crypt"?world.overworldMap:world.map;
+ if(overworld&&overworld[51])for(let x=95;x<=97;x++)overworld[51][x]=5;
+ if(currentZone!=="crypt")world.minimapDirty=true;
+}
+function addItem(name,qty,desc){let it=player.inventory.find(i=>i.name===name);if(it)it.qty+=qty;else player.inventory.push({name,qty,desc:desc||(equipmentCatalog[name]&&equipmentCatalog[name].description)||""})}
+function equipItem(name){
+ const gear=equipmentCatalog[name],item=player.inventory.find(entry=>entry.name===name&&entry.qty>0);
+ if(!gear||!item){toast("Esse equipamento não está na bolsa.");return}
+ if(!gear.classes.includes(player.classId)){toast("Sua classe não pode usar esse equipamento.");return}
+ normalizeEquipment();
+ const previous=player.equipment[gear.slot];
+ if(previous===name){toast("Esse item já está equipado.");return}
+ item.qty--;if(item.qty===0)player.inventory=player.inventory.filter(entry=>entry.qty>0);
+ if(previous&&equipmentCatalog[previous])addItem(previous,1,equipmentCatalog[previous].description);
+ player.equipment[gear.slot]=name;
+ if(gear.slot==="weapon")player.weapon=name;
+ if(gear.slot==="armor")player.armor=name;
+ player.hp=Math.min(player.hp,effectiveMaxHp());player.mp=Math.min(player.mp,effectiveMaxMp());
+ log(`${name} equipado.`,"good");updateUI();openInventory();
+}
+function unequipItem(slot){
+ normalizeEquipment();
+ const name=player.equipment[slot],gear=equipmentCatalog[name];
+ if(!gear){toast("Esse item inicial não pode ser removido.");return}
+ addItem(name,1,gear.description);player.equipment[slot]=null;
+ if(slot==="weapon")player.weapon="";
+ if(slot==="armor")player.armor="";
+ player.hp=Math.min(player.hp,effectiveMaxHp());player.mp=Math.min(player.mp,effectiveMaxMp());
+ log(`${name} removido.`,"good");updateUI();openInventory();
+}
 function useItem(name,keepInventory=true){
  const it=player.inventory.find(i=>i.name===name&&i.qty>0);if(!it)return;
- if(name==="Poção de vida"){if(player.hp===player.maxHp){toast("Sua vida já está cheia.");return}player.hp=Math.min(player.maxHp,player.hp+45)}
- else if(name==="Pão de viagem"){if(player.hp===player.maxHp){toast("Sua vida já está cheia.");return}player.hp=Math.min(player.maxHp,player.hp+15)}
+ if(name==="Poção de vida"){if(player.hp===effectiveMaxHp()){toast("Sua vida já está cheia.");return}player.hp=Math.min(effectiveMaxHp(),player.hp+45)}
+ else if(name==="Pão de viagem"){if(player.hp===effectiveMaxHp()){toast("Sua vida já está cheia.");return}player.hp=Math.min(effectiveMaxHp(),player.hp+15)}
+ else if(name==="Poção de mana"){if(player.mp===effectiveMaxMp()){toast("Sua mana já está cheia.");return}player.mp=Math.min(effectiveMaxMp(),player.mp+40)}
  else {toast("Este item não pode ser usado agora.");return}
  it.qty--;if(it.qty===0)player.inventory=player.inventory.filter(i=>i.qty>0);
  log(name+" utilizado.","good");updateUI();if(keepInventory)openInventory();
 }
 function openInventory(){
- const items=player.inventory.map(i=>`<div class="item"><canvas class="item-icon" data-item-icon="${itemIconKey(i.name)}" width="32" height="32"></canvas><b>${i.name} × ${i.qty}</b><span>${i.desc}</span>${["Poção de vida","Pão de viagem"].includes(i.name)?`<p><button onclick="useItem('${i.name}')">Usar</button></p>`:""}</div>`).join("");
- showModal("Inventário",`<p>O que você carrega pode decidir se verá o próximo amanhecer.</p><div class="modalgrid">${items||"Bolsa vazia."}</div><div class="menuButtons"><button onclick="closeModal()">Fechar</button></div>`);
+ normalizeEquipment();
+ const slots=[["weapon","Arma"],["armor","Armadura"],["charm","Amuleto"]].map(([slot,label])=>{
+  const name=player.equipment[slot],gear=equipmentCatalog[name];
+  const bonus=gear?equipmentBonusText(gear):"Equipamento inicial";
+  return `<div class="item"><b>${label}</b><span>${name||"Vazio"} · ${bonus}</span>${gear?`<button type="button" data-unequip="${slot}">Desequipar</button>`:""}</div>`;
+ }).join("");
+ const items=player.inventory.map(item=>{
+  const gear=equipmentCatalog[item.name];
+  const action=gear?`<button type="button" data-equip="${item.name}">Equipar</button>`:
+   ["Poção de vida","Pão de viagem","Poção de mana"].includes(item.name)?`<button type="button" data-use="${item.name}">Usar</button>`:"";
+  return `<div class="item"><canvas class="item-icon" data-item-icon="${itemIconKey(item.name)}" width="32" height="32"></canvas><b>${item.name} × ${item.qty}</b><span>${item.desc||gear?.description||""}</span>${action}</div>`;
+ }).join("");
+ showModal("Equipamentos e bolsa",`<p>Ataque ${effectiveAttack()} · Defesa ${effectiveStat("defense")} · Vida máxima ${effectiveMaxHp()} · Mana máxima ${effectiveMaxMp()}</p><h3>Equipados</h3><div class="modalgrid">${slots}</div><h3>Bolsa</h3><div class="modalgrid">${items||"Bolsa vazia."}</div><div class="menuButtons"><button onclick="closeModal()">Fechar</button></div>`);
+ document.querySelectorAll("[data-equip]").forEach(button=>button.addEventListener("click",()=>equipItem(button.dataset.equip)));
+ document.querySelectorAll("[data-unequip]").forEach(button=>button.addEventListener("click",()=>unequipItem(button.dataset.unequip)));
+ document.querySelectorAll("[data-use]").forEach(button=>button.addEventListener("click",()=>useItem(button.dataset.use)));
  document.querySelectorAll(".item-icon").forEach(canvas=>{
   drawPixelItemIcon(canvas.getContext("2d"),canvas.dataset.itemIcon,0,0,32);
  });
 }
+function equipmentBonusText(gear){
+ return Object.entries(gear).filter(([key,value])=>["attack","defense","strength","intelligence","agility","maxHp","maxMp"].includes(key)&&value)
+  .map(([key,value])=>`${key==="maxHp"?"Vida":key==="maxMp"?"Mana":key==="attack"?"Ataque":key==="defense"?"Defesa":key==="strength"?"Força":key==="intelligence"?"Inteligência":"Agilidade"} +${value}`).join(" · ")||"Sem bônus";
+}
 function itemIconKey(name){
  const icons={
-  "Poção de vida":"potion","Pão de viagem":"bread","Erva-lua":"herb",
+  "Poção de vida":"potion","Poção de mana":"mana-potion","Pão de viagem":"bread","Erva-lua":"herb",
   "Núcleo de gosma":"slime","Presa de lobo":"fang","Dente de goblin":"tooth",
-  "Fragmento ósseo":"bone","Selo antigo":"seal","Chave antiga":"key"
+  "Fragmento ósseo":"bone","Selo antigo":"seal","Fragmento do sino":"seal","Núcleo do sino":"seal",
+  "Caixa de suprimentos":"crate","Chave antiga":"key","Anel do Viajante":"charm",
+  "Broche do Sino":"charm","Medalhão da Vigília":"charm","Relíquia do Primeiro Rei":"charm",
+  "Lâmina do Saqueador":"sword","Cajado de Brasa":"staff","Arco do Batedor":"bow",
+  "Armadura de Escamas":"armor","Manto da Fenda":"armor"
  };
  return icons[name]||"coin";
 }
@@ -694,7 +1036,11 @@ function drawPixelItemIcon(iconCtx,key,x,y,size){
   iconCtx.fillRect(x+px*scale,y+py*scale,width*scale,height*scale);
  };
  if(key==="herb"&&pixelAssets.drawFrame(iconCtx,"props",0,1,32,32,x,y,size,size))return;
- if(key==="potion"){
+ if(key==="mana-potion"){
+  block(6,1,4,2,"#d4e4e6");block(7,3,2,2,"#b8d7e8");
+  block(4,5,8,8,"#28529b");block(5,6,6,6,"#4f9bea");
+  block(6,7,2,4,"#c6ecff");block(4,12,8,2,"#1b3974");
+ }else if(key==="potion"){
   block(6,1,4,2,"#b8d7e8");block(7,3,2,2,"#d4e4e6");
   block(4,5,8,8,"#a52e48");block(5,6,6,6,"#e84e68");
   block(6,7,2,4,"#ffb3a5");block(4,12,8,2,"#74243c");
@@ -718,6 +1064,27 @@ function drawPixelItemIcon(iconCtx,key,x,y,size){
   block(4,2,8,2,"#a87832");block(2,4,12,8,"#e5bd72");
   block(4,12,8,2,"#a87832");block(6,5,4,6,"#7f5029");
   block(7,6,2,4,"#e5bd72");
+ }else if(key==="sword"){
+  block(7,1,3,2,"#eee5d0");block(6,3,4,4,"#d4ddeb");
+  block(7,7,2,4,"#f1d98c");block(5,10,6,2,"#9f6b32");
+  block(7,12,2,3,"#79502f");
+ }else if(key==="staff"){
+  block(7,3,2,11,"#875d38");block(6,2,4,2,"#e2bd72");
+  block(5,1,6,2,"#e67e53");block(6,0,4,1,"#fff0bd");
+ }else if(key==="bow"){
+  block(4,2,2,3,"#c6914f");block(6,5,2,3,"#c6914f");
+  block(8,8,2,3,"#c6914f");block(10,11,2,3,"#c6914f");
+  block(5,4,1,7,"#eadbb9");block(6,10,5,1,"#eadbb9");
+ }else if(key==="armor"){
+  block(4,3,8,2,"#748b9a");block(2,5,12,7,"#a8b7bd");
+  block(4,12,8,2,"#64737c");block(7,5,2,7,"#e2bd72");
+ }else if(key==="charm"){
+  block(6,2,4,2,"#e5bd72");block(4,4,8,8,"#9e6d3d");
+  block(6,6,4,4,"#e7d291");block(7,7,2,2,"#7ab9d4");
+ }else if(key==="crate"){
+  block(2,4,12,9,"#79502f");block(3,5,10,7,"#bd8547");
+  block(7,5,2,7,"#e5bd72");block(3,8,10,2,"#e5bd72");
+  block(2,13,12,1,"#5e3d2c");
  }else if(key==="key"){
   block(2,3,6,2,"#f0ca73");block(2,5,2,3,"#f0ca73");
   block(7,4,7,2,"#d19b49");block(11,6,2,3,"#d19b49");
@@ -774,10 +1141,12 @@ function exitGame(){
  },100);
 }
 function showMap(){
- let body=currentZone==="crypt"?"Você está na <b>Cripta do Primeiro Rei</b>. Esqueletos guardam os corredores. A saída fica perto da entrada.":"Você está em <b>"+regionNames[currentRegionId]+"</b>, no Vale de Eldoria. As estradas conectam a vila, os campos do norte, a Floresta dos Sussurros, o rio com sua ponte e a trilha até a Caverna Esquecida.";
+ let body=currentZone==="crypt"?"Você está na <b>Cripta do Primeiro Rei</b>. Esqueletos guardam os corredores. A saída fica perto da entrada.":
+  currentZone==="rift"?"Você está na <b>Fenda Além da Pedra</b>. Atravesse as galerias e encontre a origem da voz que imita os mortos.":
+  "Você está em <b>"+regionNames[currentRegionId]+"</b>, no Vale de Eldoria. As estradas atravessam a vila, os campos, a floresta, o rio e a cripta; além do portão a leste ficam as Montanhas do Eco e as ruínas do sino.";
  showModal("Mapa e regiões",`<p>${body}</p><p><b>Objetivo:</b> explore, converse com personagens e siga as pistas no painel Jornada atual.</p><div class="menuButtons"><button onclick="closeModal()">Voltar ao jogo</button></div>`);
 }
-function showHelp(){const characterClass=classes[player.classId]||classes.warrior;showModal("Como jogar",`<p><b>Movimentação:</b> WASD ou setas. <b>Ataque:</b> clique esquerdo no mundo ou Espaço. <b>Habilidade de ${characterClass.name}:</b> ${characterClass.ability}. <b>Interagir:</b> E. <b>Inventário:</b> I. <b>Poção:</b> 1. <b>Pão:</b> 2.</p><p><b>Descansar:</b> R. <b>Salvar:</b> F. <b>Mapa:</b> M. <b>Painel:</b> J. <b>Ajuda:</b> H. Pressione Enter ou Espaço para avançar diálogos e Esc para fechar uma janela.</p><p>O alcance e o efeito do ataque mudam por classe. Chegue perto de personagens, baús, placas e plantas e pressione E. Inimigos perseguem você quando chegam perto e reaparecem após um intervalo.</p><p>Derrotar inimigos concede XP e ouro. Ao subir de nível, os atributos evoluem conforme sua classe, e vida/mana são restauradas.</p><div class="menuButtons"><button onclick="closeModal()">Entendi</button></div>`)}
+function showHelp(){const characterClass=classes[player.classId]||classes.warrior;showModal("Como jogar",`<p><b>Movimentação:</b> WASD ou setas. <b>Ataque:</b> clique esquerdo no mundo ou Espaço. <b>Habilidades de ${characterClass.name}:</b> Q, Z, X, C e V; novas habilidades desbloqueiam nos níveis 3, 5, 8 e 10. <b>Interagir:</b> E. <b>Equipamentos e bolsa:</b> I. <b>Itens:</b> 1 poção de vida, 2 pão, 3 poção de mana.</p><p><b>Descansar:</b> R. <b>Salvar:</b> F. <b>Mapa:</b> M. <b>Painel:</b> J. <b>Ajuda:</b> H. Pressione Enter ou Espaço para avançar diálogos e Esc para fechar uma janela.</p><p>O alcance e o efeito das habilidades mudam por classe. Equipe armas, armaduras e amuletos encontrados ou comprados com Doran; os bônus alteram seus atributos de combate. Chegue perto de personagens, baús, placas e itens brilhantes e pressione E.</p><p>Derrotar inimigos concede XP e ouro. Ao subir de nível, os atributos evoluem conforme sua classe, e vida/mana são restauradas.</p><div class="menuButtons"><button onclick="closeModal()">Entendi</button></div>`)}
 function showCredits(){showModal("Créditos",`<p><b>DRAKMOR — As Cinzas do Primeiro Rei</b></p><p>Um RPG de fantasia criado em HTML, CSS e JavaScript, com Canvas 2D, mapa por tiles e carregamento de pixel art PNG.</p><p>História, personagens, mundo, interface e código: projeto original para estudo e expansão.</p><div class="menuButtons"><button onclick="backToMenu()">Voltar</button></div>`)}
 function backToMenu(){closeModal()}
 function findFacingEnemy(maxRange,lateralRange=45){
@@ -790,6 +1159,14 @@ function findFacingEnemy(maxRange,lateralRange=45){
   if(forward>0&&forward<=maxRange&&lateral<=lateralRange&&distance<nearest){target=enemy;nearest=distance}
  }
  return target;
+}
+function findFacingEnemies(maxRange,lateralRange,maxTargets){
+ const dir={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]}[player.facing],px=player.x+player.w/2,py=player.y+player.h/2;
+ return world.enemies.map(enemy=>{
+  const dx=enemy.x+enemy.w/2-px,dy=enemy.y+enemy.h/2-py;
+  return{enemy,forward:dx*dir[0]+dy*dir[1],lateral:Math.abs(dx*dir[1]-dy*dir[0]),distance:Math.hypot(dx,dy)};
+ }).filter(target=>!target.enemy.dead&&target.forward>0&&target.forward<=maxRange&&target.lateral<=lateralRange)
+  .sort((a,b)=>a.distance-b.distance).slice(0,maxTargets).map(target=>target.enemy);
 }
 function damageEnemiesInArea(x,y,radius,damage){
  let hits=0;
@@ -817,24 +1194,24 @@ function attack(){
  player.attackTimer=.24;
  const classId=classes[player.classId]?player.classId:"warrior";
  const dir={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]}[player.facing],px=player.x+player.w/2,py=player.y+player.h/2;
- attackCooldown=Math.max(.28,.5-player.agility*.008);
+ attackCooldown=Math.max(.28,.5-effectiveStat("agility")*.008);
  const attackColors={mage:"#9c7aff",archer:"#f2d27c",druid:"#83c878"};
  if(classId==="mage"||classId==="archer"||classId==="druid"){
   const ranges={mage:220,archer:330,druid:190};
   const enemy=findFacingEnemy(ranges[classId],classId==="archer"?36:55);
   if(enemy){
-   const damage=classId==="mage"?player.baseAttack+player.intelligence:classId==="archer"?player.baseAttack+Math.round(player.agility*.7):player.baseAttack+Math.round(player.intelligence*.7);
+   const damage=classId==="mage"?effectiveAttack()+effectiveStat("intelligence"):classId==="archer"?effectiveAttack()+Math.round(effectiveStat("agility")*.7):effectiveAttack()+Math.round(effectiveStat("intelligence")*.7);
    firePlayerProjectile(classId,enemy,damage,attackColors[classId]);
   }else{burst(px+dir[0]*45,py+dir[1]*45,attackColors[classId],8);log("Seu ataque não encontrou um alvo à frente.")}
   return;
  }
  let hits=0;
- const meleeDamage=player.baseAttack+Math.round(player.strength*.55)+rand(-2,3)+
-  (classId==="paladin"?Math.round(player.intelligence*.2):0);
+ const meleeDamage=effectiveAttack()+Math.round(effectiveStat("strength")*.55)+rand(-2,3)+
+  (classId==="paladin"?Math.round(effectiveStat("intelligence")*.2):0);
  if(classId==="rogue"){
   const enemy=findFacingEnemy(82,60);
   if(enemy){
-   const critical=Math.random()<Math.min(.7,player.agility/40),damage=critical?meleeDamage:Math.max(1,Math.round(meleeDamage*.65));
+   const critical=Math.random()<Math.min(.7,effectiveStat("agility")/40),damage=critical?meleeDamage:Math.max(1,Math.round(meleeDamage*.65));
    damageEnemy(enemy,damage);if(!enemy.dead)damageEnemy(enemy,damage);hits=1;
    if(critical)log("Ataque crítico do Ladino!","gold");
   }
@@ -849,34 +1226,59 @@ function attack(){
  if(!hits)log("Seu golpe cortou o ar.");
 }
 function castSpell(){
+ const primary=(classSkills[player.classId]||[])[0];
+ if(primary)castClassSkill(primary.id);
+}
+function castClassSkill(skillId){
  if(!gameStarted||paused||spellCooldown>0)return;
- const classId=classes[player.classId]?player.classId:"warrior",costs={warrior:8,mage:12,archer:8,rogue:10,paladin:12,druid:12},cost=costs[classId];
- if(player.mp<cost){toast("Mana insuficiente.");return}
- player.mp-=cost;spellCooldown=1.2;player.attackTimer=.32;
- const dir={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]}[player.facing],px=player.x+player.w/2,py=player.y+player.h/2;
- let hits=0,color="#f3d18a",message="";
- if(classId==="warrior"){
-  color="#f0bb62";player.guardBonus=4;player.guardTimer=4;hits=damageEnemiesInArea(px+dir[0]*45,py+dir[1]*45,88,player.baseAttack+player.strength);message="Golpe de escudo";
- }else if(classId==="mage"){
-  color="#a47aff";hits=damageEnemiesInArea(px+dir[0]*62,py+dir[1]*62,105,16+player.intelligence*2);message="Explosão elemental";
- }else if(classId==="archer"){
-  color="#f2d27c";const enemy=findFacingEnemy(390,42);
-  if(enemy){damageEnemy(enemy,player.baseAttack+player.agility*2);hits=1}
-  message="Disparo preciso";
- }else if(classId==="rogue"){
-  color="#c7a6ff";const enemy=findFacingEnemy(115,65);
-  if(enemy){damageEnemy(enemy,Math.round((player.baseAttack+player.agility*1.5)*1.6));hits=1}
-  message="Golpe sombrio";
- }else if(classId==="paladin"){
-  color="#ffe17c";player.hp=Math.min(player.maxHp,player.hp+35+player.intelligence);
-  hits=damageEnemiesInArea(px,py,105,12+Math.round(player.intelligence*1.5));message="Luz sagrada";
- }else{
-  color="#83c878";player.hp=Math.min(player.maxHp,player.hp+20);
-  hits=damageEnemiesInArea(px+dir[0]*48,py+dir[1]*48,100,12+Math.round(player.intelligence*1.5));message="Raízes vivas";
+ const classId=classes[player.classId]?player.classId:"warrior";
+ const skill=(classSkills[classId]||[]).find(candidate=>candidate.id===skillId);
+ if(!skill)return;
+ if(player.level<skill.level){toast(`${skill.name} desbloqueia no nível ${skill.level}.`);return}
+ if(player.mp<skill.cost){toast("Mana insuficiente.");return}
+ player.mp-=skill.cost;spellCooldown=skill.cooldown||1.2;player.attackTimer=.32;
+ const dir={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]}[player.facing]||[0,1];
+ const px=player.x+player.w/2,py=player.y+player.h/2;
+ const attribute=effectiveStat(skill.attribute)||0;
+ const damage=Math.max(1,Math.round((effectiveAttack()+attribute*(skill.scale||0))*(skill.multiplier||1)));
+ const targetX=px+dir[0]*(skill.offset||0),targetY=py+dir[1]*(skill.offset||0);
+ let hits=0,healed=0;
+ if(skill.effect==="area"||skill.effect==="guard-area"||skill.effect==="heal-area"){
+  hits=damageEnemiesInArea(targetX,targetY,skill.radius,damage);
  }
- burst(px+dir[0]*48,py+dir[1]*48,color,24);
- log(`${message}: ${hits?`atingiu ${hits} inimigo(s)`:"nenhum inimigo atingido"}.`,"good");updateUI();
- if(classId==="warrior")log("Sua defesa aumentou por 4 segundos.","good");
+ if(skill.effect==="target"||skill.effect==="projectile"){
+  const enemy=findFacingEnemy(skill.range,skill.cone);
+  if(enemy){
+   if(skill.effect==="projectile")firePlayerProjectile(classId,enemy,damage,skill.color);
+   else damageEnemy(enemy,damage);
+   hits=1;
+  }
+ }
+ if(skill.effect==="volley"){
+  const targets=findFacingEnemies(skill.range,skill.cone,skill.targets);
+  for(const enemy of targets)firePlayerProjectile(classId,enemy,damage,skill.color);
+  hits=targets.length;
+ }
+ if(skill.effect==="heal"||skill.effect==="heal-area"||skill.effect==="heal-guard"){
+  healed=Math.min(effectiveMaxHp()-player.hp,skill.heal+Math.round(effectiveStat("intelligence")*(skill.healScale||0)));
+  player.hp+=healed;
+ }
+ if(skill.effect==="guard"||skill.effect==="guard-area"||skill.effect==="heal-guard"){
+  player.guardBonus=skill.guard;player.guardTimer=skill.duration;
+ }
+ burst(targetX,targetY,skill.color,skill.particles||12);
+ const results=[];
+ if(hits)results.push(`${hits} alvo(s)`);
+ if(healed)results.push(`+${healed} vida`);
+ if(skill.guard)results.push(`defesa +${skill.guard}`);
+ log(`${skill.name}: ${results.join(" · ")||"nenhum alvo atingido"}.`,results.length?"good":"");
+ updateUI();
+}
+function castClassSkillByKey(key){
+ const skill=(classSkills[player.classId]||[]).find(candidate=>candidate.key===key);
+ if(!skill)return false;
+ if(player.level<skill.level){toast(`${skill.name} desbloqueia no nível ${skill.level}.`);return true}
+ castClassSkill(skill.id);return true;
 }
 function damageEnemy(e,amount){
  if(e.dead)return;
@@ -886,9 +1288,18 @@ function damageEnemy(e,amount){
   e.dead=true;e.deadTimer=e.respawn;e.state="dead";
   player.xp+=e.xp;player.gold+=e.gold;
   if(e.type==="slime")player.quests.slimes++;
-  if(e.type==="boss"){
+  if(e.isEchoKing){
+   player.flags.riftBossDefeated=true;world.chapter=3;
+   say("Narrador","O Rei sem Voz ergue a espada para a terceira badalada — e a lâmina se desfaz em poeira. O eco se cala. Uma pessoa se move na câmara ao fundo.");
+   log("O Rei sem Voz foi derrotado. Procure Joren na câmara.","gold");
+  }else if(e.isEchoGuardian){
+   player.flags.echoGuardianDefeated=true;
+   say("Narrador","A armadura se parte, e o guardião deixa cair um núcleo que pulsa como um coração. No silêncio, você ouve a voz de Joren: “Uma vez, Lia. Só uma.”");
+   log("Guardião derrotado. Recupere o Núcleo do Sino.","gold");
+  }else if(e.type==="boss"){
    player.flags.cryptBoss=true;player.quests.crypt=true;
-   say("Narrador","O Cavaleiro sem Rosto cai de joelhos. A armadura se desfaz em cinzas. Sob ela, não existe corpo — apenas uma chama azul, que sussurra seu nome antes de desaparecer. A moeda em sua mão se parte ao meio. A primeira fechadura foi quebrada, mas algo muito maior acaba de acordar.");
+   openMountainGate();
+   say("Narrador","O Cavaleiro sem Rosto cai de joelhos. A armadura se desfaz em cinzas; sob ela, há apenas uma chama azul que sussurra seu nome. A moeda se parte, e um som atravessa a pedra. Na cordilheira, um portão antigo se abre: o sino não chamava os mortos — mantinha algo preso.");
    world.chapter=2;log("Chefe derrotado! Capítulo II desbloqueado.","gold");
   }
   log(`${e.name} derrotado: +${e.xp} XP, +${e.gold} ouro.`,"good");
@@ -897,7 +1308,10 @@ function damageEnemy(e,amount){
  updateUI();
 }
 function dropEnemyLoot(enemy){
- for(const item of enemyDrops[enemy.type]||[]){
+ const drops=enemy.isEchoGuardian?
+  [{name:"Núcleo do sino",description:"O núcleo que alimentava o Guardião do Sino.",chance:1}]:
+  enemyDrops[enemy.type]||[];
+ for(const item of drops){
   if(Math.random()>=item.chance)continue;
   world.objects.push({
    type:"loot",itemName:item.name,description:item.description,
@@ -912,7 +1326,12 @@ function checkLevel(){
   player.xp-=player.nextXp;player.level++;player.nextXp=Math.floor(player.nextXp*1.45);
   player.maxHp+=growth.hp;player.maxMp+=growth.mp;player.baseAttack+=growth.attack;
   player.strength+=growth.strength;player.intelligence+=growth.intelligence;player.agility+=growth.agility;player.defense+=growth.defense;
-  player.hp=player.maxHp;player.mp=player.maxMp;say("Sistema","SUBIU DE NÍVEL! Seus atributos aumentaram. Vida e mana foram restauradas.");log("Você alcançou o nível "+player.level+"!","gold")
+  player.hp=effectiveMaxHp();player.mp=effectiveMaxMp();
+  const unlocked=(classSkills[player.classId]||[]).find(skill=>skill.level===player.level);
+  say("Sistema",unlocked?
+   `SUBIU DE NÍVEL! Nova habilidade: ${unlocked.name} (${unlocked.key.toUpperCase()}). ${unlocked.description}`:
+   "SUBIU DE NÍVEL! Seus atributos aumentaram. Vida e mana foram restauradas.");
+  log("Você alcançou o nível "+player.level+"!","gold")
  }
 }
 function gainXP(n){player.xp+=n;checkLevel();updateUI()}
@@ -928,7 +1347,7 @@ function burst(x,y,color,n){
   });
  }
 }
-function rest(){if(!gameStarted||paused)return;if(world.enemies.some(e=>!e.dead&&Math.hypot(e.x-player.x,e.y-player.y)<180)){toast("Perigo por perto! Não é seguro descansar.");return}player.hp=player.maxHp;player.mp=player.maxMp;world.day++;log("Você descansou. Um novo dia começa.","good");updateUI()}
+function rest(){if(!gameStarted||paused)return;if(world.enemies.some(e=>!e.dead&&Math.hypot(e.x-player.x,e.y-player.y)<180)){toast("Perigo por perto! Não é seguro descansar.");return}player.hp=effectiveMaxHp();player.mp=effectiveMaxMp();world.day++;log("Você descansou. Um novo dia começa.","good");updateUI()}
 function enemyUpdate(dt){
  for(const e of world.enemies){
   e.attackEffectTimer=Math.max(0,(e.attackEffectTimer||0)-dt);
@@ -951,14 +1370,14 @@ function enemyUpdate(dt){
   e.animationTime+=dt;
   e.attackTimer-=dt;
   if(d<e.attackRange&&e.attackTimer<=0&&player.invulnerable<=0){
-   const damage=Math.max(1,e.attack-player.defense-(player.guardTimer>0?player.guardBonus:0));
+   const damage=Math.max(1,e.attack-effectiveStat("defense")-(player.guardTimer>0?player.guardBonus:0));
    player.hp=Math.max(0,player.hp-damage);player.invulnerable=.7;e.attackTimer=e.attackCooldown;e.attackEffectTimer=.2;e.state="attack";
    burst(player.x+player.w/2,player.y+player.h/2,"#f16d6d",1);log(`${e.name} causou ${damage} de dano.`,"bad");
    if(player.hp<=0)playerDown();updateUI();
   }
  }
 }
-function playerDown(){paused=true;say("Narrador","A escuridão toma seus sentidos. Quando desperta, você está de volta à vila. Parte do ouro foi perdida, mas sua jornada ainda não terminou.",()=>{if(currentZone==="crypt")exitCrypt();player.hp=player.maxHp;player.mp=player.maxMp;player.gold=Math.floor(player.gold*.75);player.x=6*TILE;player.y=10*TILE;player.guardTimer=0;paused=false;updateRegion();updateUI()})}
+function playerDown(){paused=true;say("Narrador","A escuridão toma seus sentidos. Quando desperta, você está de volta à vila. Parte do ouro foi perdida, mas sua jornada ainda não terminou.",()=>{if(currentZone==="crypt")exitCrypt();else if(currentZone==="rift")exitRift();player.hp=effectiveMaxHp();player.mp=effectiveMaxMp();player.gold=Math.floor(player.gold*.75);player.x=6*TILE;player.y=10*TILE;player.guardTimer=0;paused=false;updateRegion();updateUI()})}
 function moveEntity(e,dx,dy){
  const nx={x:e.x+dx,y:e.y,w:e.w,h:e.h};if(!collides(nx))e.x=clamp(nx.x,TILE,world.mapWidth*TILE-e.w-TILE);
  const ny={x:e.x,y:e.y+dy,w:e.w,h:e.h};if(!collides(ny))e.y=clamp(ny.y,TILE,world.mapHeight*TILE-e.h-TILE);
@@ -966,7 +1385,7 @@ function moveEntity(e,dx,dy){
 function collides(r){
  const x0=Math.floor(r.x/TILE),x1=Math.floor((r.x+r.w-1)/TILE),y0=Math.floor(r.y/TILE),y1=Math.floor((r.y+r.h-1)/TILE);
  for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){if(!world.map[y]||world.map[y][x]===undefined||SOLID_TILES.has(world.map[y][x]))return true}
- if(currentZone!=="crypt")for(const npc of npcs)if(rects(r,{x:npc.x+3,y:npc.y+5,w:18,h:23}))return true;
+ for(const npc of currentZoneNpcs())if(rects(r,{x:npc.x+3,y:npc.y+5,w:18,h:23}))return true;
  return false;
 }
 function playerUpdate(dt){
@@ -1035,6 +1454,8 @@ const atmospherePalettes={
  river:{wash:"rgba(126,199,230,.07)",mote:"#c4f1ff"},
  east:{wash:"rgba(255,196,126,.065)",mote:"#ffe0a2"},
  cave:{wash:"rgba(186,190,171,.065)",mote:"#e8e4c4"},
+ mountains:{wash:"rgba(159,190,207,.075)",mote:"#d2edff"},
+ rift:{wash:"rgba(103,77,160,.12)",mote:"#d9bdff"},
  crypt:{wash:"rgba(95,128,190,.12)",mote:"#c5d8ff"}
 };
 function drawRegionAtmosphere(){
@@ -1049,19 +1470,21 @@ function drawRegionAtmosphere(){
   ctx.globalAlpha=pulse*.32;ctx.fillStyle=mood.mote;ctx.fillRect(x-3,y-3,8,8);
   ctx.globalAlpha=pulse;ctx.fillRect(x,y,3,3);
  }
- if(currentZone==="crypt"){
+ if(currentZone==="crypt"||currentZone==="rift"){
   const x=player.x+player.w/2-world.camera.x,y=player.y+player.h/2-world.camera.y;
   const glow=ctx.createRadialGradient(x,y,8,x,y,220);
-  glow.addColorStop(0,"rgba(255,211,142,.2)");glow.addColorStop(1,"rgba(255,211,142,0)");
+  const aura=currentZone==="rift"?"rgba(185,143,255,.2)":"rgba(255,211,142,.2)";
+  const auraClear=currentZone==="rift"?"rgba(185,143,255,0)":"rgba(255,211,142,0)";
+  glow.addColorStop(0,aura);glow.addColorStop(1,auraClear);
   ctx.globalAlpha=1;ctx.fillStyle=glow;ctx.fillRect(0,0,W,H);
  }
  const vignette=ctx.createRadialGradient(W/2,H/2,H*.22,W/2,H/2,Math.max(W,H)*.72);
- vignette.addColorStop(0,"rgba(5,8,12,0)");vignette.addColorStop(1,currentZone==="crypt"?"rgba(4,7,18,.42)":"rgba(5,8,12,.28)");
+ vignette.addColorStop(0,"rgba(5,8,12,0)");vignette.addColorStop(1,currentZone==="crypt"?"rgba(4,7,18,.42)":currentZone==="rift"?"rgba(33,13,64,.55)":"rgba(5,8,12,.28)");
  ctx.globalAlpha=1;ctx.fillStyle=vignette;ctx.fillRect(0,0,W,H);
  ctx.restore();
 }
 const facingRows={down:0,up:1,left:2,right:3};
-const propFrames={sign:0,herb:1,chest:2,portal:3,exitPortal:5};
+const propFrames={sign:0,herb:1,chest:2,portal:3,riftPortal:4,exitPortal:5,riftExit:5};
 function drawTileMap(){
  const camera=world.camera;
  const startX=Math.max(0,Math.floor(camera.x/TILE)),startY=Math.max(0,Math.floor(camera.y/TILE));
@@ -1075,7 +1498,7 @@ function drawTileMap(){
 function drawWorldActors(){
  const camera=world.camera,actors=world.renderActors||(world.renderActors=[]);
  let count=0;
- for(const npc of npcs)if(currentZone!=="crypt")count=addRenderActor(actors,count,"npc",npc,npc.y);
+ for(const npc of currentZoneNpcs())count=addRenderActor(actors,count,"npc",npc,npc.y);
  for(const enemy of world.enemies)if(!enemy.dead)count=addRenderActor(actors,count,"enemy",enemy,enemy.y+enemy.h);
  count=addRenderActor(actors,count,"player",player,player.y+player.h);
  actors.length=count;actors.sort(actorSort);
@@ -1163,15 +1586,36 @@ function drawEnemyAttackEffect(actor,x,y){
 }
 function drawObject(object){
  if((object.type==="herb"||object.type==="loot")&&!object.active)return;
+ if(object.type==="riftPortal"&&!player.flags.riftUnlocked)return;
  if(object.type==="loot"){
-  drawPixelItemIcon(ctx,itemIconKey(object.itemName),object.x-world.camera.x-4,object.y-world.camera.y-4,32);
+  drawLootObject(object);
   return;
  }
  let frame=propFrames[object.type];
  if(object.type==="portal"&&player.flags.gateOpen)frame=4;
  if(object.type==="exitPortal"&&currentZone!=="crypt")return;
+ if(object.type==="riftExit"&&currentZone!=="rift")return;
  if(frame===undefined)return;
  pixelAssets.drawFrame(ctx,"props",Math.floor(frame/8),frame%8,32,32,object.x-world.camera.x,object.y-world.camera.y);
+}
+function drawLootObject(object){
+ const x=object.x+(object.w||24)/2-world.camera.x,y=object.y+(object.h||24)/2-world.camera.y;
+ const bob=Math.sin(performance.now()/280+object.x*.02)*2.5;
+ const colors=object.itemName==="Poção de mana"?
+  ["rgba(105,174,255,.55)","rgba(105,174,255,0)"]:
+  object.itemName==="Poção de vida"?
+   ["rgba(242,100,119,.5)","rgba(242,100,119,0)"]:
+   object.itemName==="Caixa de suprimentos"?
+    ["rgba(231,164,92,.52)","rgba(231,164,92,0)"]:
+   ["rgba(244,202,112,.48)","rgba(244,202,112,0)"];
+ ctx.save();
+ const glow=ctx.createRadialGradient(x,y+bob,1,x,y+bob,20);
+ glow.addColorStop(0,colors[0]);glow.addColorStop(1,colors[1]);
+ ctx.fillStyle=glow;ctx.beginPath();ctx.ellipse(x,y+bob,20,12,0,0,Math.PI*2);ctx.fill();
+ ctx.globalAlpha=.72+.18*Math.sin(performance.now()/180+object.y*.02);
+ ctx.strokeStyle=colors[0];ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(x,y+bob+9,11,3,0,0,Math.PI*2);ctx.stroke();
+ ctx.restore();
+ drawPixelItemIcon(ctx,itemIconKey(object.itemName),x-16,y-16+bob,32);
 }
 function drawCombatEffects(){
  for(const effect of world.particles){
@@ -1247,6 +1691,13 @@ function drawMinimap(){
   const ey=Math.floor((enemy.y+enemy.h/2)/(world.mapHeight*TILE)*minimap.height);
   mapCtx.fillRect(ex,ey,2,2);
  }
+ for(const object of world.objects)if(object.active!==false&&(object.type==="loot"||object.type==="herb"||object.type==="chest")){
+  const ox=Math.floor((object.x+(object.w||24)/2)/(world.mapWidth*TILE)*minimap.width);
+  const oy=Math.floor((object.y+(object.h||24)/2)/(world.mapHeight*TILE)*minimap.height);
+  mapCtx.fillStyle=object.type==="herb"?"#8fe0a7":object.itemName==="Poção de mana"?"#76b9ed":
+   object.itemName==="Caixa de suprimentos"?"#e7a45c":"#f4d28a";
+  mapCtx.fillRect(ox-1,oy-1,3,3);
+ }
  mapCtx.fillStyle="#f4d28a";mapCtx.fillRect(px-1,py-1,3,3);
 }
 function updateAssetNotice(){
@@ -1263,40 +1714,102 @@ function updateAssetNotice(){
  }
 }
 function loop(t){if(!gameStarted)return;const dt=Math.min((t-lastTime)/1000||0,.04);lastTime=t;update(dt);draw();requestAnimationFrame(loop)}
+function updateClassSkillList(){
+ const list=document.getElementById("skillList"),signature=`${player.classId}:${player.level}`;
+ if(!list||signature===renderedSkillSignature)return;
+ renderedSkillSignature=signature;list.replaceChildren();
+ for(const skill of classSkills[player.classId]||[]){
+  const unlocked=player.level>=skill.level,button=document.createElement("button");
+  button.type="button";button.className="skill-button";button.disabled=!unlocked;
+  button.title=skill.description;
+  const key=document.createElement("kbd"),name=document.createElement("strong"),details=document.createElement("small");
+  key.textContent=skill.key.toUpperCase();name.textContent=skill.name;
+  details.textContent=unlocked?`${skill.description} · ${skill.cost} mana`:`Desbloqueia no nível ${skill.level}`;
+  button.append(key,name,details);
+  if(unlocked)button.addEventListener("click",()=>castClassSkill(skill.id));
+  list.append(button);
+ }
+}
 function updateUI(){
  const characterClass=classes[player.classId]||classes.warrior;
  document.getElementById("heroName").textContent=player.name+" · "+characterClass.name+" · Nv. "+player.level;
- document.getElementById("location").textContent=(currentZone==="crypt"?regionNames.crypt:regionNames[currentRegionId]).toUpperCase();
- document.getElementById("hpText").textContent=player.hp+" / "+player.maxHp;document.getElementById("hpBar").style.width=100*player.hp/player.maxHp+"%";
- document.getElementById("mpText").textContent=player.mp+" / "+player.maxMp;document.getElementById("mpBar").style.width=100*player.mp/player.maxMp+"%";
+ document.getElementById("location").textContent=regionNames[currentZone==="crypt"||currentZone==="rift"?currentZone:currentRegionId].toUpperCase();
+ const maxHp=effectiveMaxHp(),maxMp=effectiveMaxMp();
+ document.getElementById("hpText").textContent=player.hp+" / "+maxHp;document.getElementById("hpBar").style.width=100*player.hp/maxHp+"%";
+ document.getElementById("mpText").textContent=player.mp+" / "+maxMp;document.getElementById("mpBar").style.width=100*player.mp/maxMp+"%";
  document.getElementById("xpText").textContent=player.xp+" / "+player.nextXp;document.getElementById("xpBar").style.width=100*player.xp/player.nextXp+"%";
- document.getElementById("attackText").textContent=player.baseAttack;document.getElementById("strengthText").textContent=player.strength;document.getElementById("intelligenceText").textContent=player.intelligence;document.getElementById("agilityText").textContent=player.agility;document.getElementById("coins").textContent="◈ "+player.gold+" ouro";
+ document.getElementById("attackText").textContent=effectiveAttack();document.getElementById("strengthText").textContent=effectiveStat("strength");document.getElementById("intelligenceText").textContent=effectiveStat("intelligence");document.getElementById("agilityText").textContent=effectiveStat("agility");document.getElementById("defenseText").textContent=effectiveStat("defense");document.getElementById("coins").textContent="◈ "+player.gold+" ouro";
  let q="Fale com o ancião Oren na vila para descobrir o que está acontecendo.";
  if(player.quests.elder&&!player.flags.elderReward)q=`<strong>Ecos na Estrada</strong><br>Núcleos de gosma: ${player.quests.slimes}/3<br>Ervas-lua: ${player.quests.herbs}/2<br><span style="color:#9299a6">Derrote gosmas e colete as plantas brilhantes.</span>`;
  if(player.flags.elderReward&&!player.flags.gateOpen)q="<strong>A chave da cripta</strong><br>Converse com o guarda Bren para abrir a passagem.";
  if(player.flags.gateOpen&&!player.flags.cryptBoss)q="<strong>O Primeiro Selo</strong><br>Entre na cripta e derrote o Cavaleiro sem Rosto.";
- if(player.flags.cryptBoss)q="<strong>O despertar</strong><br>O primeiro selo foi quebrado. A moeda se partiu. Algo despertou além das montanhas.<br><span style='color:#e5bd72'>Capítulo II — em breve.</span>";
+ if(player.flags.cryptBoss&&!player.flags.bellRestored){
+  if(!player.flags.bellQuestStarted)q="<strong>O Sino que Chama de Volta</strong><br>Encontre Lia nas Montanhas do Eco, além do portão recém-aberto.";
+  else if(player.quests.bellFragments<3)q=`<strong>O Sino que Chama de Volta</strong><br>Fragmentos do sino: ${player.quests.bellFragments}/3<br>Explore as trilhas e as ruínas das montanhas.`;
+  else if(!player.flags.echoGuardianDefeated)q="<strong>O Sino que Chama de Volta</strong><br>Os fragmentos despertaram o Guardião do Sino. Derrote-o nas ruínas.";
+  else if(!player.quests.bellCore)q="<strong>O Sino que Chama de Volta</strong><br>Recupere o Núcleo do Sino que o guardião deixou no pátio.";
+  else q="<strong>O Sino que Chama de Volta</strong><br>Leve o Núcleo do Sino para Lia.";
+ }
+ if(player.flags.bellRestored&&!player.flags.riftBossDefeated)q="<strong>Capítulo III — A Voz Além da Pedra</strong><br>Entre na fenda atrás do altar das ruínas e derrote o Rei sem Voz.";
+ if(player.flags.riftBossDefeated&&!player.flags.jorenRescued)q="<strong>Capítulo III — A Voz Além da Pedra</strong><br>Procure Joren na câmara ao fundo e traga-o de volta para Lia.";
+ if(player.flags.jorenRescued)q="<strong>Capítulo III concluído</strong><br>Joren voltou para casa. O sino foi silenciado e a maldição do Primeiro Rei terminou.";
+ if(player.flags.supplyQuestStarted&&!player.flags.supplyReward)q+=`<br><br><strong>Extra · A Carga Perdida</strong><br>Caixas recuperadas: ${player.quests.suppliesFound}/2.`;
  document.getElementById("questText").innerHTML=q;
+ updateClassSkillList();
 }
 function saveGame(){
- const data={mapVersion:2,player,chapter:world.chapter,day:world.day,currentZone,regionId:currentRegionId,herbs:world.objects.filter(o=>o.type==="herb").map(o=>o.active),chest:world.objects.find(o=>o.type==="chest")?.active};
+ const isDungeon=currentZone==="crypt"||currentZone==="rift";
+ const overworldObjects=isDungeon&&world.overworldObjects?world.overworldObjects:world.objects;
+ const collectDrops=(objects,zone)=>objects.filter(o=>o.type==="loot"&&!o.mapPickup&&o.active!==false)
+  .map(({itemName,description,x,y})=>({itemName,description,x,y,zone}));
+ const droppedLoot=[...collectDrops(overworldObjects,"overworld"),...(isDungeon?collectDrops(world.objects,currentZone):[])];
+ const data={mapVersion:4,player,chapter:world.chapter,day:world.day,currentZone,regionId:currentRegionId,returnPoint:world.returnPoint,herbs:overworldObjects.filter(o=>o.type==="herb").map(o=>o.active),chest:overworldObjects.find(o=>o.type==="chest")?.active,droppedLoot};
  localStorage.setItem("drakmorSave",JSON.stringify(data));toast("Jornada salva neste navegador.");log("Progresso salvo.","good");
 }
 function continueGame(){
  const raw=localStorage.getItem("drakmorSave");if(!raw){toast("Nenhum jogo salvo encontrado.");return}
  try{
   const d=JSON.parse(raw);Object.assign(player,d.player);
+  player.quests=Object.assign({elder:false,slimes:0,herbs:0,bandit:false,crypt:false,bellFragments:0,bellCore:false,suppliesFound:0},player.quests||{});
+  player.flags=Object.assign({intro:false,elderReward:false,gateOpen:false,cryptBoss:false,bellQuestStarted:false,echoGuardianDefeated:false,bellRestored:false,supplyQuestStarted:false,supplyReward:false,riftUnlocked:false,riftBossDefeated:false,jorenRescued:false},player.flags||{});
+  if(player.flags.bellRestored)player.flags.riftUnlocked=true;
+  if(player.flags.jorenRescued)player.flags.riftBossDefeated=true;
+  player.collectedMapItems=Array.isArray(player.collectedMapItems)?player.collectedMapItems:[];
+  normalizeEquipment();
+  player.hp=Math.min(player.hp,effectiveMaxHp());player.mp=Math.min(player.mp,effectiveMaxMp());
   world.projectiles=[];
   if(!d.mapVersion){player.x*=TILE/48;player.y*=TILE/48}
-  world.chapter=d.chapter||1;world.day=d.day||1;currentZone=d.currentZone==="crypt"?"crypt":"village";makeMap();
-  if(d.herbs)world.objects.filter(o=>o.type==="herb").forEach((o,i)=>o.active=d.herbs[i]);
+  world.chapter=d.chapter||1;world.day=d.day||1;
+  currentZone=d.currentZone==="crypt"||d.currentZone==="rift"?d.currentZone:"village";
+  world.returnPoint=d.returnPoint&&Number.isFinite(d.returnPoint.x)&&Number.isFinite(d.returnPoint.y)?d.returnPoint:null;
+  world.overworldMap=null;world.overworldObjects=null;makeMap();
+  if(Array.isArray(d.herbs))world.objects.filter(o=>o.type==="herb").forEach((o,i)=>o.active=d.herbs[i]!==false);
   const chest=world.objects.find(o=>o.type==="chest");if(chest&&d.chest!==undefined)chest.active=d.chest;
-  if(currentZone==="crypt"){world.overworldMap=world.map;world.overworldObjects=world.objects;makeCryptMap()}
-  if(currentZone==="crypt"){world.name="Cripta do Primeiro Rei";world.enemies=[];for(let i=0;i<4;i++)spawnEnemy("skeleton",(9+i*3)*TILE,(7+(i%3)*3)*TILE);if(!player.flags.cryptBoss)spawnEnemy("boss",24*TILE,17*TILE);currentRegionId="crypt"}
-  else{currentRegionId=d.regionId||getRegionAt(player.x,player.y);world.regionId=currentRegionId;if(currentRegionId==="village")spawnInitialEnemies();else spawnRegionEnemies(currentRegionId)}
-  world.camera.x=currentZone==="crypt"?0:clamp(player.x+player.w/2-W/2,0,world.mapWidth*TILE-W);
-  world.camera.y=currentZone==="crypt"?0:clamp(player.y+player.h/2-H/2,0,world.mapHeight*TILE-H);
-  gameStarted=true;document.getElementById("titleScreen").style.display="none";document.getElementById("location").textContent=(currentZone==="crypt"?regionNames.crypt:regionNames[currentRegionId]).toUpperCase();
+  const savedLoot=Array.isArray(d.droppedLoot)?d.droppedLoot:[];
+  const restoreLoot=(zone,objects)=>savedLoot.filter(item=>item&&(item.zone||"overworld")===zone&&typeof item.itemName==="string"&&Number.isFinite(item.x)&&Number.isFinite(item.y))
+   .forEach(item=>objects.push({type:"loot",itemName:item.itemName,description:item.description||"",x:item.x,y:item.y,w:24,h:24,active:true}));
+  restoreLoot("overworld",world.objects);
+  if(currentZone==="crypt"||currentZone==="rift"){
+   world.overworldMap=world.map;world.overworldObjects=world.objects;
+   if(currentZone==="crypt")makeCryptMap();else makeRiftMap();
+   restoreLoot(currentZone,world.objects);
+  }
+  if(currentZone==="crypt"){
+   world.name=regionNames.crypt;world.enemies=[];
+   for(let i=0;i<4;i++)spawnEnemy("skeleton",(9+i*3)*TILE,(7+(i%3)*3)*TILE);
+   if(!player.flags.cryptBoss)spawnEnemy("boss",24*TILE,17*TILE);
+   currentRegionId="crypt";
+  }else if(currentZone==="rift"){
+   world.name=regionNames.rift;currentRegionId="rift";spawnRiftEnemies();
+  }else{
+   world.name="Vale de Eldoria";currentRegionId=d.regionId||getRegionAt(player.x,player.y);
+   world.regionId=currentRegionId;
+   if(currentRegionId==="village")spawnInitialEnemies();else spawnRegionEnemies(currentRegionId);
+  }
+  const fixedCamera=currentZone==="crypt"||currentZone==="rift";
+  world.camera.x=fixedCamera?0:clamp(player.x+player.w/2-W/2,0,world.mapWidth*TILE-W);
+  world.camera.y=fixedCamera?0:clamp(player.y+player.h/2-H/2,0,world.mapHeight*TILE-H);
+  gameStarted=true;document.getElementById("titleScreen").style.display="none";document.getElementById("location").textContent=regionNames[currentZone==="crypt"||currentZone==="rift"?currentZone:currentRegionId].toUpperCase();
   log("Jornada carregada.","good");updateUI();requestAnimationFrame(loop);
  }catch(error){toast("O arquivo de salvamento está corrompido.")}
 }
@@ -1320,10 +1833,12 @@ function keyDown(e){
  if(!gameStarted||paused)return;
  if(k===" ")attack();
  else if(k==="q")castSpell();
+ else if(castClassSkillByKey(k))return;
  else if(k==="e")interact();
  else if(k==="i")openInventory();
  else if(k==="1")useItem("Poção de vida",false);
  else if(k==="2")useItem("Pão de viagem",false);
+ else if(k==="3")useItem("Poção de mana",false);
  else if(k==="r")rest();
  else if(k==="f")saveGame();
  else if(k==="m")showMap();
