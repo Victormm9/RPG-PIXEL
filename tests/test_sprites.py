@@ -54,11 +54,27 @@ class SpriteSheetTests(unittest.TestCase):
         with self.assertRaisesRegex(SpriteAssetError, "4 linhas"):
             SpriteSheet.from_surface(surface, Path("bad.png"))
 
+    def test_rejects_fully_transparent_sheets(self):
+        surface = pygame.Surface((64, 256), pygame.SRCALPHA, 32)
+        with self.assertRaisesRegex(SpriteAssetError, "totalmente transparente"):
+            SpriteSheet.from_surface(surface, Path("empty.png"))
+
     def test_missing_file_is_reported_instead_of_substituted(self):
         with tempfile.TemporaryDirectory() as directory:
             manager = SpriteManager(Path(directory))
             with self.assertRaisesRegex(SpriteAssetError, "PNG de sprite ausente"):
                 manager.load_sheet("characters/base/boy_light.png")
+
+    def test_empty_sheet_is_reported_as_missing(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            pygame.image.save(
+                pygame.Surface((64, 256), pygame.SRCALPHA, 32),
+                root / "empty.png",
+            )
+            manager = SpriteManager(root)
+
+            self.assertEqual(manager.missing(["empty.png"]), ["assets/empty.png"])
 
     def test_layer_composition_preserves_transparency_and_order(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -82,14 +98,12 @@ class SpriteSheetTests(unittest.TestCase):
     def test_layers_must_have_matching_animation_frame_count(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            pygame.image.save(
-                pygame.Surface((64, 256), pygame.SRCALPHA, 32),
-                root / "body.png",
-            )
-            pygame.image.save(
-                pygame.Surface((128, 256), pygame.SRCALPHA, 32),
-                root / "hair.png",
-            )
+            body = pygame.Surface((64, 256), pygame.SRCALPHA, 32)
+            body.fill((20, 40, 120, 255))
+            pygame.image.save(body, root / "body.png")
+            hair = pygame.Surface((128, 256), pygame.SRCALPHA, 32)
+            hair.fill((190, 30, 40, 255))
+            pygame.image.save(hair, root / "hair.png")
             with self.assertRaisesRegex(SpriteAssetError, "mesmo alinhamento"):
                 compose_character(
                     SpriteManager(root),

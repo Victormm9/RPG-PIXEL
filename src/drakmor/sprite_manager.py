@@ -13,6 +13,10 @@ class SpriteAssetError(RuntimeError):
     """Raised when a sprite file is missing, invalid, or misaligned."""
 
 
+class EmptySpriteAssetError(SpriteAssetError):
+    """Raised when a sprite sheet has no visible pixels."""
+
+
 class Direction(str, Enum):
     SOUTH = "south"
     NORTH = "north"
@@ -46,6 +50,8 @@ class SpriteSheet:
                 f"{source}: esperado 4 linhas de {SPRITE_SIZE}px "
                 f"(altura total {SPRITE_SIZE * len(DIRECTION_ROWS)}px), recebido {height}px."
             )
+        if surface.get_bounding_rect(min_alpha=1).width == 0:
+            raise EmptySpriteAssetError(f"{source}: spritesheet totalmente transparente.")
         return cls(surface=surface, frame_count=width // SPRITE_SIZE, source=source)
 
     def frame(self, direction: Direction, frame_index: int = 0) -> pygame.Surface:
@@ -81,11 +87,16 @@ class SpriteManager:
         return relative_path is not None and self.resolve(relative_path).is_file()
 
     def missing(self, relative_paths: list[str]) -> list[str]:
-        return [
-            f"assets/{relative_path}"
-            for relative_path in dict.fromkeys(relative_paths)
-            if not self.exists(relative_path)
-        ]
+        missing_paths = []
+        for relative_path in dict.fromkeys(relative_paths):
+            if not self.exists(relative_path):
+                missing_paths.append(f"assets/{relative_path}")
+                continue
+            try:
+                self.load_sheet(relative_path)
+            except EmptySpriteAssetError:
+                missing_paths.append(f"assets/{relative_path}")
+        return missing_paths
 
     def load_sheet(self, relative_path: str) -> SpriteSheet:
         path = self.resolve(relative_path)

@@ -1,6 +1,6 @@
 # Guia de sprites de personagens
 
-Os sprites individuais ainda não foram fornecidos. O aplicativo carrega somente PNGs de camadas; não recorta nem usa a prancha de referência como sprite. Enquanto os arquivos não existirem, a tela mostra os caminhos ausentes e não desenha um personagem improvisado.
+Este guia descreve o pipeline de PNGs em camadas usado pelo catálogo de personagens. O jogo em `index.html` ainda usa `player.png` para personagens masculinos e gera a personagem feminina em código; sprites femininos em camadas podem substituí-la quando forem adicionados. O pipeline de camadas não recorta nem usa a prancha de referência como sprite e rejeita spritesheets totalmente transparentes.
 
 ## Formato obrigatório
 
@@ -10,6 +10,7 @@ Os sprites individuais ainda não foram fornecidos. O aplicativo carrega somente
 - Os quadros de animação ficam em colunas. Uma sheet com 4 quadros por direção mede 256 × 256 px.
 - Todas as camadas usadas juntas precisam ter o mesmo número de quadros e o mesmo ponto de origem. Desenhe cada peça na mesma grade 64 × 64, sem deslocar o personagem entre arquivos.
 - A composição mantém transparência e amplia a prévia por escala inteira sem suavização.
+- O `gerar_assets.py` aceita folhas com quatro linhas de 64 px e largura múltipla de 64 px. Uma grade estática `Cabelos.png` não contém os quadros direcionais necessários e não é usada como substituta.
 
 ## Arquivos esperados
 

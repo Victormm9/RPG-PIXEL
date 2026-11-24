@@ -3,8 +3,7 @@
 """
 Gerador de assets para o jogo DRAKMOR - RPG PIXEL
 
-Recorta imagens grandes do asset pack e salva nos caminhos
-exatos esperados pelo jogo.
+Valida e copia imagens do asset pack para os caminhos esperados pelo jogo.
 
 Requisitos:
     pip install Pillow
@@ -27,10 +26,6 @@ SOURCE_DIR = r"C:\caminho\para\as\imagens\do\asset\pack"
 # Pasta raiz do jogo (onde fica a pasta assets/)
 DEST_DIR = r"c:\Users\victor_monteiro\Documents\GitHub\RPG-PIXEL\assets"
 
-# Tamanho de cada sprite do jogo (padrao: 64x64)
-CELL_W = 64
-CELL_H = 64
-
 # ======================================================
 
 criados = []
@@ -47,44 +42,7 @@ def salvar_png(imagem, caminho_destino):
     imagem.save(caminho_destino, "PNG", optimize=True)
 
 
-def recortar_grid(nome_arquivo, colunas, linhas, funcao_destino):
-    src = os.path.join(SOURCE_DIR, nome_arquivo)
-    if not os.path.exists(src):
-        faltando_fontes.append(nome_arquivo)
-        print(f"[FONTE AUSENTE] {nome_arquivo}")
-        return 0
-
-    try:
-        img = Image.open(src).convert("RGBA")
-        w, h = img.size
-        count = 0
-
-        for linha in range(linhas):
-            for coluna in range(colunas):
-                esquerda = coluna * CELL_W
-                topo = linha * CELL_H
-                direita = min(esquerda + CELL_W, w)
-                inferior = min(topo + CELL_H, h)
-
-                celula = img.crop((esquerda, topo, direita, inferior))
-
-                indice = linha * colunas + coluna
-                dst_rel = funcao_destino(indice)
-                dst_abs = os.path.join(DEST_DIR, dst_rel)
-                salvar_png(celula, dst_abs)
-                criados.append(dst_rel)
-                count += 1
-
-        print(f"[OK] {nome_arquivo}: {count} sprites recortados")
-        return count
-
-    except Exception as e:
-        erros.append((nome_arquivo, str(e)))
-        print(f"[ERRO] {nome_arquivo}: {e}")
-        return 0
-
-
-def copiar_arquivo(nome_arquivo, caminho_destino_relativo):
+def copiar_arquivo(nome_arquivo, caminho_destino_relativo, dimensoes_esperadas=None):
     src = os.path.join(SOURCE_DIR, nome_arquivo)
     if not os.path.exists(src):
         faltando_fontes.append(nome_arquivo)
@@ -93,7 +51,25 @@ def copiar_arquivo(nome_arquivo, caminho_destino_relativo):
 
     dst = os.path.join(DEST_DIR, caminho_destino_relativo)
     try:
-        salvar_png(Image.open(src).convert("RGBA"), dst)
+        imagem = Image.open(src).convert("RGBA")
+        largura, altura = imagem.size
+        pasta_destino = caminho_destino_relativo.replace("\\", "/").split("/")[0]
+        if pasta_destino == "characters" and (
+            altura != 64 * 4 or largura < 64 or largura % 64
+        ):
+            raise ValueError(
+                "folha de personagem deve ter 4 linhas de 64 px "
+                "e largura multipla de 64 px"
+            )
+        if pasta_destino == "characters" and not imagem.getchannel("A").getbbox():
+            raise ValueError("folha de personagem esta totalmente transparente")
+        if dimensoes_esperadas and imagem.size != dimensoes_esperadas:
+            raise ValueError(
+                f"dimensoes esperadas: {dimensoes_esperadas[0]}x"
+                f"{dimensoes_esperadas[1]} px; recebidas: {largura}x{altura} px"
+            )
+
+        salvar_png(imagem, dst)
         criados.append(caminho_destino_relativo)
         print(f"[OK] {caminho_destino_relativo}")
         return True
@@ -133,22 +109,11 @@ def processar_cabelos():
     estilos = ["short", "long", "curly", "messy", "braided"]
     cores = ["black", "brown", "blonde", "red", "silver"]
 
-    qualquer_encontrado = False
     for estilo in estilos:
         for cor in cores:
             src = f"{estilo}_{cor}.png"
             dst = f"characters/hair/{estilo}_{cor}.png"
-            if os.path.exists(os.path.join(SOURCE_DIR, src)):
-                copiar_arquivo(src, dst)
-                qualquer_encontrado = True
-
-    if not qualquer_encontrado:
-        nome_grid = "Cabelos.png"
-        def destino_cabelo(i):
-            estilo = estilos[i // 5]
-            cor = cores[i % 5]
-            return f"characters/hair/{estilo}_{cor}.png"
-        recortar_grid(nome_grid, 5, 5, destino_cabelo)
+            copiar_arquivo(src, dst)
 
 
 def processar_camisas():
@@ -236,6 +201,21 @@ def processar_acessorios():
         copiar_arquivo(src, dst)
 
 
+def processar_sprites_animados():
+    mapeamento = {
+        "player.png": ("characters/player.png", (448, 256)),
+        "npcs.png": ("characters/npcs.png", (448, 256)),
+        "slime.png": ("enemies/slime.png", (448, 256)),
+        "goblin.png": ("enemies/goblin.png", (448, 256)),
+        "wolf.png": ("enemies/wolf.png", (448, 256)),
+        "skeleton.png": ("enemies/skeleton.png", (448, 256)),
+        "bandit.png": ("enemies/bandit.png", (448, 256)),
+        "boss.png": ("enemies/boss.png", (448, 256)),
+    }
+    for src, (dst, dimensoes) in mapeamento.items():
+        copiar_arquivo(src, dst, dimensoes_esperadas=dimensoes)
+
+
 def processar_tileset_props_efeitos():
     mapeamento = [
         ("Tileset Eldoria (Melhorado).png", "tilesets/eldoria.png"),
@@ -249,12 +229,11 @@ def processar_tileset_props_efeitos():
     ]
     processados = set()
     for src, dst in mapeamento:
-        chave = dst.split("/")[0]
-        if chave in processados:
+        if dst in processados:
             continue
         if os.path.exists(os.path.join(SOURCE_DIR, src)):
-            copiar_arquivo(src, dst)
-            processados.add(chave)
+            if copiar_arquivo(src, dst):
+                processados.add(dst)
 
 
 def main():
@@ -270,6 +249,7 @@ def main():
         print("Ajuste o caminho no inicio do script e rode novamente.")
         sys.exit(1)
 
+    processar_sprites_animados()
     processar_corpos()
     processar_rostos_olhos()
     processar_cabelos()

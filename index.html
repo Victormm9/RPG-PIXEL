@@ -98,7 +98,8 @@ h1{font:800 clamp(36px,7vw,66px) Cinzel,serif;color:#e6c27d;letter-spacing:5px;m
 .class-card input{margin:0;accent-color:#e5bd72}
 .class-card-name{color:#f0d49b;font-weight:700}
 .class-card small{color:#aeb3be;font-size:9px;line-height:1.15}
-.item{border:1px solid #51442f;border-radius:7px;padding:10px;background:#11141c;font-size:12px}
+.item{display:grid;grid-template-columns:36px 1fr;column-gap:9px;align-items:center;border:1px solid #51442f;border-radius:7px;padding:10px;background:#11141c;font-size:12px}
+.item-icon{grid-row:span 3;width:32px;height:32px;image-rendering:pixelated}
 .item b{display:block;color:#e5c17d;margin-bottom:5px}
 .item span{color:#b7bbc4;line-height:1.5}
 #toast{position:fixed;z-index:20;top:20px;left:50%;transform:translateX(-50%);background:#171b22;border:1px solid #a9854c;padding:10px 18px;border-radius:8px;color:#f2d69e;font-size:12px;opacity:0;transition:.25s;pointer-events:none}
@@ -172,7 +173,7 @@ let lastTime=0,attackCooldown=0,spellCooldown=0,enemySpawnTimer=0;
 let uiUpdateTimer=0;
 const world={
  name:"Vale de Cinzas",chapter:1,day:1,
- map:[],mapWidth:MAP_W,mapHeight:MAP_H,objects:[],enemies:[],particles:[],
+ map:[],mapWidth:MAP_W,mapHeight:MAP_H,objects:[],enemies:[],projectiles:[],particles:[],
  camera:{x:0,y:0},
  regionId:"village",
 };
@@ -187,13 +188,14 @@ const outfits={
 };
 const hairColors={dark:{name:"Preto",color:"#30241f"},brown:{name:"Castanho",color:"#77452e"},blonde:{name:"Loiro",color:"#d5ac55"}};
 const skinTones={light:{name:"Claro",color:"#e7bd9a"},warm:{name:"Moreno",color:"#c88f68"},deep:{name:"Escuro",color:"#80533e"}};
+let customizedPlayerCache=null;
 const classes={
- warrior:{name:"Guerreiro",description:"Forte no corpo a corpo e na defesa.",ability:"Q · Golpe de escudo (8 mana)",outfit:"crimson",weapon:"Espada de aço",armor:"Cota de malha",stats:{hp:125,mp:25,strength:16,intelligence:4,agility:7,defense:7,attack:16},growth:{hp:25,mp:3,strength:2,intelligence:0,agility:1,defense:1,attack:3}},
- mage:{name:"Mago",description:"Magia elemental e grande reserva de mana.",ability:"Q · Explosão elemental (12 mana)",outfit:"violet",weapon:"Cajado rúnico",armor:"Manto arcano",stats:{hp:85,mp:65,strength:5,intelligence:18,agility:8,defense:2,attack:8},growth:{hp:13,mp:12,strength:0,intelligence:2,agility:1,defense:0,attack:2}},
- archer:{name:"Arqueiro",description:"Precisão e ataques de longa distância.",ability:"Q · Disparo preciso (8 mana)",outfit:"forest",weapon:"Arco de teixo",armor:"Couro de batedor",stats:{hp:100,mp:30,strength:10,intelligence:7,agility:16,defense:3,attack:12},growth:{hp:17,mp:5,strength:1,intelligence:0,agility:2,defense:0,attack:3}},
- rogue:{name:"Ladino",description:"Ágil, furtivo e especialista em críticos.",ability:"Q · Golpe sombrio (10 mana)",outfit:"shadow",weapon:"Adagas gêmeas",armor:"Couro das sombras",stats:{hp:90,mp:25,strength:11,intelligence:6,agility:18,defense:3,attack:12},growth:{hp:15,mp:4,strength:1,intelligence:0,agility:2,defense:0,attack:3}},
- paladin:{name:"Paladino",description:"Resiste a golpes e restaura a própria vida.",ability:"Q · Luz sagrada (12 mana)",outfit:"blue",weapon:"Espada solar",armor:"Armadura sagrada",stats:{hp:125,mp:40,strength:14,intelligence:12,agility:6,defense:8,attack:14},growth:{hp:24,mp:8,strength:2,intelligence:1,agility:0,defense:1,attack:3}},
- druid:{name:"Druida",description:"Usa raízes, natureza e magia de cura.",ability:"Q · Raízes vivas (12 mana)",outfit:"forest",weapon:"Cajado de espinheiro",armor:"Manto de folhas",stats:{hp:100,mp:55,strength:8,intelligence:15,agility:9,defense:4,attack:10},growth:{hp:17,mp:10,strength:0,intelligence:2,agility:1,defense:1,attack:2}}
+ warrior:{name:"Guerreiro",description:"Forte no corpo a corpo e na defesa.",basicAttack:"Corte de espada",ability:"Q · Golpe de escudo (8 mana)",outfit:"crimson",weapon:"Espada de aço",armor:"Cota de malha",stats:{hp:125,mp:25,strength:16,intelligence:4,agility:7,defense:7,attack:16},growth:{hp:25,mp:3,strength:2,intelligence:0,agility:1,defense:1,attack:3}},
+ mage:{name:"Mago",description:"Magia elemental e grande reserva de mana.",basicAttack:"Projétil arcano",ability:"Q · Explosão elemental (12 mana)",outfit:"violet",weapon:"Cajado rúnico",armor:"Manto arcano",stats:{hp:85,mp:65,strength:5,intelligence:18,agility:8,defense:2,attack:8},growth:{hp:13,mp:12,strength:0,intelligence:2,agility:1,defense:0,attack:2}},
+ archer:{name:"Arqueiro",description:"Precisão e ataques de longa distância.",basicAttack:"Flecha de arco",ability:"Q · Disparo preciso (8 mana)",outfit:"forest",weapon:"Arco de teixo",armor:"Couro de batedor",stats:{hp:100,mp:30,strength:10,intelligence:7,agility:16,defense:3,attack:12},growth:{hp:17,mp:5,strength:1,intelligence:0,agility:2,defense:0,attack:3}},
+ rogue:{name:"Ladino",description:"Ágil, furtivo e especialista em críticos.",basicAttack:"Golpe duplo",ability:"Q · Golpe sombrio (10 mana)",outfit:"shadow",weapon:"Adagas gêmeas",armor:"Couro das sombras",stats:{hp:90,mp:25,strength:11,intelligence:6,agility:18,defense:3,attack:12},growth:{hp:15,mp:4,strength:1,intelligence:0,agility:2,defense:0,attack:3}},
+ paladin:{name:"Paladino",description:"Resiste a golpes e restaura a própria vida.",basicAttack:"Corte sagrado",ability:"Q · Luz sagrada (12 mana)",outfit:"blue",weapon:"Espada solar",armor:"Armadura sagrada",stats:{hp:125,mp:40,strength:14,intelligence:12,agility:6,defense:8,attack:14},growth:{hp:24,mp:8,strength:2,intelligence:1,agility:0,defense:1,attack:3}},
+ druid:{name:"Druida",description:"Usa raízes, natureza e magia de cura.",basicAttack:"Espinho natural",ability:"Q · Raízes vivas (12 mana)",outfit:"forest",weapon:"Cajado de espinheiro",armor:"Manto de folhas",stats:{hp:100,mp:55,strength:8,intelligence:15,agility:9,defense:4,attack:10},growth:{hp:17,mp:10,strength:0,intelligence:2,agility:1,defense:1,attack:2}}
 };
 const player={
  x:6*TILE,y:10*TILE,w:26,h:34,speed:190,
@@ -218,6 +220,14 @@ const enemyTypes={
  skeleton:{name:"Esqueleto",hp:65,attack:13,xp:25,gold:8,speed:55,radius:16,respawn:14,behavior:"guard",aggroRange:155,attackRange:46,attackCooldown:1.3},
  bandit:{name:"Saqueador",hp:85,attack:15,xp:35,gold:14,speed:65,radius:17,respawn:16,behavior:"pursue",aggroRange:260,attackRange:46,attackCooldown:1},
  boss:{name:"Cavaleiro sem rosto",hp:260,attack:22,xp:130,gold:90,speed:48,radius:25,respawn:0,behavior:"guard",aggroRange:370,attackRange:58,attackCooldown:1.45}
+};
+const enemyDrops={
+ slime:[{name:"Núcleo de gosma",description:"Fragmento gelatinoso pedido pelo ancião.",chance:.65}],
+ goblin:[{name:"Dente de goblin",description:"Um troféu bruto que pode ser vendido.",chance:.45}],
+ wolf:[{name:"Presa de lobo",description:"Uma presa afiada, ainda manchada de terra.",chance:.5}],
+ skeleton:[{name:"Fragmento ósseo",description:"Um pedaço antigo que ainda vibra com magia.",chance:.5}],
+ bandit:[{name:"Chave antiga",description:"Uma chave encontrada entre os pertences do saqueador.",chance:.3}],
+ boss:[{name:"Selo antigo",description:"Um fragmento do selo que protegia a cripta.",chance:1}]
 };
 const regionNames={
  village:"Vila de Eldoria",
@@ -299,6 +309,7 @@ function makeMap(){
 }
 function makeCryptMap(){
  world.mapWidth=30;world.mapHeight=22;
+ world.projectiles=[];
  world.map=Array.from({length:world.mapHeight},(_,y)=>Array.from({length:world.mapWidth},(_,x)=>{
   if(x===0||y===0||x===world.mapWidth-1||y===world.mapHeight-1)return 30;
   if((x*17+y*23)%37===0)return 28;
@@ -323,7 +334,7 @@ function newGame(){
   quests:{elder:false,slimes:0,herbs:0,bandit:false,crypt:false},
   flags:{intro:false,elderReward:false,gateOpen:false,cryptBoss:false}
  });
- world.name="Vale de Eldoria";world.chapter=1;world.day=1;world.enemies=[];world.overworldMap=null;world.overworldObjects=null;currentZone="village";makeMap();spawnInitialEnemies();gameStarted=true;
+ world.name="Vale de Eldoria";world.chapter=1;world.day=1;world.enemies=[];world.projectiles=[];world.overworldMap=null;world.overworldObjects=null;currentZone="village";makeMap();spawnInitialEnemies();gameStarted=true;
  world.camera.x=clamp(player.x+player.w/2-W/2,0,world.mapWidth*TILE-W);
  world.camera.y=clamp(player.y+player.h/2-H/2,0,world.mapHeight*TILE-H);
  document.getElementById("titleScreen").style.display="none";
@@ -333,7 +344,7 @@ function newGame(){
 function showCharacterCreation(){
  const classCards=Object.entries(classes).map(([id,characterClass])=>{
   const stats=characterClass.stats;
-  return `<label class="class-card"><input type="radio" name="characterClass" value="${id}" ${id===player.classId?"checked":""}><span class="class-card-name">${characterClass.name}</span><small>${characterClass.description}</small><small>Vida ${stats.hp} · Mana ${stats.mp}</small><small>FOR ${stats.strength} · INT ${stats.intelligence} · AGI ${stats.agility} · DEF ${stats.defense}</small><small>${characterClass.weapon} · ${characterClass.armor}</small><small>${characterClass.ability}</small></label>`;
+  return `<label class="class-card"><input type="radio" name="characterClass" value="${id}" ${id===player.classId?"checked":""}><span class="class-card-name">${characterClass.name}</span><small>${characterClass.description}</small><small>Ataque: ${characterClass.basicAttack}</small><small>Vida ${stats.hp} · Mana ${stats.mp}</small><small>FOR ${stats.strength} · INT ${stats.intelligence} · AGI ${stats.agility} · DEF ${stats.defense}</small><small>${characterClass.weapon} · ${characterClass.armor}</small><small>${characterClass.ability}</small></label>`;
  }).join("");
  const body=`
   <div class="creation-layout">
@@ -362,6 +373,10 @@ function showCharacterCreation(){
   document.getElementById("characterOutfit").value=classes[control.value].outfit;
   updateCharacterPreview();
  }));
+ document.getElementById("characterGender").addEventListener("change",event=>{
+  if(event.target.value==="Feminino")document.getElementById("characterHairStyle").value="long";
+  updateCharacterPreview();
+ });
  updateCharacterPreview();
 }
 function getCharacterDraft(){
@@ -381,13 +396,129 @@ function getCharacterDraft(){
   skinColor:skin.color
  };
 }
+function parseHexColor(color){
+ const value=color.replace("#","");
+ return[parseInt(value.slice(0,2),16),parseInt(value.slice(2,4),16),parseInt(value.slice(4,6),16)];
+}
+function recolorPixel(data,index,color,shade){
+ data[index]=Math.round(color[0]*shade);
+ data[index+1]=Math.round(color[1]*shade);
+ data[index+2]=Math.round(color[2]*shade);
+}
+function colorTone(color,shade){
+ return `rgb(${color.map(channel=>Math.round(channel*shade)).join(",")})`;
+}
+function drawPixelBlock(draw,x,y,width,height,color){
+ draw.fillStyle=Array.isArray(color)?`rgb(${color.join(",")})`:color;
+ draw.fillRect(x*2,y*2,width*2,height*2);
+}
+function createFemalePlayerSheet(character){
+ const sheet=document.createElement("canvas");sheet.width=448;sheet.height=256;
+ const draw=sheet.getContext("2d");draw.imageSmoothingEnabled=false;
+ const skin=parseHexColor(character.skinColor||skinTones.light.color);
+ const hair=parseHexColor(character.hairColor||hairColors.dark.color);
+ const outfit=parseHexColor(character.outfitColor||outfits.crimson.color);
+ const outline="#21191f",boots="#403442",gold="#e3bd72";
+ for(let row=0;row<4;row++)for(let column=0;column<7;column++){
+  draw.save();draw.translate(column*64,row*64);
+  if(row===3){draw.translate(64,0);draw.scale(-1,1)}
+  const stride=column===1?1:column===3?-1:0;
+  const attack=column>=4,back=row===1,side=row>=2;
+  const hairShade=colorTone(hair,.66),hairLight=colorTone(hair,1.18);
+  const skinShade=colorTone(skin,.72),outfitShade=colorTone(outfit,.68);
+  drawPixelBlock(draw,10,4,12,2,outline);
+  drawPixelBlock(draw,8,6,16,8,outline);
+  drawPixelBlock(draw,9,5,14,9,hair);
+  drawPixelBlock(draw,11,4,9,2,hair);
+  drawPixelBlock(draw,11,6,5,1,hairLight);
+  if(character.hairStyle==="long"){
+   drawPixelBlock(draw,8,12,3,9,outline);drawPixelBlock(draw,9,12,2,8,hair);
+   drawPixelBlock(draw,21,12,3,9,outline);drawPixelBlock(draw,21,12,2,8,hair);
+   drawPixelBlock(draw,9,18,2,2,hairShade);drawPixelBlock(draw,21,18,2,2,hairShade);
+  }else{
+   drawPixelBlock(draw,9,12,3,4,hair);drawPixelBlock(draw,20,12,3,4,hair);
+  }
+  const torsoX=side?12:10;
+  drawPixelBlock(draw,torsoX,15,12,9,outline);
+  drawPixelBlock(draw,torsoX+1,16,10,7,outfit);
+  drawPixelBlock(draw,torsoX+2,17,2,5,outfitShade);
+  drawPixelBlock(draw,torsoX+7,17,2,1,colorTone(outfit,1.2));
+  const armY=attack?13:16;
+  drawPixelBlock(draw,7,armY,4,7,outline);drawPixelBlock(draw,8,armY+1,2,5,outfit);
+  drawPixelBlock(draw,21,armY,4,7,outline);drawPixelBlock(draw,22,armY+1,2,5,outfit);
+  drawPixelBlock(draw,8,22,2,2,skinShade);drawPixelBlock(draw,22,22,2,2,skinShade);
+  drawPixelBlock(draw,10,22,14,2,outline);drawPixelBlock(draw,11,22,12,1,gold);
+  drawPixelBlock(draw,8,24,16,6,outline);
+  drawPixelBlock(draw,9,24,14,5,outfit);
+  drawPixelBlock(draw,10,25,2,3,outfitShade);drawPixelBlock(draw,20,25,2,3,outfitShade);
+  drawPixelBlock(draw,14,26,3,1,gold);
+  drawPixelBlock(draw,11+stride,29,4,2,outline);drawPixelBlock(draw,18-stride,29,4,2,outline);
+  drawPixelBlock(draw,12+stride,29,2,1,boots);drawPixelBlock(draw,19-stride,29,2,1,boots);
+  if(!back){
+   const faceWidth=side?8:10,faceX=side?11:11;
+   drawPixelBlock(draw,10,7,12,10,outline);
+   drawPixelBlock(draw,faceX,8,faceWidth,8,skin);
+   drawPixelBlock(draw,faceX+1,9,faceWidth-2,1,colorTone(skin,1.12));
+   drawPixelBlock(draw,side?15:13,12,1,1,"#282331");
+   if(!side)drawPixelBlock(draw,18,12,1,1,"#282331");
+   drawPixelBlock(draw,side?14:15,14,2,1,colorTone(skin,.58));
+  }else{
+   drawPixelBlock(draw,10,7,12,10,hair);
+   drawPixelBlock(draw,11,9,10,5,hairShade);
+  }
+  drawPixelBlock(draw,10,6,12,3,hair);
+  drawPixelBlock(draw,9,8,3,4,hair);
+  drawPixelBlock(draw,20,8,3,4,hair);
+  drawPixelBlock(draw,12,6,4,1,hairLight);
+  if(side)drawPixelBlock(draw,9,11,3,2,skin);
+  draw.restore();
+ }
+ return sheet;
+}
+function getCustomizedPlayerSheet(character){
+ const key=[character.gender,character.outfitColor,character.hairColor,character.hairStyle,character.skinColor].join("|");
+ if(customizedPlayerCache?.key===key)return customizedPlayerCache.sheet;
+ if(character.gender==="Feminino"){
+  const sheet=createFemalePlayerSheet(character);
+  customizedPlayerCache={key,sheet};
+  return sheet;
+ }
+ const source=pixelAssets.image("player");
+ if(!source)return null;
+ const sheet=document.createElement("canvas");
+ sheet.width=source.naturalWidth||source.width;sheet.height=source.naturalHeight||source.height;
+ const sheetCtx=sheet.getContext("2d",{willReadFrequently:true});
+ sheetCtx.drawImage(source,0,0);
+ const pixels=sheetCtx.getImageData(0,0,sheet.width,sheet.height),data=pixels.data;
+ const outfitColor=parseHexColor(character.outfitColor||outfits.crimson.color);
+ const hairColor=parseHexColor(character.hairColor||hairColors.dark.color);
+ const skinColor=parseHexColor(character.skinColor||skinTones.light.color);
+ for(let y=0;y<sheet.height;y++)for(let x=0;x<sheet.width;x++){
+  const index=(y*sheet.width+x)*4;
+  const red=data[index],green=data[index+1],blue=data[index+2],alpha=data[index+3];
+  if(alpha<96)continue;
+  const localY=y%64,luminance=(red+green+blue)/3;
+  if(localY>=27&&red>green*1.08&&green>blue*1.04&&red>150&&green>80){
+   recolorPixel(data,index,skinColor,clamp(luminance/190,.48,1.05));
+  }else if(localY<=26&&red>green*1.12&&green>blue*.95&&green<125&&red<180){
+   recolorPixel(data,index,hairColor,clamp(luminance/95,.48,1.25));
+  }else if(localY>=27&&red>green*1.15&&red>blue*1.08&&green<135&&red>70){
+   recolorPixel(data,index,outfitColor,clamp(luminance/115,.45,1.3));
+  }
+ }
+ sheetCtx.putImageData(pixels,0,0);
+ customizedPlayerCache={key,sheet};
+ return sheet;
+}
 function updateCharacterPreview(){
  const preview=document.getElementById("characterPreview");
  if(!preview)return;
  const character=getCharacterDraft(),previewCtx=preview.getContext("2d");
  previewCtx.clearRect(0,0,preview.width,preview.height);
  previewCtx.imageSmoothingEnabled=false;
- if(!pixelAssets.drawFrame(previewCtx,"player",0,0,64,64,28,15,64,64)){
+ const sheet=getCustomizedPlayerSheet(character);
+ if(sheet)previewCtx.drawImage(sheet,0,0,64,64,28,15,64,64);
+ else{
   previewCtx.fillStyle="#aab0bd";previewCtx.font="9px Inter";previewCtx.textAlign="center";
   previewCtx.fillText("Sprite PNG ausente",preview.width/2,preview.height/2);
  }
@@ -412,7 +543,7 @@ function spawnInitialEnemies(){
 function spawnEnemy(type,x,y){
  const d=enemyTypes[type];
  const spawn=findOpenSpawn(x,y),size=d.radius*2;
- world.enemies.push({type,name:d.name,x:spawn.x,y:spawn.y,spawnX:spawn.x,spawnY:spawn.y,w:size,h:size,hp:d.hp,maxHp:d.hp,attack:d.attack,xp:d.xp,gold:d.gold,speed:d.speed,behavior:d.behavior,aggroRange:d.aggroRange,attackRange:d.attackRange,attackCooldown:d.attackCooldown,aggro:false,attackTimer:0,dead:false,deadTimer:0,respawn:d.respawn,state:"idle",facing:"down",animationTime:0});
+ world.enemies.push({type,name:d.name,x:spawn.x,y:spawn.y,spawnX:spawn.x,spawnY:spawn.y,w:size,h:size,hp:d.hp,maxHp:d.hp,attack:d.attack,xp:d.xp,gold:d.gold,speed:d.speed,behavior:d.behavior,aggroRange:d.aggroRange,attackRange:d.attackRange,attackCooldown:d.attackCooldown,aggro:false,attackTimer:0,attackEffectTimer:0,dead:false,deadTimer:0,respawn:d.respawn,state:"idle",facing:"down",animationTime:0});
 }
 function findOpenSpawn(x,y){
  const tx=Math.floor(x/TILE),ty=Math.floor(y/TILE);
@@ -443,6 +574,7 @@ function interact(){
  else if(nearby.type==="guard")talkGuard();
  else if(nearby.type==="healer")talkHealer();
  else if(nearby.type==="herb")collectHerb(nearby);
+ else if(nearby.type==="loot")collectLoot(nearby);
  else if(nearby.type==="chest")openChest(nearby);
  else if(nearby.type==="sign")say("Placa","VALE DE CINZAS — “A estrada termina onde a floresta começa. Não siga as luzes azuis.”");
  else if(nearby.type==="portal")enterCrypt();
@@ -480,6 +612,9 @@ function talkHealer(){
 function collectHerb(o){
  o.active=false;player.quests.herbs++;addItem("Erva-lua",1,"Ingrediente prateado usado na missão do ancião.");log("Você coletou uma Erva-lua.","good");updateUI();
 }
+function collectLoot(o){
+ o.active=false;addItem(o.itemName,1,o.description);log(`Item encontrado: ${o.itemName}.`,"good");updateUI();
+}
 function openChest(o){
  if(!o.active){toast("O baú está vazio.");return}
  o.active=false;player.gold+=rand(18,32);addItem("Poção de vida",1,"Recupera 45 pontos de vida.");say("Baú antigo","Dentro do baú há moedas antigas e uma poção intacta.");updateUI();
@@ -489,7 +624,7 @@ function enterCrypt(){
  if(currentZone==="crypt")return;
  world.overworldMap=world.map;world.overworldObjects=world.objects;
  currentZone="crypt";currentRegionId="crypt";world.name="Cripta do Primeiro Rei";makeCryptMap();player.x=5*TILE;player.y=5*TILE;
- world.enemies=[];for(let i=0;i<5;i++)spawnEnemy("skeleton",(8+i*3)*TILE,(7+(i%3)*4)*TILE);
+ world.enemies=[];world.projectiles=[];for(let i=0;i<5;i++)spawnEnemy("skeleton",(8+i*3)*TILE,(7+(i%3)*4)*TILE);
  if(!player.flags.cryptBoss)spawnEnemy("boss",24*TILE,17*TILE);
  world.camera.x=0;world.camera.y=0;document.getElementById("location").textContent=world.name.toUpperCase();log("Você desceu à Cripta do Primeiro Rei.","gold");toast("A atmosfera ficou mais pesada.");
 }
@@ -526,7 +661,7 @@ function spawnRegionEnemies(region){
   east:[["goblin",60,24],["wolf",68,39],["slime",57,45]],
   cave:[["skeleton",73,48],["skeleton",84,57],["goblin",88,49]]
  };
- world.enemies=[];
+ world.enemies=[];world.projectiles=[];
  for(const[type,x,y]of groups[region]||[])spawnEnemy(type,x*TILE,y*TILE);
 }
 function addItem(name,qty,desc){let it=player.inventory.find(i=>i.name===name);if(it)it.qty+=qty;else player.inventory.push({name,qty,desc})}
@@ -539,8 +674,58 @@ function useItem(name,keepInventory=true){
  log(name+" utilizado.","good");updateUI();if(keepInventory)openInventory();
 }
 function openInventory(){
- const items=player.inventory.map(i=>`<div class="item"><b>${i.name} × ${i.qty}</b><span>${i.desc}</span>${["Poção de vida","Pão de viagem"].includes(i.name)?`<p><button onclick="useItem('${i.name}')">Usar</button></p>`:""}</div>`).join("");
+ const items=player.inventory.map(i=>`<div class="item"><canvas class="item-icon" data-item-icon="${itemIconKey(i.name)}" width="32" height="32"></canvas><b>${i.name} × ${i.qty}</b><span>${i.desc}</span>${["Poção de vida","Pão de viagem"].includes(i.name)?`<p><button onclick="useItem('${i.name}')">Usar</button></p>`:""}</div>`).join("");
  showModal("Inventário",`<p>O que você carrega pode decidir se verá o próximo amanhecer.</p><div class="modalgrid">${items||"Bolsa vazia."}</div><div class="menuButtons"><button onclick="closeModal()">Fechar</button></div>`);
+ document.querySelectorAll(".item-icon").forEach(canvas=>{
+  drawPixelItemIcon(canvas.getContext("2d"),canvas.dataset.itemIcon,0,0,32);
+ });
+}
+function itemIconKey(name){
+ const icons={
+  "Poção de vida":"potion","Pão de viagem":"bread","Erva-lua":"herb",
+  "Núcleo de gosma":"slime","Presa de lobo":"fang","Dente de goblin":"tooth",
+  "Fragmento ósseo":"bone","Selo antigo":"seal","Chave antiga":"key"
+ };
+ return icons[name]||"coin";
+}
+function drawPixelItemIcon(iconCtx,key,x,y,size){
+ const scale=size/16,block=(px,py,width,height,color)=>{
+  iconCtx.fillStyle=color;
+  iconCtx.fillRect(x+px*scale,y+py*scale,width*scale,height*scale);
+ };
+ if(key==="herb"&&pixelAssets.drawFrame(iconCtx,"props",0,1,32,32,x,y,size,size))return;
+ if(key==="potion"){
+  block(6,1,4,2,"#b8d7e8");block(7,3,2,2,"#d4e4e6");
+  block(4,5,8,8,"#a52e48");block(5,6,6,6,"#e84e68");
+  block(6,7,2,4,"#ffb3a5");block(4,12,8,2,"#74243c");
+ }else if(key==="bread"){
+  block(4,4,8,2,"#b77738");block(2,6,12,6,"#e5ad5d");
+  block(4,4,8,2,"#f1cb79");block(3,8,2,2,"#f6d991");
+  block(11,9,2,2,"#ba783b");block(4,12,8,2,"#99602f");
+ }else if(key==="slime"){
+  block(5,3,6,2,"#8de6ed");block(3,5,10,2,"#3cbce8");
+  block(2,7,12,5,"#1886cb");block(4,12,8,2,"#12589f");
+  block(5,7,2,2,"#e9ffff");block(9,8,2,2,"#e9ffff");
+ }else if(key==="fang"||key==="tooth"){
+  const color=key==="fang"?"#f2e7c8":"#b9d483";
+  block(5,2,6,2,color);block(4,4,8,2,color);block(5,6,6,2,color);
+  block(6,8,4,2,color);block(7,10,2,2,color);block(7,12,2,2,"#927759");
+ }else if(key==="bone"){
+  block(3,3,4,3,"#f1e7ce");block(10,3,4,3,"#f1e7ce");
+  block(5,5,6,6,"#ded2b7");block(3,10,4,3,"#f1e7ce");
+  block(10,10,4,3,"#f1e7ce");
+ }else if(key==="seal"){
+  block(4,2,8,2,"#a87832");block(2,4,12,8,"#e5bd72");
+  block(4,12,8,2,"#a87832");block(6,5,4,6,"#7f5029");
+  block(7,6,2,4,"#e5bd72");
+ }else if(key==="key"){
+  block(2,3,6,2,"#f0ca73");block(2,5,2,3,"#f0ca73");
+  block(7,4,7,2,"#d19b49");block(11,6,2,3,"#d19b49");
+  block(9,6,2,2,"#d19b49");
+ }else{
+  block(4,3,8,2,"#f1d98c");block(2,5,12,7,"#dba94e");
+  block(4,12,8,2,"#9f6b32");block(6,7,4,3,"#f5d77e");
+ }
 }
 function showModal(title,body){const ov=document.getElementById("overlay");ov.style.display="flex";ov.innerHTML=`<div class="screen"><div class="kicker">DRAKMOR · REGISTRO DE JORNADA</div><h2>${title}</h2>${body}</div>`;paused=true}
 function closeModal(){document.getElementById("overlay").style.display="none";document.getElementById("overlay").innerHTML="";paused=false}
@@ -614,6 +799,19 @@ function damageEnemiesInArea(x,y,radius,damage){
  }
  return hits;
 }
+function firePlayerProjectile(classId,enemy,damage,color){
+ const playerX=player.x+player.w/2,playerY=player.y+player.h/2;
+ const targetX=enemy.x+enemy.w/2,targetY=enemy.y+enemy.h/2;
+ const dx=targetX-playerX,dy=targetY-playerY,distance=Math.max(1,Math.hypot(dx,dy));
+ const speed={mage:230,archer:360,druid:185}[classId];
+ const kind={mage:"magic",archer:"arrow",druid:"thorn"}[classId];
+ const directionX=dx/distance,directionY=dy/distance;
+ world.projectiles.push({
+  kind,x:playerX+directionX*20,y:playerY+directionY*20,
+  vx:directionX*speed,vy:directionY*speed,damage,color,
+  radius:kind==="arrow"?5:8,life:Math.min(1.8,distance/speed+.35)
+ });
+}
 function attack(){
  if(!gameStarted||paused||attackCooldown>0)return;
  player.attackTimer=.24;
@@ -626,17 +824,18 @@ function attack(){
   const enemy=findFacingEnemy(ranges[classId],classId==="archer"?36:55);
   if(enemy){
    const damage=classId==="mage"?player.baseAttack+player.intelligence:classId==="archer"?player.baseAttack+Math.round(player.agility*.7):player.baseAttack+Math.round(player.intelligence*.7);
-   damageEnemy(enemy,damage);burst(enemy.x+enemy.w/2,enemy.y+enemy.h/2,attackColors[classId],8);
+   firePlayerProjectile(classId,enemy,damage,attackColors[classId]);
   }else{burst(px+dir[0]*45,py+dir[1]*45,attackColors[classId],8);log("Seu ataque não encontrou um alvo à frente.")}
   return;
  }
  let hits=0;
- const meleeDamage=player.baseAttack+Math.round(player.strength*.55)+rand(-2,3);
+ const meleeDamage=player.baseAttack+Math.round(player.strength*.55)+rand(-2,3)+
+  (classId==="paladin"?Math.round(player.intelligence*.2):0);
  if(classId==="rogue"){
   const enemy=findFacingEnemy(82,60);
   if(enemy){
-   const critical=Math.random()<Math.min(.7,player.agility/40),damage=critical?meleeDamage*2:meleeDamage;
-   damageEnemy(enemy,damage);hits=1;
+   const critical=Math.random()<Math.min(.7,player.agility/40),damage=critical?meleeDamage:Math.max(1,Math.round(meleeDamage*.65));
+   damageEnemy(enemy,damage);if(!enemy.dead)damageEnemy(enemy,damage);hits=1;
    if(critical)log("Ataque crítico do Ladino!","gold");
   }
  }else{
@@ -683,10 +882,29 @@ function damageEnemy(e,amount){
  if(e.dead)return;
  e.hp-=amount;e.aggro=true;burst(e.x+e.w/2,e.y+e.h/2,"#f3b2a2",5);
  log(`${e.name}: -${amount} HP`,"good");
- if(e.hp<=0){e.dead=true;e.deadTimer=e.respawn;e.state="dead";player.xp+=e.xp;player.gold+=e.gold;if(e.type==="slime")player.quests.slimes++;if(e.type==="boss"){player.flags.cryptBoss=true;player.quests.crypt=true;say("Narrador","O Cavaleiro sem Rosto cai de joelhos. A armadura se desfaz em cinzas. Sob ela, não existe corpo — apenas uma chama azul, que sussurra seu nome antes de desaparecer. A moeda em sua mão se parte ao meio. A primeira fechadura foi quebrada, mas algo muito maior acaba de acordar.");world.chapter=2;log("Chefe derrotado! Capítulo II desbloqueado.","gold");}
-  log(`${e.name} derrotado: +${e.xp} XP, +${e.gold} ouro.`,"good");checkLevel();if(e.type==="slime"&&Math.random()<.35)addItem("Núcleo de gosma",1,"Fragmento gelatinoso pedido pelo ancião.");
+ if(e.hp<=0){
+  e.dead=true;e.deadTimer=e.respawn;e.state="dead";
+  player.xp+=e.xp;player.gold+=e.gold;
+  if(e.type==="slime")player.quests.slimes++;
+  if(e.type==="boss"){
+   player.flags.cryptBoss=true;player.quests.crypt=true;
+   say("Narrador","O Cavaleiro sem Rosto cai de joelhos. A armadura se desfaz em cinzas. Sob ela, não existe corpo — apenas uma chama azul, que sussurra seu nome antes de desaparecer. A moeda em sua mão se parte ao meio. A primeira fechadura foi quebrada, mas algo muito maior acaba de acordar.");
+   world.chapter=2;log("Chefe derrotado! Capítulo II desbloqueado.","gold");
+  }
+  log(`${e.name} derrotado: +${e.xp} XP, +${e.gold} ouro.`,"good");
+  checkLevel();dropEnemyLoot(e);
  }
  updateUI();
+}
+function dropEnemyLoot(enemy){
+ for(const item of enemyDrops[enemy.type]||[]){
+  if(Math.random()>=item.chance)continue;
+  world.objects.push({
+   type:"loot",itemName:item.name,description:item.description,
+   x:Math.max(TILE,enemy.x+enemy.w/2-12),y:Math.max(TILE,enemy.y+enemy.h/2-12),
+   w:24,h:24,active:true
+  });
+ }
 }
 function checkLevel(){
  const growth=(classes[player.classId]||classes.warrior).growth;
@@ -702,6 +920,7 @@ function burst(x,y,color,n){world.particles.push({x,y,life:.42,maxLife:.42,frame
 function rest(){if(!gameStarted||paused)return;if(world.enemies.some(e=>!e.dead&&Math.hypot(e.x-player.x,e.y-player.y)<180)){toast("Perigo por perto! Não é seguro descansar.");return}player.hp=player.maxHp;player.mp=player.maxMp;world.day++;log("Você descansou. Um novo dia começa.","good");updateUI()}
 function enemyUpdate(dt){
  for(const e of world.enemies){
+  e.attackEffectTimer=Math.max(0,(e.attackEffectTimer||0)-dt);
   if(e.dead){
    if(e.respawn>0){e.deadTimer-=dt;if(e.deadTimer<=0){e.hp=e.maxHp;e.x=e.spawnX;e.y=e.spawnY;e.dead=false;e.aggro=false;e.attackTimer=0;e.state="idle";e.animationTime=0}}
    continue;
@@ -722,7 +941,7 @@ function enemyUpdate(dt){
   e.attackTimer-=dt;
   if(d<e.attackRange&&e.attackTimer<=0&&player.invulnerable<=0){
    const damage=Math.max(1,e.attack-player.defense-(player.guardTimer>0?player.guardBonus:0));
-   player.hp=Math.max(0,player.hp-damage);player.invulnerable=.7;e.attackTimer=e.attackCooldown;e.state="attack";
+   player.hp=Math.max(0,player.hp-damage);player.invulnerable=.7;e.attackTimer=e.attackCooldown;e.attackEffectTimer=.2;e.state="attack";
    burst(player.x+player.w/2,player.y+player.h/2,"#f16d6d",1);log(`${e.name} causou ${damage} de dano.`,"bad");
    if(player.hp<=0)playerDown();updateUI();
   }
@@ -748,9 +967,24 @@ function playerUpdate(dt){
  player.invulnerable=Math.max(0,player.invulnerable-dt);player.guardTimer=Math.max(0,player.guardTimer-dt);player.attackTimer=Math.max(0,(player.attackTimer||0)-dt);
  attackCooldown=Math.max(0,attackCooldown-dt);spellCooldown=Math.max(0,spellCooldown-dt);
 }
+function updateProjectiles(dt){
+ for(let i=world.projectiles.length-1;i>=0;i--){
+  const projectile=world.projectiles[i];
+  projectile.life-=dt;projectile.x+=projectile.vx*dt;projectile.y+=projectile.vy*dt;
+  const hit=world.enemies.find(enemy=>!enemy.dead&&Math.hypot(
+   projectile.x-(enemy.x+enemy.w/2),
+   projectile.y-(enemy.y+enemy.h/2)
+  )<=projectile.radius+Math.max(enemy.w,enemy.h)*.35);
+  if(hit){
+   damageEnemy(hit,projectile.damage);
+   burst(projectile.x,projectile.y,projectile.color,8);
+   world.projectiles.splice(i,1);
+  }else if(projectile.life<=0)world.projectiles.splice(i,1);
+ }
+}
 function update(dt){
  if(!gameStarted||paused)return;
- playerUpdate(dt);enemyUpdate(dt);updateRegion();
+ playerUpdate(dt);enemyUpdate(dt);updateProjectiles(dt);updateRegion();
  for(let i=world.particles.length-1;i>=0;i--){
   const effect=world.particles[i];effect.life-=dt;effect.frame=Math.min(5,Math.floor((1-effect.life/effect.maxLife)*6));
   if(effect.life<=0)world.particles.splice(i,1);
@@ -773,6 +1007,7 @@ function draw(){
   drawTileMap();
   for(const object of world.objects)drawObject(object);
   drawWorldActors();
+  drawProjectiles();
   drawCombatEffects();
  }else drawMissingWorldNotice();
  drawMinimap();
@@ -811,26 +1046,79 @@ function addRenderActor(actors,index,kind,actor,y){
 }
 function actorSort(a,b){return a.y-b.y}
 function drawActorSprite(assetKey,actor,isPlayer,isNpc=false){
- const row=facingRows[actor.facing]??0;
- let frame=0;
+ let row=facingRows[actor.facing]??0,frame=0,mirrorX=false;
  if(isPlayer){
+  if(actor.gender==="Feminino")row=facingRows[actor.facing]??0;
+  else if(actor.facing==="left"||actor.facing==="right"){
+   row=1;mirrorX=actor.facing==="right";
+  }else row=0;
   if(actor.attackTimer>0)frame=4+Math.floor((.32-actor.attackTimer)*20)%3;
   else if(actor.state==="walk")frame=1+Math.floor(actor.walkTime*8)%3;
  }else if(!isNpc){
+  if(actor.facing==="left"){row=2;mirrorX=true}
+  else if(actor.facing==="right")row=2;
+  else row=actor.facing==="up"?1:0;
   if(actor.state==="attack")frame=4+Math.floor(actor.animationTime*10)%3;
   else if(actor.state==="walk")frame=1+Math.floor(actor.animationTime*8)%3;
  }
  const width=actor.w||32,height=actor.h||32;
  const x=actor.x+(width-64)/2-world.camera.x,y=actor.y+height-64-world.camera.y;
- pixelAssets.drawFrame(ctx,assetKey,row,frame,64,64,x,y);
+ const customizedSheet=isPlayer?getCustomizedPlayerSheet(actor):null;
+ if(customizedSheet&&mirrorX){
+  ctx.save();ctx.translate(x+64,y);ctx.scale(-1,1);
+  ctx.drawImage(customizedSheet,frame*64,row*64,64,64,0,0,64,64);
+  ctx.restore();
+ }else if(customizedSheet)ctx.drawImage(customizedSheet,frame*64,row*64,64,64,x,y,64,64);
+ else if(mirrorX){
+  ctx.save();ctx.translate(x+64,y);ctx.scale(-1,1);
+  pixelAssets.drawFrame(ctx,assetKey,row,frame,64,64,0,0);
+  ctx.restore();
+ }else pixelAssets.drawFrame(ctx,assetKey,row,frame,64,64,x,y);
+ if(isPlayer&&actor.attackTimer>0)drawPlayerAttackWeapon(actor,x,y);
  if(!isNpc&&!isPlayer){
   const barWidth=34,barX=x+15,barY=y-7;
   ctx.fillStyle="#17131a";ctx.fillRect(barX,barY,barWidth,4);
   ctx.fillStyle="#d95757";ctx.fillRect(barX,barY,barWidth*Math.max(0,actor.hp/actor.maxHp),4);
+ if(actor.attackEffectTimer>0)drawEnemyAttackEffect(actor,x,y);
  }
 }
+function drawPlayerAttackWeapon(actor,x,y){
+ const classId=actor.classId,angle={down:0,up:Math.PI,left:Math.PI/2,right:-Math.PI/2}[actor.facing]||0;
+ ctx.save();ctx.translate(x+32,y+34);ctx.rotate(angle);ctx.lineCap="square";
+ if(classId==="archer"){
+ ctx.strokeStyle="#c6914f";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(12,-11);ctx.quadraticCurveTo(24,0,12,11);ctx.stroke();
+ ctx.strokeStyle="#eadbb9";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(12,-11);ctx.lineTo(12,11);ctx.stroke();
+ ctx.strokeStyle="#e9e0ca";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(6,0);ctx.lineTo(20,0);ctx.stroke();
+ ctx.fillStyle="#d7a45d";ctx.fillRect(18,-2,4,4);
+ }else if(classId==="mage"||classId==="druid"){
+ ctx.strokeStyle=classId==="mage"?"#9c7aff":"#8a633e";ctx.lineWidth=4;
+ ctx.beginPath();ctx.moveTo(14,12);ctx.lineTo(12,-13);ctx.stroke();
+ ctx.fillStyle=classId==="mage"?"#b49aff":"#82c878";ctx.fillRect(8,-18,8,8);
+ ctx.fillStyle="#f2e4ad";ctx.fillRect(10,-16,3,3);
+ }else if(classId==="rogue"){
+ ctx.strokeStyle="#e5e9ef";ctx.lineWidth=3;
+ for(const side of [-1,1]){ctx.beginPath();ctx.moveTo(side*11,8);ctx.lineTo(side*15,-8);ctx.stroke()}
+ }else{
+ ctx.strokeStyle=classId==="paladin"?"#ffe17c":"#dce4ec";ctx.lineWidth=4;
+ ctx.beginPath();ctx.moveTo(14,11);ctx.lineTo(11,-12);ctx.stroke();
+ ctx.strokeStyle="#b88642";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(6,-2);ctx.lineTo(17,-2);ctx.stroke();
+ }
+ ctx.restore();
+}
+function drawEnemyAttackEffect(actor,x,y){
+ const remaining=clamp(actor.attackEffectTimer/.2,0,1);
+ ctx.save();ctx.globalAlpha=remaining;ctx.strokeStyle=actor.type==="wolf"?"#e8c19a":"#f07468";ctx.lineWidth=3;
+ const centerX=x+32,centerY=y+34;
+ ctx.beginPath();ctx.moveTo(centerX-12,centerY-8);ctx.lineTo(centerX+12,centerY+8);ctx.stroke();
+ ctx.beginPath();ctx.moveTo(centerX-11,centerY+7);ctx.lineTo(centerX+10,centerY-9);ctx.stroke();
+ ctx.restore();
+}
 function drawObject(object){
- if(object.type==="herb"&&!object.active)return;
+ if((object.type==="herb"||object.type==="loot")&&!object.active)return;
+ if(object.type==="loot"){
+  drawPixelItemIcon(ctx,itemIconKey(object.itemName),object.x-world.camera.x-4,object.y-world.camera.y-4,32);
+  return;
+ }
  let frame=propFrames[object.type];
  if(object.type==="portal"&&player.flags.gateOpen)frame=4;
  if(object.type==="exitPortal"&&currentZone!=="crypt")return;
@@ -842,6 +1130,26 @@ function drawCombatEffects(){
   const x=effect.x-32-world.camera.x,y=effect.y-32-world.camera.y;
   if(x<-64||y<-64||x>W+64||y>H+64)continue;
   pixelAssets.drawFrame(ctx,"combat",0,effect.frame,64,64,x,y,64,64);
+ }
+}
+function drawProjectiles(){
+ for(const projectile of world.projectiles){
+  const x=projectile.x-world.camera.x,y=projectile.y-world.camera.y;
+  ctx.save();ctx.translate(x,y);ctx.rotate(Math.atan2(projectile.vy,projectile.vx));
+  if(projectile.kind==="arrow"){
+   ctx.fillStyle="#9f7243";ctx.fillRect(-8,-1,14,2);
+   ctx.fillStyle="#eee1c3";ctx.beginPath();ctx.moveTo(8,0);ctx.lineTo(3,-3);ctx.lineTo(3,3);ctx.fill();
+   ctx.fillStyle="#d0a45f";ctx.fillRect(-9,-3,3,2);ctx.fillRect(-9,1,3,2);
+  }else if(projectile.kind==="magic"){
+   ctx.fillStyle="#6848c7";ctx.fillRect(-5,-5,10,10);
+   ctx.fillStyle="#ae98ff";ctx.fillRect(-3,-7,6,14);ctx.fillRect(-7,-3,14,6);
+   ctx.fillStyle="#fff0b0";ctx.fillRect(-2,-2,4,4);
+  }else{
+   ctx.fillStyle="#4a8d4a";ctx.fillRect(-7,-2,13,4);
+   ctx.fillStyle="#a5da76";ctx.fillRect(-3,-5,7,10);
+   ctx.fillStyle="#e5f4b4";ctx.fillRect(2,-1,5,2);
+  }
+  ctx.restore();
  }
 }
 function drawMissingWorldNotice(){
@@ -923,6 +1231,7 @@ function continueGame(){
  const raw=localStorage.getItem("drakmorSave");if(!raw){toast("Nenhum jogo salvo encontrado.");return}
  try{
   const d=JSON.parse(raw);Object.assign(player,d.player);
+  world.projectiles=[];
   if(!d.mapVersion){player.x*=TILE/48;player.y*=TILE/48}
   world.chapter=d.chapter||1;world.day=d.day||1;currentZone=d.currentZone==="crypt"?"crypt":"village";makeMap();
   if(d.herbs)world.objects.filter(o=>o.type==="herb").forEach((o,i)=>o.active=d.herbs[i]);
