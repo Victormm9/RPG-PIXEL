@@ -916,7 +916,18 @@ function checkLevel(){
  }
 }
 function gainXP(n){player.xp+=n;checkLevel();updateUI()}
-function burst(x,y,color,n){world.particles.push({x,y,life:.42,maxLife:.42,frame:0,color})}
+function burst(x,y,color,n){
+ world.particles.push({kind:"impact",x,y,life:.42,maxLife:.42,frame:0});
+ const count=clamp(Math.round(n),1,24);
+ for(let index=0;index<count;index++){
+  const angle=index/count*Math.PI*2+(Math.random()-.5)*.45,speed=rand(35,105);
+  const life=.22+Math.random()*.2;
+  world.particles.push({
+   kind:"spark",x,y,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed-10,
+   life,maxLife:life,color,size:rand(2,4)
+  });
+ }
+}
 function rest(){if(!gameStarted||paused)return;if(world.enemies.some(e=>!e.dead&&Math.hypot(e.x-player.x,e.y-player.y)<180)){toast("Perigo por perto! Não é seguro descansar.");return}player.hp=player.maxHp;player.mp=player.maxMp;world.day++;log("Você descansou. Um novo dia começa.","good");updateUI()}
 function enemyUpdate(dt){
  for(const e of world.enemies){
@@ -986,7 +997,11 @@ function update(dt){
  if(!gameStarted||paused)return;
  playerUpdate(dt);enemyUpdate(dt);updateProjectiles(dt);updateRegion();
  for(let i=world.particles.length-1;i>=0;i--){
-  const effect=world.particles[i];effect.life-=dt;effect.frame=Math.min(5,Math.floor((1-effect.life/effect.maxLife)*6));
+  const effect=world.particles[i];effect.life-=dt;
+  if(effect.kind==="spark"){
+   effect.x+=effect.vx*dt;effect.y+=effect.vy*dt;effect.vy+=70*dt;
+   const drag=Math.max(0,1-dt*2.5);effect.vx*=drag;effect.vy*=drag;
+  }else effect.frame=Math.min(5,Math.floor((1-effect.life/effect.maxLife)*6));
   if(effect.life<=0)world.particles.splice(i,1);
  }
  updateCamera(dt);uiUpdateTimer+=dt;
@@ -1009,8 +1024,41 @@ function draw(){
   drawWorldActors();
   drawProjectiles();
   drawCombatEffects();
+  drawRegionAtmosphere();
  }else drawMissingWorldNotice();
  drawMinimap();
+}
+const atmospherePalettes={
+ village:{wash:"rgba(255,220,160,.055)",mote:"#ffe5ad"},
+ north:{wash:"rgba(238,232,185,.05)",mote:"#fff0be"},
+ whispering:{wash:"rgba(174,222,144,.07)",mote:"#e2f5a1"},
+ river:{wash:"rgba(126,199,230,.07)",mote:"#c4f1ff"},
+ east:{wash:"rgba(255,196,126,.065)",mote:"#ffe0a2"},
+ cave:{wash:"rgba(186,190,171,.065)",mote:"#e8e4c4"},
+ crypt:{wash:"rgba(95,128,190,.12)",mote:"#c5d8ff"}
+};
+function drawRegionAtmosphere(){
+ const mood=currentZone==="crypt"?atmospherePalettes.crypt:atmospherePalettes[currentRegionId]||atmospherePalettes.village;
+ const time=performance.now()/1000;
+ ctx.save();
+ ctx.fillStyle=mood.wash;ctx.fillRect(0,0,W,H);
+ for(let index=0;index<20;index++){
+  const x=(index*167+time*3+Math.sin(time*.35+index*2.1)*12+W)%W;
+  const y=(index*83+Math.sin(time*.48+index*1.7)*10+H)%H;
+  const pulse=.16+.28*(.5+.5*Math.sin(time*1.5+index*1.9));
+  ctx.globalAlpha=pulse*.32;ctx.fillStyle=mood.mote;ctx.fillRect(x-3,y-3,8,8);
+  ctx.globalAlpha=pulse;ctx.fillRect(x,y,3,3);
+ }
+ if(currentZone==="crypt"){
+  const x=player.x+player.w/2-world.camera.x,y=player.y+player.h/2-world.camera.y;
+  const glow=ctx.createRadialGradient(x,y,8,x,y,220);
+  glow.addColorStop(0,"rgba(255,211,142,.2)");glow.addColorStop(1,"rgba(255,211,142,0)");
+  ctx.globalAlpha=1;ctx.fillStyle=glow;ctx.fillRect(0,0,W,H);
+ }
+ const vignette=ctx.createRadialGradient(W/2,H/2,H*.22,W/2,H/2,Math.max(W,H)*.72);
+ vignette.addColorStop(0,"rgba(5,8,12,0)");vignette.addColorStop(1,currentZone==="crypt"?"rgba(4,7,18,.42)":"rgba(5,8,12,.28)");
+ ctx.globalAlpha=1;ctx.fillStyle=vignette;ctx.fillRect(0,0,W,H);
+ ctx.restore();
 }
 const facingRows={down:0,up:1,left:2,right:3};
 const propFrames={sign:0,herb:1,chest:2,portal:3,exitPortal:5};
@@ -1127,6 +1175,13 @@ function drawObject(object){
 }
 function drawCombatEffects(){
  for(const effect of world.particles){
+  if(effect.kind==="spark"){
+   const x=Math.round(effect.x-world.camera.x),y=Math.round(effect.y-world.camera.y),size=effect.size||3;
+   ctx.save();ctx.globalAlpha=clamp(effect.life/effect.maxLife,0,1);
+   ctx.fillStyle=effect.color;ctx.fillRect(x-Math.floor(size/2),y-Math.floor(size/2),size,size);
+   ctx.fillStyle="#fff3cf";ctx.fillRect(x,y,1,1);ctx.restore();
+   continue;
+  }
   const x=effect.x-32-world.camera.x,y=effect.y-32-world.camera.y;
   if(x<-64||y<-64||x>W+64||y>H+64)continue;
   pixelAssets.drawFrame(ctx,"combat",0,effect.frame,64,64,x,y,64,64);
