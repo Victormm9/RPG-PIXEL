@@ -1,0 +1,10 @@
+# Materiais para cabelo_curto
+
+newmtl cabelo
+Ka 0.2 0.2 0.2
+Kd 0.2900 0.2200 0.1600
+Ks 0.2 0.2 0.2
+Ns 20
+d 1.0
+illum 2
+

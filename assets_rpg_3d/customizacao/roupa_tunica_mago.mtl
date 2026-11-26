@@ -1,0 +1,10 @@
+# Materiais para roupa_tunica_mago
+
+newmtl manto_mago
+Ka 0.2 0.2 0.2
+Kd 0.4500 0.3000 0.6000
+Ks 0.2 0.2 0.2
+Ns 20
+d 1.0
+illum 2
+

@@ -21,6 +21,7 @@ canvas{width:min(100vw,160vh);height:min(100vh,62.5vw);object-fit:contain;image-
 .title-hitbox:hover,.title-hitbox:focus-visible{filter:none;transform:none;border-color:#ffd16e;background:#ffd16e12;box-shadow:0 0 20px #ffc45a99;outline:none}
 .title-hitbox.start{top:53.4%}.title-hitbox.settings{top:63.4%}.title-hitbox.exit{top:73.3%}
 .three-d-entry{position:fixed;z-index:2;right:18px;bottom:16px;padding:9px 13px;border:1px solid #d2aa6577;border-radius:7px;background:#11131ae8;color:#f4dfb2;font-size:12px;text-decoration:none}
+.three-d-entry.viewer{bottom:60px}
 .three-d-entry:hover,.three-d-entry:focus-visible{background:#33291f;color:#fff4d9;outline:2px solid #ffd16e}
 #statusHud{position:absolute;z-index:3;top:58px;left:14px;width:min(230px,calc(100% - 28px));margin:0;padding:12px;background:rgba(12,14,20,.88);backdrop-filter:blur(8px)}
 #statusHud .statline{font-size:12px}
@@ -163,6 +164,8 @@ h1{font:800 clamp(36px,7vw,66px) Cinzel,serif;color:#e6c27d;letter-spacing:5px;m
   <button class="title-hitbox exit" type="button" aria-label="Sair" title="Sair" onclick="exitGame()"></button>
  </div>
   <a class="three-d-entry" href="prototipo-3d.html">Experimentar a prévia 3D</a>
+ <a class="three-d-entry viewer" href="visualizador-3d.html">Visualizar pacote 3D</a>
+  <a class="three-d-entry viewer" href="preview-3d.html">Pré-visualizar modelos 3D (OBJ)</a>
 </div>
 <div id="overlay"></div>
 <div id="dialogue"><strong id="speaker">Personagem</strong><p id="dialogueText"></p><div class="row"><button id="dialogueAlt" onclick="dialogueAltAction()" style="display:none">Recusar</button><button class="primary" onclick="nextDialogue()">Continuar</button></div></div>

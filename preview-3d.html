@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Drakmor — Pré-visualizador de Modelos 3D (OBJ)</title>
+<style>
+:root{color-scheme:dark;--gold:#e5bd72;--panel:#11141ce8;--muted:#aab0bd}
+*{box-sizing:border-box}
+html,body{width:100%;height:100%;margin:0;background:#0b0e14;color:#eee;font:14px Inter,system-ui,sans-serif;overflow:hidden}
+body{display:grid;grid-template-rows:auto 1fr}
+header{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 18px;background:#11141c;border-bottom:1px solid #80633b}
+h1{margin:0;color:var(--gold);font:700 18px Georgia,serif;letter-spacing:1px}
+header p{margin:4px 0 0;color:var(--muted);font-size:11px}
+a,.button{border:1px solid #80633b;border-radius:7px;padding:9px 12px;background:#211d19;color:#f4dfb2;text-decoration:none;font:inherit;cursor:pointer}
+a:hover,.button:hover{background:#33291f}
+main{display:grid;grid-template-columns:minmax(0,1fr) 300px;min-height:0}
+#viewer{position:relative;min-width:0;min-height:0;background:#161d26}
+canvas{display:block;width:100%;height:100%;touch-action:none}
+#message{position:absolute;inset:auto 16px 16px;padding:11px 14px;border:1px solid #ffffff30;border-radius:8px;background:#11141ce8;color:#e5e6eb;line-height:1.5;pointer-events:none}
+#message.error{border-color:#a74b4b;color:#ffd9d9}
+#dropTarget{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;color:#f4dfb2;font-weight:600;background:#0007;opacity:0;transition:opacity .15s}
+#dropTarget.active{opacity:1}
+aside{display:grid;align-content:start;gap:14px;padding:18px;background:#11141c;border-left:1px solid #ffffff18;overflow:auto}
+label{display:grid;gap:7px;color:#c7cbd1;font-size:12px}
+select{width:100%;padding:10px;border:1px solid #51442f;border-radius:7px;background:#0c0f15;color:#f2e6cf;font:inherit}
+button.categoria{width:100%;text-align:left;padding:8px 10px;border:1px solid #51442f;border-radius:7px;background:#0c0f15;color:#f2e6cf;font:inherit;cursor:pointer}
+button.categoria:hover{background:#1b222b;border-color:#80633b}
+button.categoria.ativa{border-color:#d2aa65;background:#33291f}
+.help{margin:0;color:var(--muted);font-size:12px;line-height:1.6}
+.status{padding:10px;border:1px solid #ffffff20;border-radius:7px;color:#c7cbd1;font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+.status strong{color:var(--gold)}
+.stats{display:grid;gap:4px;font-size:11px;color:#c7cbd1;margin-top:8px}
+.stats b{color:#f4dfb2}
+@media(max-width:700px){body{grid-template-rows:auto 1fr}header{padding:10px 12px}h1{font-size:15px}main{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto}aside{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;padding:10px;border-left:0;border-top:1px solid #ffffff18}.help,.status{grid-column:1/-1}#viewer{min-height:0}}
+</style>
+</head>
+<body>
+<header>
+ <div><h1>DRAKMOR · PRÉVIA 3D (OBJ)</h1><p>Inspecione os modelos low-poly gerados por <code>gerar_modelos_3d.py</code></p></div>
+ <a href="index.html">Voltar ao jogo</a>
+</header>
+<main>
+ <section id="viewer" aria-label="Visualização dos modelos 3D">
+  <canvas id="modelCanvas"></canvas>
+  <div id="message" role="status">Selecione um modelo ao lado para visualizar.</div>
+  <div id="dropTarget">Solte um arquivo .obj para carregar</div>
+ </section>
+ <aside>
+  <label>Categoria
+   <select id="categoria"></select>
+  </label>
+  <label>Modelo
+   <select id="modelo" disabled></select>
+  </label>
+  <div class="status" id="status"><strong>Modelo:</strong> aguardando seleção</div>
+  <div class="stats" id="stats"></div>
+  <p class="help">Arraste para girar a câmera; use a roda do mouse para aproximar/afastar. Cada modelo carrega seu <code>.mtl</code> com as cores dos materiais.</p>
+ </aside>
+</main>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}
+</script>
+<script type="module">
+import * as THREE from "three";
+import {OrbitControls} from "three/addons/controls/OrbitControls.js";
+import {MTLLoader} from "three/addons/loaders/MTLLoader.js";
+import {OBJLoader} from "three/addons/loaders/OBJLoader.js";
+const BASE = "assets_rpg_3d";
+
+const MODELOS = {
+  personagens: [
+    {pasta:"personagens", nome:"npc_base", rotulo:"NPC base"},
+    {pasta:"personagens", nome:"mago", rotulo:"Mago"},
+    {pasta:"personagens", nome:"arqueiro", rotulo:"Arqueiro"},
+  ],
+  customizacao: [
+    {pasta:"customizacao", nome:"cabelo_curto", rotulo:"Cabelo curto"},
+    {pasta:"customizacao", nome:"cabelo_longo", rotulo:"Cabelo longo"},
+    {pasta:"customizacao", nome:"roupa_tunica_mago", rotulo:"Túnica de mago"},
+    {pasta:"customizacao", nome:"roupa_armadura", rotulo:"Armadura leve"},
+  ],
+  armas: [
+    {pasta:"armas", nome:"espada", rotulo:"Espada longa"},
+    {pasta:"armas", nome:"arco", rotulo:"Arco recurvo"},
+    {pasta:"armas", nome:"cajado_mago", rotulo:"Cajado mágico"},
+    {pasta:"armas", nome:"machado", rotulo:"Machado de batalha"},
+    {pasta:"armas", nome:"escudo", rotulo:"Escudo medieval"},
+  ],
+  itens: [
+    {pasta:"itens", nome:"pocao", rotulo:"Poção"},
+  ],
+  mobs: [
+    {pasta:"mobs", nome:"tier1_slime", rotulo:"Slime (Tier 1)"},
+    {pasta:"mobs", nome:"tier2_goblin", rotulo:"Goblin (Tier 2)"},
+    {pasta:"mobs", nome:"tier3_golem", rotulo:"Golem (Tier 3)"},
+  ],
+  cenario: [
+    {pasta:"cenario", nome:"casa", rotulo:"Casa medieval"},
+    {pasta:"cenario", nome:"arvore", rotulo:"Árvore pinheiro"},
+    {pasta:"cenario", nome:"arbusto", rotulo:"Arbusto"},
+    {pasta:"cenario", nome:"montanha", rotulo:"Montanha"},
+    {pasta:"cenario", nome:"entrada_caverna", rotulo:"Entrada de caverna"},
+  ],
+};
+
+const canvas=document.getElementById("modelCanvas");
+const message=document.getElementById("message");
+const selCategoria=document.getElementById("categoria");
+const selModelo=document.getElementById("modelo");
+const status=document.getElementById("status");
+const stats=document.getElementById("stats");
+const dropTarget=document.getElementById("dropTarget");
+const viewer=document.getElementById("viewer");
+
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+renderer.setClearColor(0x161d26);
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.15;
+
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x161d26);
+scene.add(new THREE.HemisphereLight(0xdce4f0,0x5a4a3c,1.6));
+const keyLight=new THREE.DirectionalLight(0xffe0b0,2.5);
+keyLight.position.set(-6,10,5);
+scene.add(keyLight);
+const fillLight=new THREE.DirectionalLight(0xb6d5ff,1.2);
+fillLight.position.set(6,4,-6);
+scene.add(fillLight);
+const grid=new THREE.GridHelper(30,30,0x51442f,0x2b333e);
+grid.position.y=-0.02;
+scene.add(grid);
+
+const camera=new THREE.PerspectiveCamera(45,1,.1,1000);
+camera.position.set(10,6,10);
+const controls=new OrbitControls(camera,renderer.domElement);
+controls.enableDamping=true;
+controls.dampingFactor=.06;
+
+let objAtual=null;
+let mixer=null;
+let clock=new THREE.Clock();
+
+function resize(){
+ const w=Math.max(1,canvas.clientWidth),h=Math.max(1,canvas.clientHeight);
+ renderer.setSize(w,h,false);
+ camera.aspect=w/h;
+ camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(viewer);
+window.addEventListener("resize",resize);
+resize();
+
+function showMessage(text,erro=false){
+ message.textContent=text;
+ message.classList.toggle("error",erro);
+ message.hidden=false;
+}
+function esconderMensagem(){message.hidden=true;}
+
+function limparCena(){
+ if(objAtual){scene.remove(objAtual);objAtual.traverse(o=>{
+  if(o.geometry)o.geometry.dispose();
+  if(o.material){
+   const mats=Array.isArray(o.material)?o.material:[o.material];
+   for(const m of mats){if(m.map)m.map.dispose();m.dispose();}
+  }
+ });objAtual=null;}
+}
+
+function atualizarStats(info){
+ stats.innerHTML="";
+ const add=(label,valor)=>{const d=document.createElement("div");d.innerHTML=`<b>${label}:</b> ${valor}`;stats.appendChild(d);};
+ if(info){add("Vértices",info.vertices);add("Triângulos",info.faces);add("Materiais",info.materiais);}
+}
+
+function carregarModelo(item){
+ esconderMensagem();
+ selModelo.disabled=false;
+ status.innerHTML=`<strong>Carregando:</strong> ${item.rotulo}...`;
+ stats.innerHTML="";
+ limparCena();
+ const mtlLoader=new MTLLoader();
+ mtlLoader.setPath(`${BASE}/${item.pasta}/`);
+ mtlLoader.load(`${item.nome}.mtl`,(materiais)=>{
+  materiais.preload();
+  const objLoader=new OBJLoader();
+  objLoader.setMaterials(materiais);
+  objLoader.setPath(`${BASE}/${item.pasta}/`);
+  objLoader.load(`${item.nome}.obj`,(grupo)=>{
+   try{
+    scene.add(grupo);
+    objAtual=grupo;
+    const box=new THREE.Box3().setFromObject(grupo);
+    const center=box.getCenter(new THREE.Vector3());
+    const size=box.getSize(new THREE.Vector3());
+    grupo.position.x-=center.x;
+    grupo.position.y-=box.min.y;
+    grupo.position.z-=center.z;
+    const maxS=Math.max(size.x,size.y,size.z,0.5);
+    const dist=maxS*1.6/Math.tan(THREE.MathUtils.degToRad(camera.fov/2));
+    camera.near=Math.max(.01,maxS/1000);
+    camera.far=Math.max(1000,dist*8);
+    camera.position.set(dist*0.7,size.y/2+dist*0.5,dist);
+    camera.updateProjectionMatrix();
+    controls.target.set(0,size.y/2,0);
+    controls.minDistance=maxS*.25;
+    controls.maxDistance=dist*3;
+    controls.update();
+    let vert=0,tri=0;
+    grupo.traverse(o=>{
+     if(o.isMesh){
+      const g=o.geometry;
+      vert+=(g.attributes.position?g.attributes.position.count:0);
+      tri+=(g.index?g.index.count/3:(g.attributes.position?g.attributes.position.count/3:0));
+     }
+    });
+    status.innerHTML=`<strong>Modelo:</strong> ${item.rotulo}`;
+    atualizarStats({vertices:vert,faces:Math.round(tri),materiais:0});
+    message.hidden=true;
+   }catch(e){showMessage(`Erro ao preparar: ${e.message}`,true);}
+  },undefined,(err)=>{
+   showMessage(`Falha ao carregar OBJ ${item.nome}: ${err&&err.message?err.message:""}`,true);
+  });
+ },undefined,(err)=>{
+  showMessage(`Falha ao carregar MTL ${item.nome}: ${err&&err.message?err.message:""}`,true);
+ });
+}
+
+function popularCategorias(){
+ selCategoria.innerHTML="";
+ Object.keys(MODELOS).forEach(cat=>{
+  const opt=document.createElement("option");opt.value=cat;opt.textContent=cat;selCategoria.appendChild(opt);
+ });
+}
+popularCategorias();
+
+function popularModelos(cat){
+ selModelo.innerHTML="";
+ const lista=MODELOS[cat]||[];
+ lista.forEach((item,i)=>{
+  const opt=document.createElement("option");opt.value=i;opt.textContent=item.rotulo;selModelo.appendChild(opt);
+ });
+ selModelo.disabled=lista.length===0;
+ if(lista.length)carregarModelo(lista[0]);
+}
+selCategoria.addEventListener("change",()=>popularModelos(selCategoria.value));
+selModelo.addEventListener("change",()=>{
+ const i=parseInt(selModelo.value,10);
+ if(!isNaN(i))carregarModelo(MODELOS[selCategoria.value][i]);
+});
+popularModelos(selCategoria.value);
+
+viewer.addEventListener("dragover",e=>{e.preventDefault();dropTarget.classList.add("active");});
+viewer.addEventListener("dragleave",e=>{if(!viewer.contains(e.relatedTarget))dropTarget.classList.remove("active");});
+viewer.addEventListener("drop",e=>{
+ e.preventDefault();dropTarget.classList.remove("active");
+ const file=e.dataTransfer&&e.dataTransfer.files[0];
+ if(!file||!file.name.toLowerCase().endsWith(".obj")){showMessage("Solte um arquivo .obj",true);return;}
+ esconderMensagem();limparCena();selModelo.disabled=true;
+ const url=URL.createObjectURL(file);
+ const mtlUrl=url.replace(/\.obj$/i,".mtl");
+ const mtlLoader=new MTLLoader();
+ mtlLoader.load(mtlUrl,(materiais)=>{
+  materiais.preload();
+  const loader=new OBJLoader();loader.setMaterials(materiais);
+  loader.load(url,(grupo)=>{
+   scene.add(grupo);objAtual=grupo;
+   const box=new THREE.Box3().setFromObject(grupo);const center=box.getCenter(new THREE.Vector3());const size=box.getSize(new THREE.Vector3());
+   grupo.position.x-=center.x;grupo.position.y-=box.min.y;grupo.position.z-=center.z;
+   const maxS=Math.max(size.x,size.y,size.z,0.5);const dist=maxS*1.6/Math.tan(THREE.MathUtils.degToRad(camera.fov/2));
+   camera.position.set(dist*0.7,size.y/2+dist*0.5,dist);camera.updateProjectionMatrix();
+   controls.target.set(0,size.y/2,0);controls.update();
+   status.innerHTML=`<strong>Modelo:</strong> ${file.name}`;
+   message.hidden=true;
+  },undefined,err=>showMessage(`Falha ao carregar OBJ: ${err&&err.message?err.message:""}`,true));
+ },err=>{
+  const loader=new OBJLoader();
+  loader.load(url,(grupo)=>{
+   scene.add(grupo);objAtual=grupo;
+   const box=new THREE.Box3().setFromObject(grupo);const center=box.getCenter(new THREE.Vector3());const size=box.getSize(new THREE.Vector3());
+   grupo.position.x-=center.x;grupo.position.y-=box.min.y;grupo.position.z-=center.z;
+   const maxS=Math.max(size.x,size.y,size.z,0.5);const dist=maxS*1.6/Math.tan(THREE.MathUtils.degToRad(camera.fov/2));
+   camera.position.set(dist*0.7,size.y/2+dist*0.5,dist);camera.updateProjectionMatrix();
+   controls.target.set(0,size.y/2,0);controls.update();
+   status.innerHTML=`<strong>Modelo:</strong> ${file.name} (sem .mtl)`;
+   message.hidden=true;
+  },undefined,err2=>showMessage(`Falha ao carregar OBJ: ${err2&&err2.message?err2.message:""}`,true));
+ },err=>showMessage(`Falha ao carregar MTL: ${err&&err.message?err.message:""}`,true));
+});
+
+function animar(){
+ requestAnimationFrame(animar);
+ const delta=clock.getDelta();
+ if(mixer)mixer.update(delta);
+ controls.update();
+ renderer.render(scene,camera);
+}
+animar();
+</script>
+</body>
+</html>
+

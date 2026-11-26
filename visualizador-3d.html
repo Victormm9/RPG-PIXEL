@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Drakmor — Pacote 3D</title>
+<style>
+:root{color-scheme:dark;--gold:#e5bd72;--panel:#151821;--muted:#aab0bd}
+*{box-sizing:border-box}
+html,body{width:100%;height:100%;margin:0;background:#0b0e14;color:#eee;font:14px Inter,system-ui,sans-serif}
+body{display:grid;grid-template-rows:auto 1fr}
+header{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 18px;background:#11141c;border-bottom:1px solid #80633b}
+h1{margin:0;color:var(--gold);font:700 18px Georgia,serif;letter-spacing:1px}
+header p{margin:4px 0 0;color:var(--muted);font-size:11px}
+a,.button{border:1px solid #80633b;border-radius:7px;padding:9px 12px;background:#211d19;color:#f4dfb2;text-decoration:none;font:inherit;cursor:pointer}
+a:hover,.button:hover{background:#33291f}
+main{display:grid;grid-template-columns:minmax(0,1fr) 280px;min-height:0}
+#viewer{position:relative;min-width:0;min-height:0;background:#202733}
+canvas{display:block;width:100%;height:100%;touch-action:none}
+#message{position:absolute;inset:auto 16px 16px;padding:11px 14px;border:1px solid #ffffff30;border-radius:8px;background:#11141ce8;color:#e5e6eb;line-height:1.5}
+#message.error{border-color:#a74b4b;color:#ffd9d9}
+#dropTarget{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;color:#f4dfb2;font-weight:600;background:#0007;opacity:0;transition:opacity .15s}
+#dropTarget.active{opacity:1}
+aside{display:grid;align-content:start;gap:14px;padding:18px;background:#11141c;border-left:1px solid #ffffff18;overflow:auto}
+label{display:grid;gap:7px;color:#c7cbd1;font-size:12px}
+input[type=file],select{width:100%;padding:10px;border:1px solid #51442f;border-radius:7px;background:#0c0f15;color:#f2e6cf;font:inherit}
+.help{margin:0;color:var(--muted);font-size:12px;line-height:1.6}
+.status{padding:10px;border:1px solid #ffffff20;border-radius:7px;color:#c7cbd1;font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+.status strong{color:var(--gold)}
+@media(max-width:700px){body{grid-template-rows:auto 1fr}header{padding:10px 12px}h1{font-size:15px}main{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto}aside{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;padding:10px;border-left:0;border-top:1px solid #ffffff18}.help,.status{grid-column:1/-1}#viewer{min-height:0}}
+</style>
+</head>
+<body>
+<header>
+ <div><h1>DRAKMOR · PACOTE 3D</h1><p>Visualizador dos modelos low-poly criados no Blender</p></div>
+ <a href="index.html">Voltar ao jogo</a>
+</header>
+<main>
+ <section id="viewer" aria-label="Visualização dos modelos 3D">
+  <canvas id="modelCanvas"></canvas>
+  <div id="message" role="status">Carregue o arquivo <strong>RPG_LowPoly_Assets.glb</strong> exportado pelo Blender. Arraste para cá ou selecione o arquivo ao lado.</div>
+  <div id="dropTarget">Solte o arquivo .glb para carregar</div>
+ </section>
+ <aside>
+  <label>Arquivo do pacote (.glb)
+   <input id="modelFile" type="file" accept=".glb,model/gltf-binary">
+  </label>
+  <label>Mostrar
+   <select id="category" disabled>
+    <option value="all">Todos os modelos</option>
+    <option value="player">Personagem do jogador</option>
+    <option value="clothes">Roupas</option>
+    <option value="hair">Cabelos</option>
+    <option value="npcs">NPCs</option>
+    <option value="monsters">Monstros</option>
+    <option value="weapons">Armas e ferramentas</option>
+    <option value="items">Itens e acessórios</option>
+    <option value="props">Props de cenário</option>
+   </select>
+  </label>
+  <div class="status" id="modelStatus"><strong>Modelo:</strong> aguardando arquivo</div>
+  <p class="help">Arraste para girar a câmera; use a roda do mouse ou o gesto de pinça para aproximar. A animação de demonstração do personagem é reproduzida quando disponível.</p>
+ </aside>
+</main>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}
+</script>
+<script type="module">
+import * as THREE from "three";
+import {OrbitControls} from "three/addons/controls/OrbitControls.js";
+import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
+
+const canvas=document.getElementById("modelCanvas");
+const message=document.getElementById("message");
+const fileInput=document.getElementById("modelFile");
+const category=document.getElementById("category");
+const modelStatus=document.getElementById("modelStatus");
+const dropTarget=document.getElementById("dropTarget");
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+renderer.setClearColor(0x202733);
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.15;
+
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x202733);
+scene.add(new THREE.HemisphereLight(0xe4efff,0x64513c,2.1));
+const keyLight=new THREE.DirectionalLight(0xffe0b0,3);
+keyLight.position.set(-5,10,7);
+scene.add(keyLight);
+const fillLight=new THREE.DirectionalLight(0xb6d5ff,1.4);
+fillLight.position.set(6,5,-6);
+scene.add(fillLight);
+const grid=new THREE.GridHelper(40,40,0x80633b,0x3c4654);
+grid.position.y=-0.015;
+scene.add(grid);
+
+const camera=new THREE.PerspectiveCamera(45,1,.1,1000);
+camera.position.set(16,12,20);
+const controls=new OrbitControls(camera,renderer.domElement);
+controls.enableDamping=true;
+controls.dampingFactor=.07;
+controls.target.set(7.5,1,0);
+controls.update();
+
+const loader=new GLTFLoader();
+let modelRoot=null;
+let mixer=null;
+let animationClock=new THREE.Clock();
+
+function resize(){
+ const width=Math.max(1,canvas.clientWidth),height=Math.max(1,canvas.clientHeight);
+ renderer.setSize(width,height,false);
+ camera.aspect=width/height;
+ camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(document.getElementById("viewer"));
+window.addEventListener("resize",resize);
+resize();
+
+function showMessage(text,isError=false){
+ message.textContent=text;
+ message.classList.toggle("error",isError);
+ message.hidden=false;
+}
+
+function categoryFor(name){
+ const value=name.toLowerCase();
+ if(value.startsWith("player_"))return "player";
+ if(/moletom|camiseta|jaqueta|calca/.test(value))return "clothes";
+ if(value.startsWith("cabelo")||value.includes("rabo_de_cavalo"))return "hair";
+ if(value.startsWith("npc_"))return "npcs";
+ if(/ogro|esqueleto|costela/.test(value))return "monsters";
+ if(/espada|machado|picareta|tocha/.test(value))return "weapons";
+ if(/pocao|gema|moeda|mochila|chapeu|oculos/.test(value))return "items";
+ if(/bau|caixa|barril|pedra|arvore/.test(value))return "props";
+ return "other";
+}
+
+function showCategory(){
+ if(!modelRoot)return;
+ const selected=category.value;
+ modelRoot.traverse(object=>{
+  if(object.isMesh)object.visible=selected==="all"||categoryFor(object.name)===selected;
+ });
+}
+
+function frameModel(root){
+ const bounds=new THREE.Box3().setFromObject(root);
+ if(bounds.isEmpty())throw new Error("O arquivo não contém malhas 3D visíveis.");
+ const center=bounds.getCenter(new THREE.Vector3());
+ const size=bounds.getSize(new THREE.Vector3());
+ root.position.x-=center.x;
+ root.position.y-=bounds.min.y;
+ root.position.z-=center.z;
+ const maxSize=Math.max(size.x,size.y,size.z,1);
+ const distance=maxSize*1.55/Math.tan(THREE.MathUtils.degToRad(camera.fov/2));
+ camera.near=Math.max(.01,maxSize/1000);
+ camera.far=Math.max(1000,distance*8);
+ camera.position.set(distance*.72,size.y/2+distance*.53,distance);
+ camera.updateProjectionMatrix();
+ controls.target.set(0,size.y/2,0);
+ controls.minDistance=maxSize*.35;
+ controls.maxDistance=distance*2.5;
+ controls.update();
+}
+
+function disposeModel(){
+ if(!modelRoot)return;
+ scene.remove(modelRoot);
+ modelRoot.traverse(object=>{
+  if(object.geometry)object.geometry.dispose();
+  if(object.material){
+   for(const material of Array.isArray(object.material)?object.material:[object.material]){
+    for(const value of Object.values(material))if(value&&value.isTexture)value.dispose();
+    material.dispose();
+   }
+  }
+ });
+ modelRoot=null;
+ mixer=null;
+}
+
+function loadModel(url,name,revokeUrl=false){
+ showMessage(`Carregando ${name}...`);
+ loader.load(url,gltf=>{
+  try{
+   disposeModel();
+   modelRoot=gltf.scene;
+   scene.add(modelRoot);
+   frameModel(modelRoot);
+   mixer=gltf.animations.length?new THREE.AnimationMixer(modelRoot):null;
+   if(mixer)for(const clip of gltf.animations)mixer.clipAction(clip).play();
+   category.value="all";
+   category.disabled=false;
+   modelStatus.textContent=`Modelo: ${name}${gltf.animations.length?` · ${gltf.animations.length} animação(ões)`:""}`;
+   message.hidden=true;
+  }catch(error){
+   showMessage(`Não foi possível preparar o modelo: ${error.message}`,true);
+  }finally{
+   if(revokeUrl)URL.revokeObjectURL(url);
+  }
+ },undefined,error=>{
+  if(revokeUrl)URL.revokeObjectURL(url);
+  const reason=error&&error.message?` (${error.message})`:"";
+  showMessage(`Falha ao carregar ${name}${reason}. Selecione um arquivo .glb exportado pelo Blender.`,true);
+ });
+}
+
+fileInput.addEventListener("change",()=>{
+ const file=fileInput.files&&fileInput.files[0];
+ if(!file)return;
+ if(!file.name.toLowerCase().endsWith(".glb")){
+  showMessage("Selecione um arquivo .glb exportado pelo Blender.",true);
+  return;
+ }
+ loadModel(URL.createObjectURL(file),file.name,true);
+});
+category.addEventListener("change",showCategory);
+
+const viewer=document.getElementById("viewer");
+viewer.addEventListener("dragover",event=>{event.preventDefault();dropTarget.classList.add("active");});
+viewer.addEventListener("dragleave",event=>{
+ if(!viewer.contains(event.relatedTarget))dropTarget.classList.remove("active");
+});
+viewer.addEventListener("drop",event=>{
+ event.preventDefault();
+ dropTarget.classList.remove("active");
+ const file=event.dataTransfer&&event.dataTransfer.files[0];
+ if(!file)return;
+ if(!file.name.toLowerCase().endsWith(".glb")){
+  showMessage("Solte um arquivo .glb exportado pelo Blender.",true);
+  return;
+ }
+ loadModel(URL.createObjectURL(file),file.name,true);
+});
+
+function animate(){
+ requestAnimationFrame(animate);
+ const delta=animationClock.getDelta();
+ if(mixer)mixer.update(delta);
+ controls.update();
+ renderer.render(scene,camera);
+}
+animate();
+</script>
+</body>
+</html>

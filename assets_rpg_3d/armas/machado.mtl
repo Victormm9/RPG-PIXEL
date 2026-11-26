@@ -1,0 +1,18 @@
+# Materiais para machado_batalha
+
+newmtl madeira
+Ka 0.2 0.2 0.2
+Kd 0.5800 0.3900 0.2400
+Ks 0.2 0.2 0.2
+Ns 20
+d 1.0
+illum 2
+
+newmtl metal
+Ka 0.2 0.2 0.2
+Kd 0.8000 0.8200 0.8500
+Ks 0.2 0.2 0.2
+Ns 20
+d 1.0
+illum 2
+

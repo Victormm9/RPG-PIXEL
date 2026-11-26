@@ -1,0 +1,18 @@
+# Materiais para goblin_tier2
+
+newmtl goblin
+Ka 0.2 0.2 0.2
+Kd 0.4200 0.5600 0.1600
+Ks 0.2 0.2 0.2
+Ns 20
+d 1.0
+illum 2
+
+newmtl pele
+Ka 0.2 0.2 0.2
+Kd 0.8200 0.6400 0.4800
+Ks 0.2 0.2 0.2
+Ns 20
+d 1.0
+illum 2
+

@@ -37,9 +37,9 @@ a:hover,.button:hover{background:#33291f}
   <div class="health-label"><span>Vida</span><span id="healthText">100 / 100</span></div>
   <div class="bar"><div id="health"></div></div>
  </section>
- <div id="rightHud"><a href="index.html">Voltar ao jogo 2D</a><div class="panel sub">Exploração · Capítulo I</div></div>
+ <div id="rightHud"><a href="index.html">Voltar ao jogo 2D</a><div class="panel sub">Exploração · Capítulo I</div><div class="panel sub" id="potionCount">Poções · 0</div></div>
 </header>
-<div id="help">WASD / setas: mover · Espaço: atacar · E: falar/interagir · Arraste o mouse: girar câmera · Rodinha: zoom</div>
+<div id="help">WASD / setas: mover · Espaço: atacar · E: falar, abrir baú ou pegar itens · R: usar poção · Arraste o mouse: girar câmera · Rodinha: zoom</div>
 <div id="prompt"></div>
 <div id="notice" role="status" aria-live="polite"></div>
 <div id="error" role="alert"></div>
@@ -131,7 +131,27 @@ a:hover,.button:hover{background:#33291f}
   }
   return geometry(triangles);
  }
- const shapes={box:makeCube(),sphere:makeSphere()};
+ function makeIco(){
+  const t=(1+Math.sqrt(5))/2;
+  const raw=[[-1,t,0],[1,t,0],[-1,-t,0],[1,-t,0],[0,-1,t],[0,1,t],[0,-1,-t],[0,1,-t],[t,0,-1],[t,0,1],[-t,0,-1],[-t,0,1]];
+  const points=raw.map(v=>{const length=Math.hypot(...v);return v.map(n=>n/length);});
+  const faces=[[0,11,5],[0,5,1],[0,1,7],[0,7,10],[0,10,11],[1,5,9],[5,11,4],[11,10,2],[10,7,6],[7,1,8],[3,9,4],[3,4,2],[3,2,6],[3,6,8],[3,8,9],[4,9,5],[2,4,11],[6,2,10],[8,6,7],[9,8,1]];
+  const triangles=faces.map(([a,b,c])=>[points[a],points[b],points[c],.66+Math.max(0,(points[a][1]+points[b][1]+points[c][1])/3)*.3]);
+  return geometry(triangles);
+ }
+ function makeCylinder(sides=8){
+  const triangles=[];
+  for(let i=0;i<sides;i++){
+   const a=i/sides*Math.PI*2,b=(i+1)/sides*Math.PI*2;
+   const bottomA=[Math.cos(a),-.5,Math.sin(a)],bottomB=[Math.cos(b),-.5,Math.sin(b)];
+   const topA=[Math.cos(a),.5,Math.sin(a)],topB=[Math.cos(b),.5,Math.sin(b)];
+   const center=(a+b)/2,shade=.68+Math.max(0,Math.cos(center))*.2;
+   triangles.push([bottomA,bottomB,topB,shade],[bottomA,topB,topA,shade]);
+   triangles.push([[0,.5,0],topA,topB,.96],[[0,-.5,0],bottomB,bottomA,.5]);
+  }
+  return geometry(triangles);
+ }
+ const shapes={box:makeCube(),sphere:makeSphere(),ico:makeIco(),cylinder:makeCylinder()};
  const deg=Math.PI/180;
  const identity=()=>new Float32Array([1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]);
  function multiply(a,b){
@@ -144,8 +164,9 @@ a:hover,.button:hover{background:#33291f}
  function scaling(x,y,z){const m=identity();m[0]=x;m[5]=y;m[10]=z;return m;}
  function rotateY(r){const m=identity(),c=Math.cos(r),s=Math.sin(r);m[0]=c;m[2]=-s;m[8]=s;m[10]=c;return m;}
  function rotateZ(r){const m=identity(),c=Math.cos(r),s=Math.sin(r);m[0]=c;m[1]=s;m[4]=-s;m[5]=c;return m;}
+ function rotateX(r){const m=identity(),c=Math.cos(r),s=Math.sin(r);m[5]=c;m[6]=s;m[9]=-s;m[10]=c;return m;}
  function modelMatrix(mesh){
-  return multiply(translation(mesh.x,mesh.y,mesh.z),multiply(rotateY(mesh.yaw||0),multiply(rotateZ(mesh.roll||0),scaling(mesh.sx,mesh.sy,mesh.sz))));
+  return multiply(translation(mesh.x,mesh.y,mesh.z),multiply(rotateY(mesh.yaw||0),multiply(rotateZ(mesh.roll||0),multiply(rotateX(mesh.pitch||0),scaling(mesh.sx,mesh.sy,mesh.sz)))));
  }
  function perspective(fov,aspect,near,far){
   const f=1/Math.tan(fov/2),nf=1/(near-far),m=new Float32Array(16);
@@ -161,10 +182,12 @@ a:hover,.button:hover{background:#33291f}
   m[8]=x[2];m[9]=y[2];m[10]=z[2];m[12]=-dot(x,eye);m[13]=-dot(y,eye);m[14]=-dot(z,eye);return m;
  }
  function rgb(hex){const n=parseInt(hex.slice(1),16);return [((n>>16)&255)/255,((n>>8)&255)/255,(n&255)/255];}
- function mesh(type,x,y,z,sx,sy,sz,color,yaw=0,roll=0){return {type,x,y,z,sx,sy,sz,color:rgb(color),yaw,roll};}
+ function mesh(type,x,y,z,sx,sy,sz,color,yaw=0,roll=0,pitch=0){return {type,x,y,z,sx,sy,sz,color:rgb(color),yaw,roll,pitch};}
  const scene=[],colliders=[];
  const addBox=(...args)=>scene.push(mesh("box",...args));
  const addSphere=(...args)=>scene.push(mesh("sphere",...args));
+ const addIco=(...args)=>scene.push(mesh("ico",...args));
+ const addCylinder=(...args)=>scene.push(mesh("cylinder",...args));
  addBox(0,-.38,0,100,.7,100,"#547d48");
  addBox(0,-.015,2,4,.04,40,"#9b8058");
  addBox(0,-.01,-7,26,.05,4,"#9b8058");
@@ -181,9 +204,9 @@ a:hover,.button:hover{background:#33291f}
  }
  addHouse(-8,-9,"#bd9b70");addHouse(8,-9,"#9b876d");
  function addTree(x,z){
-  addBox(x,.85,z,.42,1.7,.42,"#69492e");
-  addSphere(x,2.35,z,2.4,2.6,2.4,"#3e7543");
-  addSphere(x-.5,2.15,z+.1,1.7,1.8,1.8,"#4d884b");
+  addCylinder(x,.85,z,.21,1.7,.21,"#69492e");
+  addIco(x,2.35,z,1.2,1.3,1.2,"#3e7543");
+  addIco(x-.5,2.15,z+.1,.85,.9,.9,"#4d884b");
   colliders.push({type:"circle",x,z,r:1});
  }
  [[-15,-16],[-13,-2],[-17,10],[-10,17],[14,-17],[16,-3],[13,13],[20,5],[-21,4],[22,-12]].forEach(p=>addTree(p[0],p[1]));
@@ -192,9 +215,37 @@ a:hover,.button:hover{background:#33291f}
   if(Math.abs(z+9)<5)continue;
   addBox(-2.6,.27,z,.22,.55,.22,"#7b6648");addBox(2.6,.27,z,.22,.55,.22,"#7b6648");
  }
+ const chest={x:-3,z:-3.8,opened:false,lid:null};
+ addBox(chest.x,.34,chest.z,.9,.62,.62,"#70421f");
+ chest.lid=mesh("box",chest.x,.69,chest.z,.96,.2,.68,"#c79542");
+ scene.push(chest.lid);
+ addBox(chest.x,.49,chest.z-.34,.13,.2,.06,"#e5bd72");
+ addBox(4.5,.34,-4.4,.72,.68,.72,"#70421f");
+ addCylinder(4.5,.67,-4.4,.36,.12,.36,"#c79542");
+ addCylinder(6,.52,-5.2,.3,1.04,.3,"#80502d");
+ colliders.push({type:"rect",minX:chest.x-.48,maxX:chest.x+.48,minZ:chest.z-.38,maxZ:chest.z+.38});
+ colliders.push({type:"rect",minX:4.08,maxX:4.92,minZ:-4.82,maxZ:-3.98});
+ colliders.push({type:"circle",x:6,z:-5.2,r:.48});
+ const potion={x:2.3,z:-4.3,available:true,meshes:[]};
+ potion.meshes.push(
+  mesh("ico",potion.x,.38,potion.z,.2,.24,.2,"#b8394b"),
+  mesh("cylinder",potion.x,.66,potion.z,.09,.18,.09,"#ddd9c8"),
+  mesh("cylinder",potion.x,.77,potion.z,.11,.08,.11,"#80613e")
+ );
+ scene.push(...potion.meshes);
  const player={x:0,z:13,yaw:0,hp:100,maxHp:100,attackTime:0};
- const npc={x:0,z:-8.5,yaw:Math.PI};
- const enemy={x:5,z:1.5,yaw:0,hp:60,maxHp:60,alive:true,cooldown:0};
+ const npcs=[
+  {name:"Ancião",x:0,z:-8.5,yaw:Math.PI,outfit:"#795a3a",trim:"#d6c18d",skin:"#d2a27a",hair:"#493729",legs:"#444d4b",dialogue:"As estradas estão perigosas. Ajude a proteger a vila, e as crônicas de Drakmor serão suas."},
+  {name:"Guarda",x:-4.3,z:-6.6,yaw:Math.PI,outfit:"#365d91",trim:"#c69e55",skin:"#b88968",hair:"#211d19",legs:"#353b48",dialogue:"O ogro apareceu perto da estrada. Fique atento e use sua espada."},
+  {name:"Médica",x:4.2,z:-7.1,yaw:Math.PI,outfit:"#e2ddd0",trim:"#b5434b",skin:"#d7a47f",hair:"#e6e0d1",legs:"#444d4b",dialogue:"Tenho poções no baú e na trilha. Use R para recuperar vida."}
+ ];
+ const enemies=[
+  {kind:"ogre",x:5,z:1.5,yaw:0,hp:75,maxHp:75,alive:true,cooldown:0},
+  {kind:"skeleton",x:-7,z:-1.5,yaw:0,hp:45,maxHp:45,alive:true,cooldown:0}
+ ];
+ for(const npc of npcs)colliders.push({type:"circle",x:npc.x,z:npc.z,r:.48});
+ for(const enemy of enemies)colliders.push({type:"circle",x:enemy.x,z:enemy.z,r:.62});
+ let potionCount=0;
  const keys=new Set();
  let cameraYaw=0,cameraPitch=.35,cameraDistance=7,dragging=false,lastPointerX=0,lastPointerY=0;
  let messageTimer=0,gameTime=0,lastFrame=0;
@@ -205,6 +256,24 @@ a:hover,.button:hover{background:#33291f}
   document.getElementById("health").style.width=`${Math.max(0,player.hp)/player.maxHp*100}%`;
  }
  function distance(a,b){return Math.hypot(a.x-b.x,a.z-b.z);}
+ function closestNpc(){
+  return npcs.reduce((closest,npc)=>!closest||distance(player,npc)<distance(player,closest)?npc:closest,null);
+ }
+ function closestEnemy(maxDistance=Infinity){
+  return enemies.filter(enemy=>enemy.alive&&distance(player,enemy)<maxDistance)
+   .sort((a,b)=>distance(player,a)-distance(player,b))[0]||null;
+ }
+ function setPotionCount(){
+  document.getElementById("potionCount").textContent=`Poções · ${potionCount}`;
+ }
+ function usePotion(){
+  if(!potionCount){say("Você não tem poções. Procure no baú ou perto da trilha.",1600);return;}
+  if(player.hp===player.maxHp){say("Sua vida já está cheia.",1400);return;}
+  potionCount--;
+  player.hp=Math.min(player.maxHp,player.hp+35);
+  setPotionCount();setHealth();
+  say("Poção usada: você recuperou 35 pontos de vida.");
+ }
  function blocked(x,z){
   if(x < -27||x>27||z < -27||z>27)return true;
   return colliders.some(c=>c.type==="circle"?Math.hypot(x-c.x,z-c.z)<c.r+.42:
@@ -213,49 +282,88 @@ a:hover,.button:hover{background:#33291f}
  function attack(){
   if(player.attackTime>0)return;
   player.attackTime=.42;
-  if(enemy.alive&&distance(player,enemy)<3.2){
+  const enemy=closestEnemy(3.2);
+  if(enemy){
    const dx=enemy.x-player.x,dz=enemy.z-player.z;
    const facingX=Math.sin(player.yaw),facingZ=-Math.cos(player.yaw);
    if((dx*facingX+dz*facingZ)/Math.max(.01,Math.hypot(dx,dz))>.15){
     enemy.hp=Math.max(0,enemy.hp-24);
-    if(!enemy.hp){enemy.alive=false;say("O saqueador caiu. A trilha para Eldoria está livre.");}
-    else say(`Acerto! O saqueador ainda tem ${enemy.hp} de vida.`);
+    if(!enemy.hp){enemy.alive=false;say(`O ${enemy.kind==="ogre"?"ogro":"esqueleto"} foi derrotado.`);}
+    else say(`Acerto! O inimigo ainda tem ${enemy.hp} de vida.`);
     return;
    }
   }
   say("Ataque no vazio. Aproxime-se e fique de frente para o inimigo.",1300);
  }
  function interact(){
-  if(distance(player,npc)<2.7){say("Ancião: As estradas estão perigosas. Ajude a proteger a vila, e as crônicas de Drakmor serão suas.");return;}
-  if(enemy.alive&&distance(player,enemy)<3.2){say("Saqueador: Saia do meu caminho!",1500);return;}
+  const npc=closestNpc();
+  if(npc&&distance(player,npc)<2.7){say(`${npc.name}: ${npc.dialogue}`);return;}
+  if(!chest.opened&&distance(player,chest)<2){chest.opened=true;chest.lid.visible=false;potionCount++;setPotionCount();say("Baú aberto: você encontrou uma poção. Pressione R para usá-la.");return;}
+  if(potion.available&&distance(player,potion)<1.7){
+   potion.available=false;potion.meshes.forEach(item=>item.visible=false);potionCount++;setPotionCount();
+   say("Poção coletada. Pressione R para recuperar vida.");return;
+  }
+  const enemy=closestEnemy(3.2);
+  if(enemy){say(`${enemy.kind==="ogre"?"Ogro":"Esqueleto"}: "Você não vai passar!"`,1500);return;}
   say("Não há ninguém por perto para conversar.",1300);
  }
  function point(actor,lx,y,lz){
   const c=Math.cos(actor.yaw),s=Math.sin(actor.yaw);
   return {x:actor.x+lx*c+lz*s,y,z:actor.z-lx*s+lz*c};
  }
- function part(actor,type,lx,y,lz,sx,sy,sz,color,roll=0){
+ function part(actor,type,lx,y,lz,sx,sy,sz,color,roll=0,pitch=0){
   const p=point(actor,lx,y,lz);
-  drawMesh(mesh(type,p.x,p.y,p.z,sx,sy,sz,color,actor.yaw,roll));
+  drawMesh(mesh(type,p.x,p.y,p.z,sx,sy,sz,color,actor.yaw,roll,pitch));
  }
- function drawActor(actor,palette,walking,attacking,isEnemy=false){
-  part(actor,"sphere",0,.09,0,.78,.12,.68,"#26352b");
+ function limbPart(actor,a,b,radius,color){
+  const dx=b[0]-a[0],dy=b[1]-a[1],dz=b[2]-a[2];
+  const length=Math.hypot(dx,dy,dz),roll=Math.atan2(-dx,dy),pitch=Math.asin(Math.max(-1,Math.min(1,dz/length)));
+  part(actor,"cylinder",(a[0]+b[0])/2,(a[1]+b[1])/2,(a[2]+b[2])/2,radius,length,radius,color,roll,pitch);
+ }
+ function drawPerson(actor,palette,walking,attacking,isPlayer=false){
   const swing=walking?Math.sin(gameTime*9)*.3:0;
-  part(actor,"box",0,1.02,0,.68,.82,.4,palette.coat);
-  part(actor,"box",0,1.16,-.215,.42,.38,.07,palette.trim);
-  part(actor,"sphere",0,1.72,-.01,.48,.5,.44,palette.skin);
-  part(actor,"sphere",0,1.91,.015,.5,.19,.48,palette.hair);
-  part(actor,"box",-.47,1.02,0,.23,.65,.25,palette.skin,swing);
-  part(actor,"box",.47,1.02,0,.23,.65,.25,palette.skin,-swing+(attacking?.65:0));
-  part(actor,"box",-.19,.38,0,.27,.68,.3,palette.legs,-swing);
-  part(actor,"box",.19,.38,0,.27,.68,.3,palette.legs,swing);
-  if(!isEnemy){
-   part(actor,"box",.62,.83,-.2,.11,.82,.13,"#c7cbd0",attacking?-.35:.15);
-   part(actor,"box",.62,.39,-.2,.3,.12,.25,"#80613e",attacking?-.35:.15);
-  }else{
-   part(actor,"box",-.37,1.72,-.05,.16,.12,.08,"#f1d27b");
-   part(actor,"box",.37,1.72,-.05,.16,.12,.08,"#f1d27b");
+  part(actor,"box",0,1.42,0,.66,.78,.36,palette.coat);
+  part(actor,"box",0,1.22,-.19,.48,.12,.035,palette.trim);
+  part(actor,"ico",0,2.05,0,.34,.38,.31,palette.skin);
+  part(actor,"ico",0,2.31,.015,.37,.22,.34,palette.hair);
+  part(actor,"box",-.18,.78,0,.23,.65,.28,palette.legs,-swing);
+  part(actor,"box",.18,.78,0,.23,.65,.28,palette.legs,swing);
+  part(actor,"box",-.18,.4,-.08,.28,.18,.46,palette.boots||"#443a31");
+  part(actor,"box",.18,.4,-.08,.28,.18,.46,palette.boots||"#443a31");
+  limbPart(actor,[-.36,1.72,0],[-.53+swing*.2,1.18,0],.105,palette.skin);
+  limbPart(actor,[.36,1.72,0],[.53-swing*.2,1.18,0],.105,palette.skin);
+  part(actor,"ico",-.12,2.08,-.285,.045,.065,.025,"#17120f");
+  part(actor,"ico",.12,2.08,-.285,.045,.065,.025,"#17120f");
+  if(isPlayer){
+   part(actor,"box",.61,.91,-.18,.1,.76,.1,"#c7cbd0",attacking?-.65:.12);
+   part(actor,"box",.61,.5,-.18,.3,.11,.12,"#80613e",attacking?-.65:.12);
+   part(actor,"ico",.61,.39,-.18,.09,.08,.09,"#c79542");
   }
+ }
+ function drawOgre(actor,walking,attacking){
+  const swing=walking?Math.sin(gameTime*7)*.18:0;
+  part(actor,"ico",0,1.2,0,.62,.86,.48,"#347b3e");
+  part(actor,"ico",0,2.05,-.015,.5,.44,.42,"#438747");
+  part(actor,"ico",-.2,2.13,-.39,.075,.09,.04,"#d33e42");
+  part(actor,"ico",.2,2.13,-.39,.075,.09,.04,"#d33e42");
+  part(actor,"box",0,1.91,-.36,.32,.07,.07,"#293b25");
+  limbPart(actor,[-.48,1.72,0],[-.67+swing,1.08,0],.18,"#347b3e");
+  limbPart(actor,[.48,1.72,0],[.67-swing,1.08,0],.18,"#347b3e");
+  part(actor,"box",-.23,.38,0,.29,.68,.34,"#263b2b",-swing);
+  part(actor,"box",.23,.38,0,.29,.68,.34,"#263b2b",swing);
+  if(attacking)part(actor,"box",.69,1.24,-.02,.16,.55,.16,"#347b3e",-.9);
+ }
+ function drawSkeleton(actor,walking){
+  const swing=walking?Math.sin(gameTime*8)*.16:0;
+  part(actor,"ico",0,2.03,0,.31,.33,.29,"#e3dfd1");
+  part(actor,"ico",-.11,2.08,-.27,.06,.065,.035,"#25221f");
+  part(actor,"ico",.11,2.08,-.27,.06,.065,.035,"#25221f");
+  part(actor,"box",0,1.38,0,.42,.52,.25,"#e3dfd1");
+  for(const y of [1.57,1.38,1.19])part(actor,"box",0,y,-.15,.59,.07,.08,"#e3dfd1");
+  limbPart(actor,[-.25,1.6,0],[-.42+swing,1.03,0],.07,"#e3dfd1");
+  limbPart(actor,[.25,1.6,0],[.42-swing,1.03,0],.07,"#e3dfd1");
+  limbPart(actor,[-.13,.97,0],[-.18-swing,.33,0],.075,"#e3dfd1");
+  limbPart(actor,[.13,.97,0],[.18+swing,.33,0],.075,"#e3dfd1");
  }
  function drawMesh(item){
   const shape=shapes[item.type];
@@ -274,13 +382,17 @@ a:hover,.button:hover{background:#33291f}
   const eye=[player.x+Math.sin(cameraYaw)*horizontal,target[1]+Math.sin(cameraPitch)*cameraDistance,player.z+Math.cos(cameraYaw)*horizontal];
   const view=lookAt(eye,target),projection=perspective(58*deg,canvas.width/canvas.height,.1,120);
   gl.uniformMatrix4fv(locations.view,false,view);gl.uniformMatrix4fv(locations.viewProjection,false,multiply(projection,view));gl.uniform3f(locations.fogColor,.60,.74,.81);
-  for(const item of scene)drawMesh(item);
-  drawActor(npc,{coat:"#657c72",trim:"#d6c18d",skin:"#d2a27a",hair:"#d1d0c4",legs:"#444d4b"},false,false);
-  if(enemy.alive){
+  for(const item of scene)if(item.visible!==false)drawMesh(item);
+  for(const npc of npcs)drawPerson(npc,{coat:npc.outfit,trim:npc.trim,skin:npc.skin,hair:npc.hair,legs:npc.legs},false,false);
+  for(const enemy of enemies){
+   if(!enemy.alive)continue;
    enemy.yaw=Math.atan2(player.x-enemy.x,-(player.z-enemy.z));
-   drawActor(enemy,{coat:"#704e37",trim:"#b78547",skin:"#b88968",hair:"#49382c",legs:"#47372f"},false,false,true);
+   if(enemy.kind==="ogre")drawOgre(enemy,false,false);
+   else drawSkeleton(enemy,false);
   }
-  drawActor(player,{coat:"#385b83",trim:"#d4b66d",skin:"#d7a47f",hair:"#493729",legs:"#353b48"},keys.has("w")||keys.has("arrowup")||keys.has("s")||keys.has("arrowdown")||keys.has("a")||keys.has("arrowleft")||keys.has("d")||keys.has("arrowright"),player.attackTime>0);
+  drawPerson(player,{coat:"#11151d",trim:"#c79542",skin:"#d7a47f",hair:"#493729",legs:"#353b48",boots:"#e4dfd1"},
+   keys.has("w")||keys.has("arrowup")||keys.has("s")||keys.has("arrowdown")||keys.has("a")||keys.has("arrowleft")||keys.has("d")||keys.has("arrowright"),
+   player.attackTime>0,true);
  }
  function update(dt){
   gameTime+=dt;
@@ -291,14 +403,23 @@ a:hover,.button:hover{background:#33291f}
   const fx=-Math.sin(cameraYaw),fz=-Math.cos(cameraYaw),rx=Math.cos(cameraYaw),rz=-Math.sin(cameraYaw);
   const dx=(fx*forward+rx*side)*5.2*dt,dz=(fz*forward+rz*side)*5.2*dt;
   if(dx||dz){player.yaw=Math.atan2(dx,-dz);if(!blocked(player.x+dx,player.z))player.x+=dx;if(!blocked(player.x,player.z+dz))player.z+=dz;}
-  if(enemy.alive&&distance(player,enemy)<2.45){
-   enemy.cooldown-=dt;
-   if(enemy.cooldown<=0){enemy.cooldown=1.35;player.hp=Math.max(0,player.hp-6);setHealth();say("O saqueador acertou você!",1100);if(!player.hp){player.hp=100;player.x=0;player.z=13;setHealth();say("Você recuou para a vila e recuperou as forças.");}}
-  }else enemy.cooldown=Math.max(0,enemy.cooldown-dt);
+  for(const enemy of enemies){
+   if(enemy.alive&&distance(player,enemy)<2.45){
+    enemy.cooldown-=dt;
+    if(enemy.cooldown<=0){
+     enemy.cooldown=1.35;player.hp=Math.max(0,player.hp-6);setHealth();
+     say(`${enemy.kind==="ogre"?"O ogro":"O esqueleto"} acertou você!`,1100);
+     if(!player.hp){player.hp=100;player.x=0;player.z=13;setHealth();say("Você recuou para a vila e recuperou as forças.");}
+    }
+   }else enemy.cooldown=Math.max(0,enemy.cooldown-dt);
+  }
   if(messageTimer>0){messageTimer-=dt*1000;if(messageTimer<=0)notice.classList.remove("visible");}
-  const nearNpc=distance(player,npc)<2.7,nearEnemy=enemy.alive&&distance(player,enemy)<3.2;
-  prompt.textContent=nearNpc?"E · Conversar com o Ancião":nearEnemy?"E · Falar com o saqueador":"";
-  prompt.classList.toggle("visible",nearNpc||nearEnemy);
+  const npc=closestNpc(),enemy=closestEnemy(3.2);
+  const nearNpc=npc&&distance(player,npc)<2.7,nearChest=!chest.opened&&distance(player,chest)<2;
+  const nearPotion=potion.available&&distance(player,potion)<1.7,nearEnemy=enemy!==null;
+  prompt.textContent=nearNpc?`E · Conversar com ${npc.name}`:nearChest?"E · Abrir baú":
+   nearPotion?"E · Pegar poção":nearEnemy?`E · Falar com ${enemy.kind==="ogre"?"ogro":"esqueleto"}`:"";
+  prompt.classList.toggle("visible",Boolean(nearNpc||nearChest||nearPotion||nearEnemy));
  }
  function loop(time){
   const dt=Math.min((time-lastFrame)/1000||0,.05);lastFrame=time;
@@ -310,6 +431,7 @@ a:hover,.button:hover{background:#33291f}
   keys.add(key);
   if(key===" "&&!event.repeat)attack();
   if(key==="e"&&!event.repeat)interact();
+  if(key==="r"&&!event.repeat)usePotion();
  });
  window.addEventListener("keyup",event=>keys.delete(event.key.toLowerCase()));
  window.addEventListener("blur",()=>keys.clear());
@@ -322,7 +444,7 @@ a:hover,.button:hover{background:#33291f}
  canvas.addEventListener("pointerup",()=>dragging=false);
  canvas.addEventListener("pointercancel",()=>dragging=false);
  canvas.addEventListener("wheel",event=>{cameraDistance=Math.max(4.5,Math.min(11,cameraDistance+Math.sign(event.deltaY)*.55));event.preventDefault();},{passive:false});
- setHealth();say("Explore o caminho até a vila. O Ancião está esperando.",4000);requestAnimationFrame(loop);
+ setHealth();setPotionCount();say("Explore a vila: converse com os moradores, abra o baú e enfrente o ogro e o esqueleto.",4500);requestAnimationFrame(loop);
 })();
 </script>
 </body>

@@ -1,0 +1,18 @@
+# Materiais para arco_recurvo
+
+newmtl madeira
+Ka 0.2 0.2 0.2
+Kd 0.5800 0.3900 0.2400
+Ks 0.2 0.2 0.2
+Ns 20
+d 1.0
+illum 2
+
+newmtl couro
+Ka 0.2 0.2 0.2
+Kd 0.4800 0.3300 0.2200
+Ks 0.2 0.2 0.2
+Ns 20
+d 1.0
+illum 2
+

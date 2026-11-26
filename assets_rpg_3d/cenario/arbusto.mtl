@@ -1,0 +1,10 @@
+# Materiais para arbusto
+
+newmtl folha_verde
+Ka 0.2 0.2 0.2
+Kd 0.8000 0.8000 0.8000
+Ks 0.2 0.2 0.2
+Ns 20
+d 1.0
+illum 2
+

@@ -8,7 +8,9 @@ Sirva a pasta do projeto em HTTP (por exemplo, com a extensão Live Server do VS
 
 ### Prévia de migração para 3D
 
-Na tela inicial, escolha **Experimentar a prévia 3D** para testar uma primeira área em terceira pessoa. O protótipo usa WebGL sem bibliotecas externas, com movimento, câmera giratória, uma conversa e um inimigo de teste. WASD/setas movem, Espaço ataca, E interage, arraste o mouse para girar a câmera e use a rodinha para aproximar/afastar. Essa área é uma etapa experimental independente: ainda não compartilha o progresso, os personagens ou os salvamentos do jogo 2D.
+Na tela inicial, escolha **Experimentar a prévia 3D** para jogar uma área em terceira pessoa. A cena WebGL usa modelos low-poly construídos no próprio jogo a partir das peças do pacote Blender: personagem modular com espada, Ancião, Guarda, Médica, Ogro, Esqueleto, árvores, baú, barril e poções. Converse com os moradores, abra o baú ou colete a poção com E; pressione R para curar, Espaço para atacar, WASD/setas para mover, arraste o mouse para girar a câmera e use a rodinha para aproximar/afastar. A área 3D permanece experimental e não compartilha progresso ou salvamentos com o jogo 2D.
+
+A opção **Visualizar pacote 3D** ainda abre um visualizador separado para o GLB completo exportado pelo script `Pacote_RPG_LowPoly_Blender.py`. O jogo 3D funciona sem Blender ou GLB: seus modelos low-poly são montados diretamente com geometria WebGL para não depender de um arquivo exportado.
 
 A iluminação e as partículas ambientais mudam conforme a região; na cripta, um brilho suave acompanha o personagem para reforçar a sensação de exploração subterrânea. Os impactos de combate também exibem faíscas pixeladas na cor do ataque.
 
